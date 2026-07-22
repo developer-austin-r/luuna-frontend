@@ -1,14 +1,19 @@
 services:
   frontend:
-    image: ${IMAGE_NAME:-luuna-frontend:latest}
-    build:
-      context: .
-      dockerfile: Dockerfile
+    image: ghcr.io/developer-austin-r/luuna-frontend:latest
     container_name: luuna-frontend
+
+    env_file:
+      - .env
+
     ports:
       - "3000:3000"
-    environment:
-      - NODE_ENV=production
-      - PORT=3000
-      - HOSTNAME=0.0.0.0
+
     restart: unless-stopped
+
+    networks:
+      - luuna-network
+
+networks:
+  luuna-network:
+    external: true
