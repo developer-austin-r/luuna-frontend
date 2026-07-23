@@ -466,7 +466,12 @@ export default function CategoriesPage() {
                 : `Category Settings: ${selectedCategory?.name || ""}`
             }
           >
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 mt-2">
+            <form
+              onSubmit={(event) => {
+                void handleSubmit(onSubmit)(event);
+              }}
+              className="space-y-4 mt-2"
+            >
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <Input
                   label="Category Name"

@@ -395,7 +395,9 @@ export default function EditProductPage() {
               </Button>
               <Button
                 variant="primary"
-                onClick={handleSubmit(onSubmit)}
+                onClick={() => {
+                  void handleSubmit(onSubmit)();
+                }}
                 className="flex-1"
                 isLoading={isSubmitting}
               >

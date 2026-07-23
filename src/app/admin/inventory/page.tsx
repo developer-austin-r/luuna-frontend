@@ -404,7 +404,9 @@ export default function InventoryPage() {
             </Button>
             <Button
               variant="primary"
-              onClick={handleSubmit(onSubmitAdjustment)}
+              onClick={() => {
+                void handleSubmit(onSubmitAdjustment)();
+              }}
             >
               Apply Adjustment
             </Button>

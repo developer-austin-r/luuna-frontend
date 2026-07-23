@@ -309,7 +309,12 @@ export default function CustomersPage() {
             <Button variant="outline" onClick={() => setEditModalOpen(false)}>
               Cancel
             </Button>
-            <Button variant="primary" onClick={handleSubmit(onSubmitEdit)}>
+            <Button
+              variant="primary"
+              onClick={() => {
+                void handleSubmit(onSubmitEdit)();
+              }}
+            >
               Save Changes
             </Button>
           </>

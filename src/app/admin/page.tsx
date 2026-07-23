@@ -560,7 +560,9 @@ export default function DashboardPage() {
             </Button>
             <Button
               variant="primary"
-              onClick={handleSubmitProd(handleAddProductShortcut)}
+              onClick={() => {
+                void handleSubmitProd(handleAddProductShortcut)();
+              }}
             >
               Create listing
             </Button>
@@ -626,7 +628,9 @@ export default function DashboardPage() {
             </Button>
             <Button
               variant="primary"
-              onClick={handleSubmitCoup(handleAddCouponShortcut)}
+              onClick={() => {
+                void handleSubmitCoup(handleAddCouponShortcut)();
+              }}
             >
               Launch Coupon
             </Button>

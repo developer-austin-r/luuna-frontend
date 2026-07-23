@@ -533,7 +533,12 @@ export default function OrderDetailsPage() {
             <Button variant="outline" onClick={() => setRefundModalOpen(false)}>
               Cancel
             </Button>
-            <Button variant="danger" onClick={handleSubmit(handleRefundSubmit)}>
+            <Button
+              variant="danger"
+              onClick={() => {
+                void handleSubmit(handleRefundSubmit)();
+              }}
+            >
               Confirm Refund
             </Button>
           </>
