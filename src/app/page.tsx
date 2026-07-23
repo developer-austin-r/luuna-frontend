@@ -1,6 +1,3 @@
-import { appConfig } from "@/config";
-import { CounterCard } from "@/features/counter";
-
 export default function Home() {
   // return (
   //   <main className="min-h-screen bg-background text-foreground">
@@ -18,7 +15,6 @@ export default function Home() {
   //           are already wired together.
   //         </p>
   //       </div>
-
   //       <div className="grid gap-6 lg:grid-cols-[1fr_420px]">
   //         <div className="grid gap-4 sm:grid-cols-2">
   //           {[
@@ -35,7 +31,6 @@ export default function Home() {
   //             </div>
   //           ))}
   //         </div>
-
   //         <CounterCard />
   //       </div>
   //     </section>

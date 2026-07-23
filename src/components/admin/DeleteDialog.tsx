@@ -1,7 +1,8 @@
-import React from 'react';
-import { Modal } from './Modal';
-import { Button } from './Button';
-import { AlertTriangle } from 'lucide-react';
+import React from "react";
+import { AlertTriangle } from "lucide-react";
+
+import { Button } from "./Button";
+import { Modal } from "./Modal";
 
 interface DeleteDialogProps {
   isOpen: boolean;
@@ -16,9 +17,9 @@ export const DeleteDialog: React.FC<DeleteDialogProps> = ({
   isOpen,
   onClose,
   onConfirm,
-  title = 'Delete Item',
-  itemName = 'this item',
-  isLoading = false
+  title = "Delete Item",
+  itemName = "this item",
+  isLoading = false,
 }) => {
   return (
     <Modal
@@ -42,9 +43,13 @@ export const DeleteDialog: React.FC<DeleteDialogProps> = ({
           <AlertTriangle className="w-5 h-5" />
         </div>
         <div className="space-y-1">
-          <p className="font-semibold text-text-custom">Are you absolutely sure?</p>
+          <p className="font-semibold text-text-custom">
+            Are you absolutely sure?
+          </p>
           <p className="text-xs text-text-custom/75">
-            This action cannot be undone. This will permanently delete <span className="font-semibold text-text-custom">"{itemName}"</span> and remove all associated data.
+            This action cannot be undone. This will permanently delete{" "}
+            <span className="font-semibold text-text-custom">"{itemName}"</span>{" "}
+            and remove all associated data.
           </p>
         </div>
       </div>

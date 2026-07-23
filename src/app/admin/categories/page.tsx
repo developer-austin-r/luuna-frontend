@@ -1,86 +1,99 @@
-'use client';
+"use client";
 
-import React, { useState } from 'react';
-import { useAppSelector, useAppDispatch } from '@/redux/hooks';
-import { 
-  addCategory, 
-  updateCategory, 
-  deleteCategory,
-  addActivityLog
-} from '@/redux/slices/admin-slice';
-import { 
-  Breadcrumb, 
-  Card, 
-  Input, 
-  Select, 
-  Button, 
+import React, { useState } from "react";
+import { useForm } from "react-hook-form";
+import {
+  ChevronDown,
+  ChevronRight,
+  Folder,
+  Plus,
+  Search as SearchIcon,
+  Settings,
+  Sparkles,
+  Trash2,
+  Upload,
+} from "lucide-react";
+
+import {
+  Breadcrumb,
+  Button,
+  Card,
   DeleteDialog,
-  StatusBadge
-} from '@/components/admin';
-import { 
-  Plus, 
-  Folder, 
-  ChevronRight, 
-  ChevronDown, 
-  Search as SearchIcon, 
-  Upload, 
-  Sparkles, 
-  Trash2, 
-  Layers,
-  Settings
-} from 'lucide-react';
-import { Category } from '@/types/admin';
-import { useForm } from 'react-hook-form';
+  Input,
+  Select,
+} from "@/components/admin";
+import { useAppDispatch, useAppSelector } from "@/redux/hooks";
+import {
+  addActivityLog,
+  addCategory,
+  deleteCategory,
+  updateCategory,
+} from "@/redux/slices/admin-slice";
+import { type Category } from "@/types/admin";
 
 interface CategoryFormValues {
   name: string;
   slug: string;
   description: string;
   parentId: string;
-  status: 'active' | 'inactive';
+  status: "active" | "inactive";
   image: string;
 }
 
 export default function CategoriesPage() {
   const dispatch = useAppDispatch();
-  const categories = useAppSelector(state => state.admin.categories);
+  const categories = useAppSelector((state) => state.admin.categories);
 
   // States
-  const [searchTerm, setSearchTerm] = useState('');
-  const [expandedParents, setExpandedParents] = useState<Record<string, boolean>>({
-    'cat-1': true,
-    'cat-2': true
+  const [searchTerm, setSearchTerm] = useState("");
+  const [expandedParents, setExpandedParents] = useState<
+    Record<string, boolean>
+  >({
+    "cat-1": true,
+    "cat-2": true,
   });
-  
+
   // Selection/Mode States
-  const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>('cat-1');
+  const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(
+    "cat-1",
+  );
   const [isAddingNew, setIsAddingNew] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [categoryToDelete, setCategoryToDelete] = useState<Category | null>(null);
+  const [categoryToDelete, setCategoryToDelete] = useState<Category | null>(
+    null,
+  );
 
   // Drag and Drop mock state
   const [isDragging, setIsDragging] = useState(false);
 
   // Form Hooks
-  const { register, handleSubmit, reset, setValue, watch, formState: { errors } } = useForm<CategoryFormValues>({
+  const {
+    register,
+    handleSubmit,
+    reset,
+    setValue,
+    watch,
+    formState: { errors },
+  } = useForm<CategoryFormValues>({
     defaultValues: {
-      name: '',
-      slug: '',
-      description: '',
-      parentId: 'none',
-      status: 'active',
-      image: 'https://images.unsplash.com/photo-1483985988355-763728e1935b?w=300&q=80'
-    }
+      name: "",
+      slug: "",
+      description: "",
+      parentId: "none",
+      status: "active",
+      image:
+        "https://images.unsplash.com/photo-1483985988355-763728e1935b?w=300&q=80",
+    },
   });
 
-  const watchedImage = watch('image');
+  const watchedImage = watch("image");
 
   // Derive Parent categories (any category that does NOT have a parent itself)
-  const parentCategories = categories.filter(c => !c.parentId);
+  const parentCategories = categories.filter((c) => !c.parentId);
 
   // Expand / Collapse toggler
   const toggleParent = (id: string) => {
-    setExpandedParents(prev => ({ ...prev, [id]: !prev[id] }));
+    setExpandedParents((prev) => ({ ...prev, [id]: !prev[id] }));
   };
 
   const handleSelectCategory = (cat: Category) => {
@@ -89,10 +102,12 @@ export default function CategoriesPage() {
     reset({
       name: cat.name,
       slug: cat.slug,
-      description: cat.description || '',
-      parentId: cat.parentId || 'none',
+      description: cat.description || "",
+      parentId: cat.parentId || "none",
       status: cat.status,
-      image: cat.image || 'https://images.unsplash.com/photo-1483985988355-763728e1935b?w=300&q=80'
+      image:
+        cat.image ||
+        "https://images.unsplash.com/photo-1483985988355-763728e1935b?w=300&q=80",
     });
   };
 
@@ -100,81 +115,92 @@ export default function CategoriesPage() {
     setIsAddingNew(true);
     setSelectedCategoryId(null);
     reset({
-      name: '',
-      slug: '',
-      description: '',
-      parentId: 'none',
-      status: 'active',
-      image: 'https://images.unsplash.com/photo-1483985988355-763728e1935b?w=300&q=80'
+      name: "",
+      slug: "",
+      description: "",
+      parentId: "none",
+      status: "active",
+      image:
+        "https://images.unsplash.com/photo-1483985988355-763728e1935b?w=300&q=80",
     });
   };
 
   // Auto Generate slug
   const handleAutoSlug = () => {
-    const nameVal = watch('name') || '';
+    const nameVal = watch("name") || "";
     const generated = nameVal
       .toLowerCase()
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/(^-|-$)+/g, '');
-    setValue('slug', generated);
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/(^-|-$)+/g, "");
+    setValue("slug", generated);
   };
 
   // Status Toggle switch
   const handleToggleStatus = (cat: Category) => {
-    const nextStatus = cat.status === 'active' ? 'inactive' : 'active';
+    const nextStatus = cat.status === "active" ? "inactive" : "active";
     dispatch(updateCategory({ ...cat, status: nextStatus }));
-    dispatch(addActivityLog({
-      user: 'Admin Alex',
-      action: `Toggled status of category "${cat.name}" to ${nextStatus}`,
-      module: 'Categories',
-      status: 'success'
-    }));
-    
+    dispatch(
+      addActivityLog({
+        user: "Admin Alex",
+        action: `Toggled status of category "${cat.name}" to ${nextStatus}`,
+        module: "Categories",
+        status: "success",
+      }),
+    );
+
     // Update active form values if we're viewing this category
     if (selectedCategoryId === cat.id) {
-      setValue('status', nextStatus);
+      setValue("status", nextStatus);
     }
   };
 
   const onSubmit = (data: CategoryFormValues) => {
-    const parentVal = data.parentId === 'none' ? undefined : data.parentId;
+    const parentVal = data.parentId === "none" ? undefined : data.parentId;
 
     if (isAddingNew) {
-      dispatch(addCategory({
-        name: data.name,
-        slug: data.slug,
-        description: data.description,
-        parentId: parentVal,
-        image: data.image,
-        status: data.status
-      }));
-      dispatch(addActivityLog({
-        user: 'Admin Alex',
-        action: `Added new category: ${data.name}`,
-        module: 'Categories',
-        status: 'success'
-      }));
-      setIsAddingNew(false);
-      setSelectedCategoryId('cat-1');
-      alert(`Category "${data.name}" added successfully.`);
-    } else if (selectedCategoryId) {
-      const existing = categories.find(c => c.id === selectedCategoryId);
-      if (existing) {
-        dispatch(updateCategory({
-          ...existing,
+      dispatch(
+        addCategory({
           name: data.name,
           slug: data.slug,
           description: data.description,
           parentId: parentVal,
           image: data.image,
-          status: data.status
-        }));
-        dispatch(addActivityLog({
-          user: 'Admin Alex',
-          action: `Modified category properties: ${data.name}`,
-          module: 'Categories',
-          status: 'success'
-        }));
+          status: data.status,
+        }),
+      );
+      dispatch(
+        addActivityLog({
+          user: "Admin Alex",
+          action: `Added new category: ${data.name}`,
+          module: "Categories",
+          status: "success",
+        }),
+      );
+      setIsAddingNew(false);
+      setSelectedCategoryId("cat-1");
+      alert(`Category "${data.name}" added successfully.`);
+    } else if (selectedCategoryId) {
+      const existing = categories.find((c) => c.id === selectedCategoryId);
+      if (existing) {
+        dispatch(
+          updateCategory({
+            ...existing,
+            name: data.name,
+            slug: data.slug,
+            description: data.description,
+            parentId: parentVal,
+            image: data.image,
+            status: data.status,
+          }),
+        );
+        dispatch(
+          addActivityLog({
+            user: "Admin Alex",
+            action: `Modified category properties: ${data.name}`,
+            module: "Categories",
+            status: "success",
+          }),
+        );
         alert(`Category "${data.name}" updated successfully.`);
       }
     }
@@ -188,13 +214,15 @@ export default function CategoriesPage() {
   const confirmDelete = () => {
     if (categoryToDelete) {
       dispatch(deleteCategory(categoryToDelete.id));
-      dispatch(addActivityLog({
-        user: 'Admin Alex',
-        action: `Removed category: ${categoryToDelete.name}`,
-        module: 'Categories',
-        status: 'success'
-      }));
-      setSelectedCategoryId('cat-1');
+      dispatch(
+        addActivityLog({
+          user: "Admin Alex",
+          action: `Removed category: ${categoryToDelete.name}`,
+          module: "Categories",
+          status: "success",
+        }),
+      );
+      setSelectedCategoryId("cat-1");
     }
     setDeleteDialogOpen(false);
   };
@@ -213,38 +241,47 @@ export default function CategoriesPage() {
     e.preventDefault();
     setIsDragging(false);
     // Mock upload URL setting
-    setValue('image', 'https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=300&q=80');
-    alert('Cover image uploaded successfully (Mock simulation).');
+    setValue(
+      "image",
+      "https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=300&q=80",
+    );
+    alert("Cover image uploaded successfully (Mock simulation).");
   };
 
   // Filter Categories matching Search
-  const filteredCategories = categories.filter(c => 
-    c.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    c.slug.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredCategories = categories.filter(
+    (c) =>
+      c.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      c.slug.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
-  const selectedCategory = categories.find(c => c.id === selectedCategoryId);
+  const selectedCategory = categories.find((c) => c.id === selectedCategoryId);
 
   return (
     <div className="space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <Breadcrumb items={[{ label: 'Categories', href: '/admin/categories' }]} />
-          <h1 className="text-2xl font-bold text-text-custom mt-1 font-sans">Category Hierarchy</h1>
+          <Breadcrumb
+            items={[{ label: "Categories", href: "/admin/categories" }]}
+          />
+          <h1 className="text-2xl font-bold text-text-custom mt-1 font-sans">
+            Category Hierarchy
+          </h1>
         </div>
-        <Button onClick={handleAddNewClick} className="flex items-center gap-1.5 shrink-0 self-start sm:self-auto">
+        <Button
+          onClick={handleAddNewClick}
+          className="flex items-center gap-1.5 shrink-0 self-start sm:self-auto"
+        >
           <Plus className="w-4 h-4" />
           Add Category
         </Button>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        
         {/* Left Column: Interactive Tree View */}
         <div className="space-y-4">
           <Card title="Category Directory">
-            
             {/* Search filter */}
             <div className="relative w-full mb-4">
               <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-text-custom/40">
@@ -261,8 +298,10 @@ export default function CategoriesPage() {
 
             {/* Hierarchy Tree */}
             <div className="space-y-1.5 font-sans">
-              {parentCategories.map(parent => {
-                const subCats = categories.filter(c => c.parentId === parent.id);
+              {parentCategories.map((parent) => {
+                const subCats = categories.filter(
+                  (c) => c.parentId === parent.id,
+                );
                 const hasSubs = subCats.length > 0;
                 const isExpanded = expandedParents[parent.id] ?? false;
                 const isSelected = selectedCategoryId === parent.id;
@@ -270,46 +309,66 @@ export default function CategoriesPage() {
                 return (
                   <div key={parent.id} className="space-y-1">
                     {/* Parent row */}
-                    <div 
+                    <div
                       className={`flex items-center justify-between p-2 rounded-lg transition-all duration-150 cursor-pointer ${
-                        isSelected 
-                          ? 'bg-primary/10 text-primary border border-primary/20' 
-                          : 'hover:bg-bg-secondary border border-transparent text-text-custom'
+                        isSelected
+                          ? "bg-primary/10 text-primary border border-primary/20"
+                          : "hover:bg-bg-secondary border border-transparent text-text-custom"
                       }`}
                     >
-                      <div className="flex items-center gap-2 flex-1 min-w-0" onClick={() => handleSelectCategory(parent)}>
+                      <div
+                        className="flex items-center gap-2 flex-1 min-w-0"
+                        onClick={() => handleSelectCategory(parent)}
+                      >
                         {hasSubs ? (
-                          <button 
+                          <button
                             type="button"
-                            onClick={(e) => { e.stopPropagation(); toggleParent(parent.id); }}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              toggleParent(parent.id);
+                            }}
                             className="p-0.5 rounded hover:bg-border-custom text-text-custom/50 cursor-pointer"
                           >
-                            {isExpanded ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
+                            {isExpanded ? (
+                              <ChevronDown className="w-3.5 h-3.5" />
+                            ) : (
+                              <ChevronRight className="w-3.5 h-3.5" />
+                            )}
                           </button>
                         ) : (
                           <span className="w-4.5" />
                         )}
-                        <Folder className={`w-4 h-4 shrink-0 ${isSelected ? 'text-primary' : 'text-text-custom/60'}`} />
-                        <span className="text-xs font-semibold truncate">{parent.name}</span>
+                        <Folder
+                          className={`w-4 h-4 shrink-0 ${isSelected ? "text-primary" : "text-text-custom/60"}`}
+                        />
+                        <span className="text-xs font-semibold truncate">
+                          {parent.name}
+                        </span>
                         <span className="text-3xs font-semibold px-1 rounded-full bg-slate-100 text-text-custom/65">
                           {parent.productCount}
                         </span>
                       </div>
-                      
+
                       {/* Toggles */}
                       <div className="flex items-center gap-2">
                         <button
                           type="button"
                           onClick={() => handleToggleStatus(parent)}
                           className={`w-7 h-4 rounded-full p-0.5 transition-colors cursor-pointer shrink-0 ${
-                            parent.status === 'active' ? 'bg-emerald-500' : 'bg-slate-200'
+                            parent.status === "active"
+                              ? "bg-emerald-500"
+                              : "bg-slate-200"
                           }`}
                         >
-                          <div className={`w-3 h-3 rounded-full bg-white transition-transform ${
-                            parent.status === 'active' ? 'translate-x-3' : 'translate-x-0'
-                          }`} />
+                          <div
+                            className={`w-3 h-3 rounded-full bg-white transition-transform ${
+                              parent.status === "active"
+                                ? "translate-x-3"
+                                : "translate-x-0"
+                            }`}
+                          />
                         </button>
-                        <button 
+                        <button
                           type="button"
                           onClick={() => handleDeleteClick(parent)}
                           className="text-text-custom/40 hover:text-red-500 p-1 rounded transition-colors cursor-pointer"
@@ -322,20 +381,26 @@ export default function CategoriesPage() {
                     {/* Subcategories list */}
                     {hasSubs && isExpanded && (
                       <div className="pl-6 border-l border-border-custom/60 ml-4 space-y-1">
-                        {subCats.map(child => {
-                          const isChildSelected = selectedCategoryId === child.id;
+                        {subCats.map((child) => {
+                          const isChildSelected =
+                            selectedCategoryId === child.id;
                           return (
-                            <div 
+                            <div
                               key={child.id}
                               className={`flex items-center justify-between p-1.5 rounded-md transition-all cursor-pointer ${
-                                isChildSelected 
-                                  ? 'bg-primary/5 text-primary border border-primary/10' 
-                                  : 'hover:bg-bg-secondary border border-transparent text-text-custom/80'
+                                isChildSelected
+                                  ? "bg-primary/5 text-primary border border-primary/10"
+                                  : "hover:bg-bg-secondary border border-transparent text-text-custom/80"
                               }`}
                             >
-                              <div className="flex items-center gap-2 flex-1 min-w-0" onClick={() => handleSelectCategory(child)}>
+                              <div
+                                className="flex items-center gap-2 flex-1 min-w-0"
+                                onClick={() => handleSelectCategory(child)}
+                              >
                                 <span className="w-1.5 h-1.5 rounded-full bg-border-custom" />
-                                <span className="text-xs font-medium truncate">{child.name}</span>
+                                <span className="text-xs font-medium truncate">
+                                  {child.name}
+                                </span>
                                 <span className="text-3xs px-1 rounded bg-slate-50 text-text-custom/50">
                                   {child.productCount}
                                 </span>
@@ -345,14 +410,20 @@ export default function CategoriesPage() {
                                   type="button"
                                   onClick={() => handleToggleStatus(child)}
                                   className={`w-7 h-4 rounded-full p-0.5 transition-colors cursor-pointer shrink-0 ${
-                                    child.status === 'active' ? 'bg-emerald-500' : 'bg-slate-200'
+                                    child.status === "active"
+                                      ? "bg-emerald-500"
+                                      : "bg-slate-200"
                                   }`}
                                 >
-                                  <div className={`w-3 h-3 rounded-full bg-white transition-transform ${
-                                    child.status === 'active' ? 'translate-x-3' : 'translate-x-0'
-                                  }`} />
+                                  <div
+                                    className={`w-3 h-3 rounded-full bg-white transition-transform ${
+                                      child.status === "active"
+                                        ? "translate-x-3"
+                                        : "translate-x-0"
+                                    }`}
+                                  />
                                 </button>
-                                <button 
+                                <button
                                   type="button"
                                   onClick={() => handleDeleteClick(child)}
                                   className="text-text-custom/40 hover:text-red-500 p-1 rounded transition-colors cursor-pointer"
@@ -374,29 +445,34 @@ export default function CategoriesPage() {
 
         {/* Right Column: Add/Edit details Panel */}
         <div className="lg:col-span-2 space-y-4">
-          <Card title={isAddingNew ? 'Create New Category' : `Category Settings: ${selectedCategory?.name || ''}`}>
-            
+          <Card
+            title={
+              isAddingNew
+                ? "Create New Category"
+                : `Category Settings: ${selectedCategory?.name || ""}`
+            }
+          >
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 mt-2">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <Input
                   label="Category Name"
-                  {...register('name', { required: 'Name is required' })}
+                  {...register("name", { required: "Name is required" })}
                   error={errors.name?.message}
                   placeholder="e.g. activewear-women"
                 />
-                
+
                 <div className="flex items-end gap-2">
                   <div className="flex-1">
                     <Input
                       label="Slug"
-                      {...register('slug', { required: 'Slug is required' })}
+                      {...register("slug", { required: "Slug is required" })}
                       error={errors.slug?.message}
                       placeholder="womens-apparel"
                     />
                   </div>
-                  <Button 
-                    type="button" 
-                    variant="outline" 
+                  <Button
+                    type="button"
+                    variant="outline"
                     onClick={handleAutoSlug}
                     className="flex items-center gap-1 text-2xs p-2.5 h-9 shrink-0"
                   >
@@ -407,19 +483,22 @@ export default function CategoriesPage() {
 
                 <Select
                   label="Parent category"
-                  {...register('parentId')}
+                  {...register("parentId")}
                   options={[
-                    { value: 'none', label: 'None (Root Category)' },
-                    ...parentCategories.map(c => ({ value: c.id, label: c.name }))
+                    { value: "none", label: "None (Root Category)" },
+                    ...parentCategories.map((c) => ({
+                      value: c.id,
+                      label: c.name,
+                    })),
                   ]}
                 />
 
                 <Select
                   label="Category Status"
-                  {...register('status')}
+                  {...register("status")}
                   options={[
-                    { value: 'active', label: 'Active' },
-                    { value: 'inactive', label: 'Inactive' }
+                    { value: "active", label: "Active" },
+                    { value: "inactive", label: "Inactive" },
                   ]}
                 />
               </div>
@@ -430,7 +509,7 @@ export default function CategoriesPage() {
                 </label>
                 <textarea
                   rows={3}
-                  {...register('description')}
+                  {...register("description")}
                   className="w-full px-3 py-2 text-sm border border-border-custom rounded-lg bg-white focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all"
                   placeholder="Explain what products are sorted in here..."
                 />
@@ -441,33 +520,35 @@ export default function CategoriesPage() {
                 <label className="text-xs font-semibold text-text-custom/80 uppercase tracking-wider block mb-1.5">
                   Category Cover Image
                 </label>
-                <div 
+                <div
                   onDragOver={handleDragOver}
                   onDragLeave={handleDragLeave}
                   onDrop={handleDrop}
                   className={`border-2 border-dashed rounded-xl p-6 transition-all text-center flex flex-col items-center justify-center cursor-pointer ${
-                    isDragging ? 'border-primary bg-primary/5' : 'border-border-custom hover:border-primary/50'
+                    isDragging
+                      ? "border-primary bg-primary/5"
+                      : "border-border-custom hover:border-primary/50"
                   }`}
                 >
                   {watchedImage ? (
                     <div className="space-y-3">
-                      <img 
-                        src={watchedImage} 
-                        alt="Upload preview" 
+                      <img
+                        src={watchedImage}
+                        alt="Upload preview"
                         className="w-32 h-20 object-cover rounded-lg border border-border-custom mx-auto"
                       />
                       <div className="flex gap-2 justify-center">
-                        <Input 
-                          type="text" 
-                          {...register('image')} 
-                          className="h-8 max-w-xs text-xs" 
-                          placeholder="Image URL" 
+                        <Input
+                          type="text"
+                          {...register("image")}
+                          className="h-8 max-w-xs text-xs"
+                          placeholder="Image URL"
                         />
-                        <Button 
-                          type="button" 
-                          variant="ghost" 
-                          size="sm" 
-                          onClick={() => setValue('image', '')}
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setValue("image", "")}
                           className="text-red-500 hover:bg-red-50"
                         >
                           Clear
@@ -477,16 +558,25 @@ export default function CategoriesPage() {
                   ) : (
                     <>
                       <Upload className="w-8 h-8 text-text-custom/40 mb-2" />
-                      <p className="text-xs font-bold text-text-custom mb-1">Drag and drop file here, or select files</p>
-                      <p className="text-3xs text-text-custom/50">Supports JPG, PNG, WEBP files up to 2MB (Mock)</p>
-                      <input 
-                        type="file" 
-                        className="hidden" 
-                        id="category-file-picker" 
-                        onChange={() => setValue('image', 'https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=300&q=80')}
+                      <p className="text-xs font-bold text-text-custom mb-1">
+                        Drag and drop file here, or select files
+                      </p>
+                      <p className="text-3xs text-text-custom/50">
+                        Supports JPG, PNG, WEBP files up to 2MB (Mock)
+                      </p>
+                      <input
+                        type="file"
+                        className="hidden"
+                        id="category-file-picker"
+                        onChange={() =>
+                          setValue(
+                            "image",
+                            "https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=300&q=80",
+                          )
+                        }
                       />
-                      <label 
-                        htmlFor="category-file-picker" 
+                      <label
+                        htmlFor="category-file-picker"
                         className="mt-3 text-2xs font-semibold px-3 py-1.5 bg-primary/10 text-primary rounded-lg cursor-pointer hover:bg-primary/20 transition-all inline-block"
                       >
                         Choose File
@@ -498,18 +588,14 @@ export default function CategoriesPage() {
 
               {/* Form Actions */}
               <div className="flex justify-end gap-2 pt-4 border-t border-border-custom/50">
-                <Button 
-                  type="submit" 
-                  className="flex items-center gap-1.5"
-                >
+                <Button type="submit" className="flex items-center gap-1.5">
                   <Settings className="w-4 h-4" />
-                  {isAddingNew ? 'Create Category' : 'Save Changes'}
+                  {isAddingNew ? "Create Category" : "Save Changes"}
                 </Button>
               </div>
             </form>
           </Card>
         </div>
-
       </div>
 
       {/* Delete Dialog */}

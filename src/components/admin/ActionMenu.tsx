@@ -1,11 +1,11 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { MoreHorizontal } from 'lucide-react';
+import React, { useEffect, useRef, useState } from "react";
+import { MoreHorizontal } from "lucide-react";
 
 export interface ActionMenuItem {
   label: string;
   onClick: () => void;
   icon?: React.ReactNode;
-  variant?: 'default' | 'danger';
+  variant?: "default" | "danger";
 }
 
 interface ActionMenuProps {
@@ -15,7 +15,7 @@ interface ActionMenuProps {
 
 export const ActionMenu: React.FC<ActionMenuProps> = ({
   items,
-  className = ''
+  className = "",
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -26,14 +26,17 @@ export const ActionMenu: React.FC<ActionMenuProps> = ({
         setIsOpen(false);
       }
     };
-    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
 
   return (
-    <div className={`relative inline-block text-left ${className}`} ref={menuRef}>
+    <div
+      className={`relative inline-block text-left ${className}`}
+      ref={menuRef}
+    >
       <button
         onClick={() => setIsOpen(!isOpen)}
         className="p-1.5 rounded-lg border border-border-custom hover:bg-bg-secondary text-text-custom/70 hover:text-text-custom transition-all duration-150 cursor-pointer"
@@ -52,9 +55,9 @@ export const ActionMenu: React.FC<ActionMenuProps> = ({
                 setIsOpen(false);
               }}
               className={`w-full flex items-center gap-2 px-4 py-2 text-xs font-medium text-left hover:bg-bg-secondary cursor-pointer transition-colors ${
-                item.variant === 'danger'
-                  ? 'text-red-600 hover:text-red-700 hover:bg-red-50'
-                  : 'text-text-custom hover:text-primary'
+                item.variant === "danger"
+                  ? "text-red-600 hover:text-red-700 hover:bg-red-50"
+                  : "text-text-custom hover:text-primary"
               }`}
             >
               {item.icon && <span className="shrink-0">{item.icon}</span>}

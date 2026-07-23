@@ -1,40 +1,41 @@
-'use client';
+"use client";
 
-import React, { useState } from 'react';
-import { useAppSelector, useAppDispatch } from '@/redux/hooks';
-import { 
-  addCoupon, 
-  updateCoupon, 
-  deleteCoupon,
-  addActivityLog
-} from '@/redux/slices/admin-slice';
-import { 
-  Breadcrumb, 
-  Card, 
-  DataTable, 
-  Column, 
-  StatusBadge, 
-  Search, 
-  Filters, 
-  Select, 
-  ActionMenu, 
-  Modal, 
-  Input, 
-  Button, 
+import React, { useState } from "react";
+import { useForm } from "react-hook-form";
+import { Download, Edit, Plus, Tag, Trash } from "lucide-react";
+
+import {
+  ActionMenu,
+  Breadcrumb,
+  Button,
+  Card,
+  type Column,
+  DataTable,
   DeleteDialog,
-  Pagination
-} from '@/components/admin';
-import { Edit, Trash, Plus, Tag, HelpCircle, Download } from 'lucide-react';
-import { Coupon } from '@/types/admin';
-import { useForm } from 'react-hook-form';
+  Filters,
+  Input,
+  Modal,
+  Pagination,
+  Search,
+  Select,
+  StatusBadge,
+} from "@/components/admin";
+import { useAppDispatch, useAppSelector } from "@/redux/hooks";
+import {
+  addActivityLog,
+  addCoupon,
+  deleteCoupon,
+  updateCoupon,
+} from "@/redux/slices/admin-slice";
+import { type Coupon } from "@/types/admin";
 
 export default function CouponsPage() {
   const dispatch = useAppDispatch();
-  const coupons = useAppSelector(state => state.admin.coupons);
+  const coupons = useAppSelector((state) => state.admin.coupons);
 
   // Search & Filter States
-  const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState('all');
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
 
   // Pagination State
   const [currentPage, setCurrentPage] = useState(1);
@@ -47,17 +48,24 @@ export default function CouponsPage() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
   // React Hook Form
-  const { register, handleSubmit, reset, formState: { errors } } = useForm<Omit<Coupon, 'id' | 'usageCount'>>();
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useForm<Omit<Coupon, "id" | "usageCount">>();
 
   const handleAddClick = () => {
     setIsAddMode(true);
     reset({
-      code: '',
-      type: 'percentage',
+      code: "",
+      type: "percentage",
       value: 10,
       minSpend: 0,
-      expiryDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().substring(0, 10),
-      status: 'active'
+      expiryDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
+        .toISOString()
+        .substring(0, 10),
+      status: "active",
     });
     setModalOpen(true);
   };
@@ -72,7 +80,7 @@ export default function CouponsPage() {
       minSpend: coup.minSpend || 0,
       usageLimit: coup.usageLimit || undefined,
       expiryDate: coup.expiryDate,
-      status: coup.status
+      status: coup.status,
     });
     setModalOpen(true);
   };
@@ -91,30 +99,36 @@ export default function CouponsPage() {
       minSpend: data.minSpend ? Number(data.minSpend) : undefined,
       usageLimit: data.usageLimit ? Number(data.usageLimit) : undefined,
       expiryDate: data.expiryDate,
-      status: data.status
+      status: data.status,
     };
 
     if (isAddMode) {
       dispatch(addCoupon(formattedData));
-      dispatch(addActivityLog({
-        user: 'Admin Alex',
-        action: `Created coupon code: ${formattedData.code}`,
-        module: 'Coupons',
-        status: 'success'
-      }));
+      dispatch(
+        addActivityLog({
+          user: "Admin Alex",
+          action: `Created coupon code: ${formattedData.code}`,
+          module: "Coupons",
+          status: "success",
+        }),
+      );
       alert(`Coupon "${formattedData.code}" created successfully.`);
     } else if (selectedCoupon) {
-      dispatch(updateCoupon({ 
-        ...formattedData, 
-        id: selectedCoupon.id,
-        usageCount: selectedCoupon.usageCount
-      }));
-      dispatch(addActivityLog({
-        user: 'Admin Alex',
-        action: `Updated campaign rules for: ${formattedData.code}`,
-        module: 'Coupons',
-        status: 'success'
-      }));
+      dispatch(
+        updateCoupon({
+          ...formattedData,
+          id: selectedCoupon.id,
+          usageCount: selectedCoupon.usageCount,
+        }),
+      );
+      dispatch(
+        addActivityLog({
+          user: "Admin Alex",
+          action: `Updated campaign rules for: ${formattedData.code}`,
+          module: "Coupons",
+          status: "success",
+        }),
+      );
       alert(`Coupon "${formattedData.code}" updated successfully.`);
     }
     setModalOpen(false);
@@ -123,89 +137,112 @@ export default function CouponsPage() {
   const confirmDelete = () => {
     if (selectedCoupon) {
       dispatch(deleteCoupon(selectedCoupon.id));
-      dispatch(addActivityLog({
-        user: 'Admin Alex',
-        action: `Removed coupon: ${selectedCoupon.code}`,
-        module: 'Coupons',
-        status: 'success'
-      }));
+      dispatch(
+        addActivityLog({
+          user: "Admin Alex",
+          action: `Removed coupon: ${selectedCoupon.code}`,
+          module: "Coupons",
+          status: "success",
+        }),
+      );
     }
     setDeleteDialogOpen(false);
   };
 
   const handleExport = () => {
-    alert('Exporting active promo codes list. The download will start shortly.');
+    alert(
+      "Exporting active promo codes list. The download will start shortly.",
+    );
   };
 
   // Filter & Paginate
-  const filteredCoupons = coupons.filter(c => {
+  const filteredCoupons = coupons.filter((c) => {
     const matchSearch = c.code.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchStatus = statusFilter === 'all' || c.status === statusFilter;
+    const matchStatus = statusFilter === "all" || c.status === statusFilter;
     return matchSearch && matchStatus;
   });
 
   const totalPages = Math.ceil(filteredCoupons.length / itemsPerPage);
   const paginatedCoupons = filteredCoupons.slice(
     (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
+    currentPage * itemsPerPage,
   );
 
   const columns: Column<Coupon>[] = [
     {
-      key: 'code',
-      label: 'Coupon Code',
+      key: "code",
+      label: "Coupon Code",
       render: (val) => (
         <span className="inline-flex items-center gap-1.5 font-bold text-text-custom font-mono bg-bg-secondary px-2.5 py-1.5 rounded border border-border-custom text-xs">
           <Tag className="w-3.5 h-3.5 text-primary" />
           {val}
         </span>
-      )
+      ),
     },
     {
-      key: 'type',
-      label: 'Discount Value',
+      key: "type",
+      label: "Discount Value",
       render: (type, item) => (
         <span className="font-bold text-text-custom">
-          {type === 'percentage' ? `${item.value}% Off` : `$${item.value.toFixed(2)} Off`}
+          {type === "percentage"
+            ? `${item.value}% Off`
+            : `$${item.value.toFixed(2)} Off`}
         </span>
-      )
+      ),
     },
     {
-      key: 'minSpend',
-      label: 'Minimum Purchase',
-      render: (val) => <span className="text-text-custom/60 font-semibold">${val ? val.toFixed(2) : '0.00'}</span>
+      key: "minSpend",
+      label: "Minimum Purchase",
+      render: (val) => (
+        <span className="text-text-custom/60 font-semibold">
+          ${val ? val.toFixed(2) : "0.00"}
+        </span>
+      ),
     },
     {
-      key: 'usageCount',
-      label: 'Redemptions',
+      key: "usageCount",
+      label: "Redemptions",
       render: (val, item) => (
         <span className="font-semibold text-text-custom">
-          {val} / {item.usageLimit || '∞'} uses
+          {val} / {item.usageLimit || "∞"} uses
         </span>
-      )
+      ),
     },
     {
-      key: 'expiryDate',
-      label: 'Expiry Date',
-      render: (val) => <span suppressHydrationWarning>{new Date(val).toLocaleDateString()}</span>
+      key: "expiryDate",
+      label: "Expiry Date",
+      render: (val) => (
+        <span suppressHydrationWarning>
+          {new Date(val).toLocaleDateString()}
+        </span>
+      ),
     },
     {
-      key: 'status',
-      label: 'Campaign Status',
-      render: (val) => <StatusBadge status={val} />
+      key: "status",
+      label: "Campaign Status",
+      render: (val) => <StatusBadge status={val} />,
     },
     {
-      key: 'actions',
-      label: 'Actions',
+      key: "actions",
+      label: "Actions",
       render: (_, coup) => (
         <ActionMenu
           items={[
-            { label: 'Edit Rules', icon: <Edit className="w-3.5 h-3.5" />, onClick: () => handleEditClick(coup) },
-            { label: 'Delete Coupon', icon: <Trash className="w-3.5 h-3.5" />, onClick: () => handleDeleteClick(coup), variant: 'danger' }
+            {
+              label: "Edit Rules",
+              icon: <Edit className="w-3.5 h-3.5" />,
+              onClick: () => handleEditClick(coup),
+            },
+            {
+              label: "Delete Coupon",
+              icon: <Trash className="w-3.5 h-3.5" />,
+              onClick: () => handleDeleteClick(coup),
+              variant: "danger",
+            },
           ]}
         />
-      )
-    }
+      ),
+    },
   ];
 
   return (
@@ -213,15 +250,24 @@ export default function CouponsPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <Breadcrumb items={[{ label: 'Coupons', href: '/admin/coupons' }]} />
-          <h1 className="text-2xl font-bold text-text-custom mt-1">Coupons & Promo Rules</h1>
+          <Breadcrumb items={[{ label: "Coupons", href: "/admin/coupons" }]} />
+          <h1 className="text-2xl font-bold text-text-custom mt-1">
+            Coupons & Promo Rules
+          </h1>
         </div>
         <div className="flex gap-2 self-start sm:self-auto shrink-0">
-          <Button onClick={handleExport} variant="outline" className="flex items-center gap-1.5">
+          <Button
+            onClick={handleExport}
+            variant="outline"
+            className="flex items-center gap-1.5"
+          >
             <Download className="w-4 h-4" />
             Export Rules
           </Button>
-          <Button onClick={handleAddClick} className="flex items-center gap-1.5">
+          <Button
+            onClick={handleAddClick}
+            className="flex items-center gap-1.5"
+          >
             <Plus className="w-4 h-4" />
             Create Coupon
           </Button>
@@ -233,32 +279,41 @@ export default function CouponsPage() {
         <div className="space-y-4">
           <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
             <div className="w-full md:w-80">
-              <Search 
-                placeholder="Search promo codes..." 
-                onSearchChange={(val) => { setSearchTerm(val); setCurrentPage(1); }} 
+              <Search
+                placeholder="Search promo codes..."
+                onSearchChange={(val) => {
+                  setSearchTerm(val);
+                  setCurrentPage(1);
+                }}
               />
             </div>
             <div className="flex gap-2 w-full md:w-auto">
-              <Filters onClearFilters={() => { setStatusFilter('all'); setSearchTerm(''); setCurrentPage(1); }}>
+              <Filters
+                onClearFilters={() => {
+                  setStatusFilter("all");
+                  setSearchTerm("");
+                  setCurrentPage(1);
+                }}
+              >
                 <Select
                   label="Campaign Status"
                   value={statusFilter}
-                  onChange={(e) => { setStatusFilter(e.target.value); setCurrentPage(1); }}
+                  onChange={(e) => {
+                    setStatusFilter(e.target.value);
+                    setCurrentPage(1);
+                  }}
                   options={[
-                    { value: 'all', label: 'All Statuses' },
-                    { value: 'active', label: 'Active' },
-                    { value: 'expired', label: 'Expired' },
-                    { value: 'disabled', label: 'Disabled' }
+                    { value: "all", label: "All Statuses" },
+                    { value: "active", label: "Active" },
+                    { value: "expired", label: "Expired" },
+                    { value: "disabled", label: "Disabled" },
                   ]}
                 />
               </Filters>
             </div>
           </div>
 
-          <DataTable
-            columns={columns}
-            data={paginatedCoupons}
-          />
+          <DataTable columns={columns} data={paginatedCoupons} />
 
           <Pagination
             currentPage={currentPage}
@@ -272,14 +327,14 @@ export default function CouponsPage() {
       <Modal
         isOpen={modalOpen}
         onClose={() => setModalOpen(false)}
-        title={isAddMode ? 'Create New Promo Code' : 'Edit Promotion Rules'}
+        title={isAddMode ? "Create New Promo Code" : "Edit Promotion Rules"}
         footer={
           <>
             <Button variant="outline" onClick={() => setModalOpen(false)}>
               Cancel
             </Button>
             <Button variant="primary" onClick={handleSubmit(onSubmitCoupon)}>
-              {isAddMode ? 'Create Coupon' : 'Save Changes'}
+              {isAddMode ? "Create Coupon" : "Save Changes"}
             </Button>
           </>
         }
@@ -288,47 +343,50 @@ export default function CouponsPage() {
           <div className="sm:col-span-2">
             <Input
               label="Promo Code Name"
-              {...register('code', { required: 'Promo code name is required' })}
+              {...register("code", { required: "Promo code name is required" })}
               error={errors.code?.message}
               placeholder="e.g. FLASH20"
             />
           </div>
           <Select
             label="Discount Mode Type"
-            {...register('type')}
+            {...register("type")}
             options={[
-              { value: 'percentage', label: 'Percentage Off (%)' },
-              { value: 'fixed_amount', label: 'Fixed Price Off ($)' }
+              { value: "percentage", label: "Percentage Off (%)" },
+              { value: "fixed_amount", label: "Fixed Price Off ($)" },
             ]}
           />
           <Input
             label="Value / Rate"
             type="number"
-            {...register('value', { valueAsNumber: true, required: 'Discount value is required' })}
+            {...register("value", {
+              valueAsNumber: true,
+              required: "Discount value is required",
+            })}
             error={errors.value?.message}
           />
           <Input
             label="Minimum Order Spend ($)"
             type="number"
-            {...register('minSpend', { valueAsNumber: true })}
+            {...register("minSpend", { valueAsNumber: true })}
           />
           <Input
             label="Redemptions Limit (Uses)"
             type="number"
-            {...register('usageLimit', { valueAsNumber: true })}
+            {...register("usageLimit", { valueAsNumber: true })}
           />
           <Input
             label="Expiry Date"
             type="date"
-            {...register('expiryDate', { required: 'Expiry date is required' })}
+            {...register("expiryDate", { required: "Expiry date is required" })}
             error={errors.expiryDate?.message}
           />
           <Select
             label="Campaign Status"
-            {...register('status')}
+            {...register("status")}
             options={[
-              { value: 'active', label: 'Active' },
-              { value: 'disabled', label: 'Disabled' }
+              { value: "active", label: "Active" },
+              { value: "disabled", label: "Disabled" },
             ]}
           />
         </form>

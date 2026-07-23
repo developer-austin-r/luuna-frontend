@@ -1,5 +1,5 @@
-import React from 'react';
-import { Calendar } from 'lucide-react';
+import React from "react";
+import { Calendar } from "lucide-react";
 
 interface DatePickerProps extends React.InputHTMLAttributes<HTMLInputElement> {
   label?: string;
@@ -7,7 +7,7 @@ interface DatePickerProps extends React.InputHTMLAttributes<HTMLInputElement> {
 
 export const DatePicker: React.FC<DatePickerProps> = ({
   label,
-  className = '',
+  className = "",
   ...props
 }) => {
   return (
