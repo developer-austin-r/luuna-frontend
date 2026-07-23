@@ -162,7 +162,7 @@ export default function InventoryPage() {
 
     // Add to local history list
     const newLog: StockHistoryLog = {
-      id: `h-${Date.now()}`,
+      id: `h-${selectedItem.id}-${historyLogs.length}`,
       date: new Date().toISOString(),
       productName: selectedItem.productName,
       sku: selectedItem.sku,
@@ -367,7 +367,7 @@ export default function InventoryPage() {
                     SKU: {log.sku} • Warehouse: {log.warehouse}
                   </p>
                   <p className="text-3xs text-text-custom/60 italic mt-0.5">
-                    Reason: "{log.reason}"
+                    Reason: &quot;{log.reason}&quot;
                   </p>
                 </div>
               </div>

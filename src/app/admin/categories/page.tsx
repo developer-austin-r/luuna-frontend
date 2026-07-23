@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import {
   ChevronDown,
   ChevronRight,
@@ -72,7 +72,8 @@ export default function CategoriesPage() {
     handleSubmit,
     reset,
     setValue,
-    watch,
+    control,
+    getValues,
     formState: { errors },
   } = useForm<CategoryFormValues>({
     defaultValues: {
@@ -86,10 +87,28 @@ export default function CategoriesPage() {
     },
   });
 
-  const watchedImage = watch("image");
+  const watchedImage = useWatch({ control, name: "image" });
+
+  const matchingCategoryIds = new Set(
+    categories
+      .filter(
+        (category) =>
+          category.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          category.slug.toLowerCase().includes(searchTerm.toLowerCase()),
+      )
+      .map((category) => category.id),
+  );
 
   // Derive Parent categories (any category that does NOT have a parent itself)
-  const parentCategories = categories.filter((c) => !c.parentId);
+  const parentCategories = categories.filter(
+    (category) =>
+      !category.parentId &&
+      (matchingCategoryIds.has(category.id) ||
+        categories.some(
+          (child) =>
+            child.parentId === category.id && matchingCategoryIds.has(child.id),
+        )),
+  );
 
   // Expand / Collapse toggler
   const toggleParent = (id: string) => {
@@ -127,7 +146,7 @@ export default function CategoriesPage() {
 
   // Auto Generate slug
   const handleAutoSlug = () => {
-    const nameVal = watch("name") || "";
+    const nameVal = getValues("name") || "";
     const generated = nameVal
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, "-")
@@ -248,13 +267,6 @@ export default function CategoriesPage() {
     alert("Cover image uploaded successfully (Mock simulation).");
   };
 
-  // Filter Categories matching Search
-  const filteredCategories = categories.filter(
-    (c) =>
-      c.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      c.slug.toLowerCase().includes(searchTerm.toLowerCase()),
-  );
-
   const selectedCategory = categories.find((c) => c.id === selectedCategoryId);
 
   return (
@@ -300,7 +312,9 @@ export default function CategoriesPage() {
             <div className="space-y-1.5 font-sans">
               {parentCategories.map((parent) => {
                 const subCats = categories.filter(
-                  (c) => c.parentId === parent.id,
+                  (category) =>
+                    category.parentId === parent.id &&
+                    matchingCategoryIds.has(category.id),
                 );
                 const hasSubs = subCats.length > 0;
                 const isExpanded = expandedParents[parent.id] ?? false;

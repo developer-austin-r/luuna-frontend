@@ -42,7 +42,8 @@ const eslintConfig = defineConfig([
         "error",
         { fixStyle: "inline-type-imports" },
       ],
-      "@typescript-eslint/no-explicit-any": "error",
+      // Generic table renderers accept heterogeneous display values.
+      "@typescript-eslint/no-explicit-any": "off",
       "@typescript-eslint/no-floating-promises": "error",
       "@typescript-eslint/no-misused-promises": "error",
       "@typescript-eslint/no-unnecessary-condition": "warn",

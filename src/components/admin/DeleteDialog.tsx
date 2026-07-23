@@ -48,7 +48,9 @@ export const DeleteDialog: React.FC<DeleteDialogProps> = ({
           </p>
           <p className="text-xs text-text-custom/75">
             This action cannot be undone. This will permanently delete{" "}
-            <span className="font-semibold text-text-custom">"{itemName}"</span>{" "}
+            <span className="font-semibold text-text-custom">
+              &quot;{itemName}&quot;
+            </span>{" "}
             and remove all associated data.
           </p>
         </div>

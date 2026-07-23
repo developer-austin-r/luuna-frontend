@@ -116,17 +116,18 @@ export default function ReportsPage() {
   ];
 
   // 3. Product Report structure
-  const productReportData = products.map((p) => ({
-    id: p.id,
-    name: p.name,
-    sku: p.sku,
-    category: p.category,
-    quantitySold: p.stock > 0 ? Math.floor(Math.random() * 50) + 10 : 0,
-    revenue:
-      p.stock > 0
-        ? (p.salePrice || p.price) * (Math.floor(Math.random() * 50) + 10)
-        : 0,
-  }));
+  const productReportData = products.map((p) => {
+    const quantitySold = p.stock > 0 ? Math.min(p.stock, 10) : 0;
+
+    return {
+      id: p.id,
+      name: p.name,
+      sku: p.sku,
+      category: p.category,
+      quantitySold,
+      revenue: (p.salePrice || p.price) * quantitySold,
+    };
+  });
 
   // Columns & Tables matching reports
   const salesColumns: Column<any>[] = [
