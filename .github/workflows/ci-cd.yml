@@ -1,0 +1,114 @@
+name: Frontend CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+        with:
+          # Use the runner's built-in builder instead of booting a separate
+          # BuildKit container from Docker Hub.
+          driver: docker
+
+      - name: Pull Node base image with retry
+        run: |
+          for attempt in 1 2 3; do
+            if docker pull node:24-alpine; then
+              exit 0
+            fi
+            if [ "$attempt" -eq 3 ]; then
+              exit 1
+            fi
+            sleep $((attempt * 10))
+          done
+
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and Push Docker Image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: ghcr.io/${{ github.repository }}:latest
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy to EC2
+        uses: appleboy/ssh-action@v1.1.0
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script_stop: true
+          script: |
+            set -e
+
+            DEPLOY_DIR="/home/ubuntu/luuna-frontend"
+
+            mkdir -p "$DEPLOY_DIR"
+            cd "$DEPLOY_DIR"
+
+            # The production environment file is managed directly on EC2.
+            # Never create, copy, or overwrite it from GitHub Actions.
+            ENV_FILE="$DEPLOY_DIR/.env"
+            COMPOSE_FILE="$DEPLOY_DIR/docker-compose.yml"
+
+            if [ ! -f "$ENV_FILE" ]; then
+              echo "Missing $ENV_FILE. Create it on the server before deploying."
+              exit 1
+            fi
+
+            if [ ! -f "$COMPOSE_FILE" ]; then
+              echo "Missing $COMPOSE_FILE. Create it on the server before deploying."
+              exit 1
+            fi
+
+            chmod 600 "$ENV_FILE"
+
+            echo "Logging into GHCR..."
+            echo "${{ secrets.GHCR_PAT }}" | docker login ghcr.io \
+              -u "${{ github.actor }}" \
+              --password-stdin
+
+            echo "Pulling latest image..."
+            sudo docker compose --env-file "$ENV_FILE" pull
+
+            echo "Stopping old container..."
+            sudo docker compose --env-file "$ENV_FILE" down
+
+            echo "Starting new container..."
+            sudo docker compose --env-file "$ENV_FILE" up -d
+
+            echo "Removing unused images..."
+            sudo docker image prune -f
+
+            echo "Running containers:"
+            sudo docker ps
+
+            echo "Deployment completed successfully."
