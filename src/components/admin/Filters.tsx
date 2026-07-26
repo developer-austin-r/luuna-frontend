@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
-import { Filter, X, RotateCcw } from 'lucide-react';
-import { Button } from './Button';
+import React, { useState } from "react";
+import { Filter, RotateCcw } from "lucide-react";
+
+import { Button } from "./Button";
 
 interface FiltersProps {
   children: React.ReactNode;
@@ -11,7 +12,7 @@ interface FiltersProps {
 export const Filters: React.FC<FiltersProps> = ({
   children,
   onClearFilters,
-  className = ''
+  className = "",
 }) => {
   const [isOpen, setIsOpen] = useState(false);
 
@@ -26,9 +27,9 @@ export const Filters: React.FC<FiltersProps> = ({
             className="flex items-center gap-1.5"
           >
             <Filter className="w-3.5 h-3.5" />
-            {isOpen ? 'Hide Filters' : 'Show Filters'}
+            {isOpen ? "Hide Filters" : "Show Filters"}
           </Button>
-          
+
           {onClearFilters && (
             <Button
               variant="ghost"

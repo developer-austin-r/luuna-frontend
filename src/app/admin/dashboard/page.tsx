@@ -1,2 +1,3 @@
-import DashboardPage from '../page';
+import DashboardPage from "../page";
+
 export default DashboardPage;

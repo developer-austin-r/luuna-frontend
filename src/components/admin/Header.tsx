@@ -1,6 +1,12 @@
-import React from 'react';
-import { Menu, Bell, Search as SearchIcon, Globe, Settings } from 'lucide-react';
-import Link from 'next/link';
+import React from "react";
+import Link from "next/link";
+import {
+  Bell,
+  Globe,
+  Menu,
+  Search as SearchIcon,
+  Settings,
+} from "lucide-react";
 
 interface HeaderProps {
   onMenuToggle: () => void;
@@ -33,8 +39,8 @@ export const Header: React.FC<HeaderProps> = ({ onMenuToggle }) => {
 
       <div className="flex items-center gap-4">
         {/* View Store link */}
-        <Link 
-          href="/" 
+        <Link
+          href="/"
           className="hidden sm:flex items-center gap-1 text-xs font-semibold text-text-custom/70 hover:text-primary transition-colors border border-border-custom px-3 py-1.5 rounded-lg"
         >
           <Globe className="w-3.5 h-3.5" />
@@ -48,7 +54,10 @@ export const Header: React.FC<HeaderProps> = ({ onMenuToggle }) => {
         </button>
 
         {/* Quick settings link */}
-        <Link href="/admin/settings" className="p-2 rounded-lg hover:bg-bg-secondary text-text-custom/70 hover:text-text-custom transition-colors">
+        <Link
+          href="/admin/settings"
+          className="p-2 rounded-lg hover:bg-bg-secondary text-text-custom/70 hover:text-text-custom transition-colors"
+        >
           <Settings className="w-4 h-4" />
         </Link>
       </div>

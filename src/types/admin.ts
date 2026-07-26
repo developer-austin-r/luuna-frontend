@@ -6,7 +6,9 @@ export interface Product {
   price: number;
   salePrice?: number | undefined;
   stock: number;
-  status: 'active' | 'draft' | 'out_of_stock';
+  reservedStock?: number;
+  availableStock?: number;
+  status: "active" | "draft" | "out_of_stock";
   image: string;
   description?: string | undefined;
 }
@@ -19,7 +21,7 @@ export interface Category {
   parentId?: string | undefined;
   image?: string | undefined;
   productCount: number;
-  status: 'active' | 'inactive';
+  status: "active" | "inactive";
 }
 
 export interface Order {
@@ -28,8 +30,8 @@ export interface Order {
   email: string;
   itemsCount: number;
   total: number;
-  status: 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
-  paymentStatus: 'paid' | 'unpaid' | 'refunded';
+  status: "pending" | "processing" | "shipped" | "delivered" | "cancelled";
+  paymentStatus: "paid" | "unpaid" | "refunded";
   date: string;
   shippingMethod: string;
 }
@@ -42,7 +44,7 @@ export interface Customer {
   phone?: string | undefined;
   ordersCount: number;
   totalSpent: number;
-  status: 'active' | 'suspended';
+  status: "active" | "suspended";
   dateJoined: string;
 }
 
@@ -55,19 +57,19 @@ export interface InventoryItem {
   available: number;
   warehouse: string;
   alertLevel: number;
-  status: 'in_stock' | 'low_stock' | 'out_of_stock';
+  status: "in_stock" | "low_stock" | "out_of_stock";
 }
 
 export interface Coupon {
   id: string;
   code: string;
-  type: 'percentage' | 'fixed_amount';
+  type: "percentage" | "fixed_amount";
   value: number;
   minSpend?: number | undefined;
   usageLimit?: number | undefined;
   usageCount: number;
   expiryDate: string;
-  status: 'active' | 'expired' | 'disabled';
+  status: "active" | "expired" | "disabled";
 }
 
 export interface ShippingMethod {
@@ -77,7 +79,7 @@ export interface ShippingMethod {
   rate: number;
   minDays: number;
   maxDays: number;
-  status: 'active' | 'inactive';
+  status: "active" | "inactive";
 }
 
 export interface ActivityLog {
@@ -86,7 +88,7 @@ export interface ActivityLog {
   action: string;
   module: string;
   timestamp: string;
-  status: 'success' | 'failed' | 'warning';
+  status: "success" | "failed" | "warning";
 }
 
 export interface ReportItem {

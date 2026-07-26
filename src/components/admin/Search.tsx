@@ -1,5 +1,5 @@
-import React from 'react';
-import { Search as SearchIcon } from 'lucide-react';
+import React from "react";
+import { Search as SearchIcon } from "lucide-react";
 
 interface SearchProps extends React.InputHTMLAttributes<HTMLInputElement> {
   onSearchChange?: (value: string) => void;
@@ -7,8 +7,8 @@ interface SearchProps extends React.InputHTMLAttributes<HTMLInputElement> {
 
 export const Search: React.FC<SearchProps> = ({
   onSearchChange,
-  className = '',
-  placeholder = 'Search...',
+  className = "",
+  placeholder = "Search...",
   ...props
 }) => {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {

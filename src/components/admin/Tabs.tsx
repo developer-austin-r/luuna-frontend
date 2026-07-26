@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 
 interface Tab {
   id: string;
@@ -17,7 +17,7 @@ export const Tabs: React.FC<TabsProps> = ({
   tabs,
   activeTab,
   onChange,
-  className = ''
+  className = "",
 }) => {
   return (
     <div className={`border-b border-border-custom w-full ${className}`}>
@@ -30,15 +30,19 @@ export const Tabs: React.FC<TabsProps> = ({
               onClick={() => onChange(tab.id)}
               className={`whitespace-nowrap py-3 px-1 border-b-2 font-medium text-sm transition-all duration-150 cursor-pointer ${
                 isActive
-                  ? 'border-primary text-primary font-semibold'
-                  : 'border-transparent text-text-custom/60 hover:text-text-custom hover:border-text-custom/20'
+                  ? "border-primary text-primary font-semibold"
+                  : "border-transparent text-text-custom/60 hover:text-text-custom hover:border-text-custom/20"
               }`}
             >
               {tab.label}
               {tab.count !== undefined && (
-                <span className={`ml-2 py-0.5 px-1.5 rounded-full text-2xs font-semibold ${
-                  isActive ? 'bg-primary/10 text-primary' : 'bg-slate-100 text-text-custom/60'
-                }`}>
+                <span
+                  className={`ml-2 py-0.5 px-1.5 rounded-full text-2xs font-semibold ${
+                    isActive
+                      ? "bg-primary/10 text-primary"
+                      : "bg-slate-100 text-text-custom/60"
+                  }`}
+                >
                   {tab.count}
                 </span>
               )}

@@ -1,7 +1,8 @@
-'use client';
+"use client";
 
-import React, { useState } from 'react';
-import { Sidebar, Navbar, Footer } from '@/components/admin';
+import React, { useState } from "react";
+
+import { Footer, Navbar, Sidebar } from "@/components/admin";
 
 interface AdminLayoutProps {
   children: React.ReactNode;

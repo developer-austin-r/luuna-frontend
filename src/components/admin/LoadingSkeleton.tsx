@@ -1,22 +1,24 @@
-import React from 'react';
+import React from "react";
 
 interface SkeletonProps {
   className?: string;
-  variant?: 'text' | 'rect' | 'circle';
+  variant?: "text" | "rect" | "circle";
 }
 
 export const Skeleton: React.FC<SkeletonProps> = ({
-  className = '',
-  variant = 'rect'
+  className = "",
+  variant = "rect",
 }) => {
   const variantStyles = {
-    text: 'h-4 w-full rounded',
-    rect: 'h-24 w-full rounded-xl',
-    circle: 'h-10 w-10 rounded-full'
+    text: "h-4 w-full rounded",
+    rect: "h-24 w-full rounded-xl",
+    circle: "h-10 w-10 rounded-full",
   };
 
   return (
-    <div className={`animate-pulse bg-slate-200/80 ${variantStyles[variant]} ${className}`} />
+    <div
+      className={`animate-pulse bg-slate-200/80 ${variantStyles[variant]} ${className}`}
+    />
   );
 };
 
@@ -47,7 +49,10 @@ export const LoadingSkeletonGrid: React.FC = () => {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
       {Array.from({ length: 4 }).map((_, i) => (
-        <div key={i} className="bg-white p-6 rounded-xl border border-border-custom space-y-4">
+        <div
+          key={i}
+          className="bg-white p-6 rounded-xl border border-border-custom space-y-4"
+        >
           <div className="flex justify-between">
             <Skeleton variant="text" className="w-1/2 h-4" />
             <Skeleton variant="circle" className="w-8 h-8" />

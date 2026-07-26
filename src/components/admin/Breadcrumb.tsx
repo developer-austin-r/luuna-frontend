@@ -1,6 +1,6 @@
-import React from 'react';
-import Link from 'next/link';
-import { ChevronRight, Home } from 'lucide-react';
+import React from "react";
+import Link from "next/link";
+import { ChevronRight, Home } from "lucide-react";
 
 interface BreadcrumbItem {
   label: string;
@@ -14,14 +14,17 @@ interface BreadcrumbProps {
 
 export const Breadcrumb: React.FC<BreadcrumbProps> = ({
   items,
-  className = ''
+  className = "",
 }) => {
   return (
-    <nav className={`flex text-xs font-medium text-text-custom/60 ${className}`} aria-label="Breadcrumb">
+    <nav
+      className={`flex text-xs font-medium text-text-custom/60 ${className}`}
+      aria-label="Breadcrumb"
+    >
       <ol className="inline-flex items-center space-x-1 md:space-x-2">
         <li className="inline-flex items-center">
-          <Link 
-            href="/admin" 
+          <Link
+            href="/admin"
             className="inline-flex items-center hover:text-primary transition-colors gap-1.5"
           >
             <Home className="w-3.5 h-3.5" />
@@ -34,10 +37,12 @@ export const Breadcrumb: React.FC<BreadcrumbProps> = ({
             <li key={index} className="flex items-center">
               <ChevronRight className="w-3.5 h-3.5 mx-1" />
               {isLast || !item.href ? (
-                <span className="text-text-custom font-semibold">{item.label}</span>
+                <span className="text-text-custom font-semibold">
+                  {item.label}
+                </span>
               ) : (
-                <Link 
-                  href={item.href} 
+                <Link
+                  href={item.href}
                   className="hover:text-primary transition-colors"
                 >
                   {item.label}
