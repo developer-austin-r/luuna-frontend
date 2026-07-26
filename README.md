@@ -115,6 +115,22 @@ Next.js environment rules:
 
 The app reads environment values from `src/config/env.ts`.
 
+### EC2 deployment environment
+
+For production deployments, keep the environment file only on the server at
+`/home/ubuntu/luuna-frontend/.env`. The deployment workflow requires this file
+and never creates or overwrites it from GitHub Actions. For example:
+
+```env
+APP_ENV=production
+NEXT_PUBLIC_API_BASE_URL=https://api.example.com
+```
+
+Set its permissions once with `chmod 600 /home/ubuntu/luuna-frontend/.env`.
+The `NEXT_PUBLIC_` prefix makes a value visible to browser code, so it must
+never contain a secret. These values are fixed when the Next.js Docker image is
+built; changing them requires rebuilding and redeploying the image.
+
 ## Project Structure
 
 ```text
