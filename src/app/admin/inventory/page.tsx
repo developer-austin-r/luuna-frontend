@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { AlertCircle, Download, History } from "lucide-react";
 
@@ -17,12 +17,15 @@ import {
   Select,
   StatusBadge,
 } from "@/components/admin";
+import { useToast } from "@/providers/toast-provider";
 import { useAppDispatch, useAppSelector } from "@/redux/hooks";
 import {
   addActivityLog,
+  setProducts,
   updateInventoryStock,
 } from "@/redux/slices/admin-slice";
-import { type InventoryItem } from "@/types/admin";
+import { apiClient } from "@/services/api-client";
+import { type InventoryItem, type Product } from "@/types/admin";
 
 interface AdjustmentFormValues {
   adjustmentType: "add" | "remove" | "set";
@@ -45,7 +48,43 @@ interface StockHistoryLog {
 
 export default function InventoryPage() {
   const dispatch = useAppDispatch();
+  const { success: toastSuccess, info: toastInfo } = useToast();
   const inventory = useAppSelector((state) => state.admin.inventory);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchInventoryProducts() {
+      try {
+        setLoading(true);
+        const res = await apiClient<{ data: { data: any[] } }>("/products");
+        if (res && res.data && Array.isArray(res.data.data)) {
+          const mapped: Product[] = res.data.data.map((p: any) => ({
+            id: p.id,
+            name: p.name,
+            sku: p.sku,
+            category:
+              p.productCategories?.[0]?.category?.name || "Uncategorized",
+            price: Number(p.basePrice),
+            salePrice: p.discountPrice ? Number(p.discountPrice) : undefined,
+            stock: p.stock,
+            reservedStock: p.reservedStock,
+            availableStock: p.availableStock,
+            status: p.status ? "active" : "draft",
+            image:
+              p.images?.[0]?.imageUrl ||
+              "https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=300&q=80",
+            description: p.description || "",
+          }));
+          dispatch(setProducts(mapped));
+        }
+      } catch (err) {
+        console.error("Error fetching inventory products:", err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchInventoryProducts();
+  }, [dispatch]);
 
   // Search & Filters State
   const [searchTerm, setSearchTerm] = useState("");
@@ -57,38 +96,7 @@ export default function InventoryPage() {
   const [selectedItem, setSelectedItem] = useState<InventoryItem | null>(null);
 
   // Dynamic stock history logs
-  const [historyLogs, setHistoryLogs] = useState<StockHistoryLog[]>([
-    {
-      id: "h-1",
-      date: "2026-07-19T18:24:00Z",
-      productName: "Classic Leather Tote Bag",
-      sku: "BG-LTH-01",
-      change: "+20 Restock",
-      warehouse: "Warehouse East",
-      reason: "Supplier Delivery Batch #23",
-      user: "Admin Sarah",
-    },
-    {
-      id: "h-2",
-      date: "2026-07-18T10:15:00Z",
-      productName: "Minimalist Gold Ring",
-      sku: "JW-GLD-03",
-      change: "-2 Sale",
-      warehouse: "Warehouse East",
-      reason: "Fulfilled ORD-9833",
-      user: "System Webhook",
-    },
-    {
-      id: "h-3",
-      date: "2026-07-17T14:00:00Z",
-      productName: "Suede Chelsea Boots",
-      sku: "SH-SUD-04",
-      change: "Set to 0",
-      warehouse: "Warehouse Central",
-      reason: "Damaged item audit adjustment",
-      user: "Admin Alex",
-    },
-  ]);
+  const [historyLogs, setHistoryLogs] = useState<StockHistoryLog[]>([]);
 
   // React Hook Form
   const {
@@ -118,8 +126,8 @@ export default function InventoryPage() {
     setAdjustmentModalOpen(true);
   };
 
-  const handleExport = () => {
-    alert(
+  const handleExportCSV = () => {
+    toastInfo(
       "Exporting warehouse stock levels as CSV. The download will start shortly.",
     );
   };
@@ -162,7 +170,7 @@ export default function InventoryPage() {
 
     // Add to local history list
     const newLog: StockHistoryLog = {
-      id: `h-${selectedItem.id}-${historyLogs.length}`,
+      id: `h-${Date.now()}`,
       date: new Date().toISOString(),
       productName: selectedItem.productName,
       sku: selectedItem.sku,
@@ -174,7 +182,7 @@ export default function InventoryPage() {
     setHistoryLogs((prev) => [newLog, ...prev]);
 
     setAdjustmentModalOpen(false);
-    alert(
+    toastSuccess(
       `Stock levels adjusted successfully for ${selectedItem.productName}.`,
     );
   };
@@ -267,7 +275,7 @@ export default function InventoryPage() {
           </h1>
         </div>
         <Button
-          onClick={handleExport}
+          onClick={handleExportCSV}
           variant="outline"
           className="flex items-center gap-1.5 shrink-0 self-start sm:self-auto"
         >
@@ -343,7 +351,16 @@ export default function InventoryPage() {
             </div>
           </div>
 
-          <DataTable columns={columns} data={filteredInventory} />
+          {loading ? (
+            <div className="flex flex-col items-center justify-center py-12 gap-2 text-text-custom/50">
+              <div className="w-8 h-8 rounded-full border-4 border-primary/20 border-t-primary animate-spin" />
+              <span className="text-xs font-semibold">
+                Loading live stock levels...
+              </span>
+            </div>
+          ) : (
+            <DataTable columns={columns} data={filteredInventory} />
+          )}
         </div>
       </Card>
 
@@ -367,7 +384,7 @@ export default function InventoryPage() {
                     SKU: {log.sku} • Warehouse: {log.warehouse}
                   </p>
                   <p className="text-3xs text-text-custom/60 italic mt-0.5">
-                    Reason: &quot;{log.reason}&quot;
+                    Reason: "{log.reason}"
                   </p>
                 </div>
               </div>
@@ -404,9 +421,7 @@ export default function InventoryPage() {
             </Button>
             <Button
               variant="primary"
-              onClick={() => {
-                void handleSubmit(onSubmitAdjustment)();
-              }}
+              onClick={handleSubmit(onSubmitAdjustment)}
             >
               Apply Adjustment
             </Button>

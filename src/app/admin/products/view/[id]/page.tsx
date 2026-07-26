@@ -59,11 +59,11 @@ export default function ViewProductPage() {
     ? Math.round(((product.price - product.salePrice) / product.price) * 100)
     : 0;
 
-  // Simulated product sales statistics
+  // Product sales statistics
   const simulatedStats = {
-    unitsSold: 142,
-    revenue: product.salePrice ? product.salePrice * 142 : product.price * 142,
-    pageViews: 2450,
+    unitsSold: 0,
+    revenue: 0,
+    pageViews: 0,
   };
 
   return (

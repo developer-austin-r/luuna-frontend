@@ -6,6 +6,8 @@ export interface Product {
   price: number;
   salePrice?: number | undefined;
   stock: number;
+  reservedStock?: number;
+  availableStock?: number;
   status: "active" | "draft" | "out_of_stock";
   image: string;
   description?: string | undefined;

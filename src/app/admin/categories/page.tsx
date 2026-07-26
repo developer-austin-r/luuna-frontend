@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useState } from "react";
-import { useForm, useWatch } from "react-hook-form";
+import React, { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
 import {
   ChevronDown,
   ChevronRight,
@@ -23,12 +23,8 @@ import {
   Select,
 } from "@/components/admin";
 import { useAppDispatch, useAppSelector } from "@/redux/hooks";
-import {
-  addActivityLog,
-  addCategory,
-  deleteCategory,
-  updateCategory,
-} from "@/redux/slices/admin-slice";
+import { addActivityLog, setCategories } from "@/redux/slices/admin-slice";
+import { apiClient } from "@/services/api-client";
 import { type Category } from "@/types/admin";
 
 interface CategoryFormValues {
@@ -48,23 +44,34 @@ export default function CategoriesPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [expandedParents, setExpandedParents] = useState<
     Record<string, boolean>
-  >({
-    "cat-1": true,
-    "cat-2": true,
-  });
+  >({});
 
   // Selection/Mode States
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(
-    "cat-1",
+    null,
   );
   const [isAddingNew, setIsAddingNew] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [categoryToDelete, setCategoryToDelete] = useState<Category | null>(
     null,
   );
+  const [loading, setLoading] = useState(true);
 
   // Drag and Drop mock state
   const [isDragging, setIsDragging] = useState(false);
+
+  // Toast Notification state
+  const [notification, setNotification] = useState<{
+    message: string;
+    type: "success" | "error";
+  } | null>(null);
+
+  const showNotification = (message: string, type: "success" | "error") => {
+    setNotification({ message, type });
+    setTimeout(() => {
+      setNotification(null);
+    }, 4500);
+  };
 
   // Form Hooks
   const {
@@ -72,8 +79,7 @@ export default function CategoriesPage() {
     handleSubmit,
     reset,
     setValue,
-    control,
-    getValues,
+    watch,
     formState: { errors },
   } = useForm<CategoryFormValues>({
     defaultValues: {
@@ -82,33 +88,57 @@ export default function CategoriesPage() {
       description: "",
       parentId: "none",
       status: "active",
-      image:
-        "https://images.unsplash.com/photo-1483985988355-763728e1935b?w=300&q=80",
+      image: "",
     },
   });
 
-  const watchedImage = useWatch({ control, name: "image" });
-
-  const matchingCategoryIds = new Set(
-    categories
-      .filter(
-        (category) =>
-          category.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          category.slug.toLowerCase().includes(searchTerm.toLowerCase()),
-      )
-      .map((category) => category.id),
-  );
+  const watchedImage = watch("image");
 
   // Derive Parent categories (any category that does NOT have a parent itself)
-  const parentCategories = categories.filter(
-    (category) =>
-      !category.parentId &&
-      (matchingCategoryIds.has(category.id) ||
-        categories.some(
-          (child) =>
-            child.parentId === category.id && matchingCategoryIds.has(child.id),
-        )),
-  );
+  const parentCategories = categories.filter((c) => !c.parentId);
+
+  const fetchCategories = async (selectFirst = false) => {
+    try {
+      setLoading(true);
+      const res = await apiClient<{ data: any[] }>("/products/categories/all");
+      if (res && res.data) {
+        const mapped: Category[] = res.data.map((c) => ({
+          id: c.id,
+          name: c.name,
+          slug: c.slug,
+          description: c.description || "",
+          parentId: c.parentId || undefined,
+          image: c.image || undefined,
+          productCount: 0,
+          status: c.status ? "active" : "inactive",
+        }));
+        dispatch(setCategories(mapped));
+
+        const firstCat = mapped[0];
+        if (selectFirst && firstCat) {
+          setSelectedCategoryId(firstCat.id);
+          reset({
+            name: firstCat.name,
+            slug: firstCat.slug,
+            description: firstCat.description || "",
+            parentId: firstCat.parentId || "none",
+            status: firstCat.status,
+            image:
+              firstCat.image ||
+              "https://images.unsplash.com/photo-1483985988355-763728e1935b?w=300&q=80",
+          });
+        }
+      }
+    } catch (err) {
+      console.error("Error fetching categories:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchCategories(true);
+  }, [dispatch]);
 
   // Expand / Collapse toggler
   const toggleParent = (id: string) => {
@@ -139,14 +169,13 @@ export default function CategoriesPage() {
       description: "",
       parentId: "none",
       status: "active",
-      image:
-        "https://images.unsplash.com/photo-1483985988355-763728e1935b?w=300&q=80",
+      image: "",
     });
   };
 
   // Auto Generate slug
   const handleAutoSlug = () => {
-    const nameVal = getValues("name") || "";
+    const nameVal = watch("name") || "";
     const generated = nameVal
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, "-")
@@ -155,63 +184,91 @@ export default function CategoriesPage() {
   };
 
   // Status Toggle switch
-  const handleToggleStatus = (cat: Category) => {
+  const handleToggleStatus = async (cat: Category) => {
     const nextStatus = cat.status === "active" ? "inactive" : "active";
-    dispatch(updateCategory({ ...cat, status: nextStatus }));
-    dispatch(
-      addActivityLog({
-        user: "Admin Alex",
-        action: `Toggled status of category "${cat.name}" to ${nextStatus}`,
-        module: "Categories",
-        status: "success",
-      }),
-    );
+    try {
+      await apiClient(`/products/categories/${cat.id}`, {
+        method: "PATCH",
+        body: JSON.stringify({ status: nextStatus === "active" }),
+      });
+      await fetchCategories();
+      dispatch(
+        addActivityLog({
+          user: "Admin Alex",
+          action: `Toggled status of category "${cat.name}" to ${nextStatus}`,
+          module: "Categories",
+          status: "success",
+        }),
+      );
 
-    // Update active form values if we're viewing this category
-    if (selectedCategoryId === cat.id) {
-      setValue("status", nextStatus);
+      if (selectedCategoryId === cat.id) {
+        setValue("status", nextStatus);
+      }
+    } catch (err) {
+      console.error(err);
+      showNotification("Failed to update category status.", "error");
     }
   };
 
-  const onSubmit = (data: CategoryFormValues) => {
-    const parentVal = data.parentId === "none" ? undefined : data.parentId;
+  const onSubmit = async (data: CategoryFormValues) => {
+    const parentVal = data.parentId === "none" ? null : data.parentId;
 
-    if (isAddingNew) {
-      dispatch(
-        addCategory({
+    try {
+      if (isAddingNew || !selectedCategoryId) {
+        const payload = {
           name: data.name,
           slug: data.slug,
           description: data.description,
           parentId: parentVal,
           image: data.image,
-          status: data.status,
-        }),
-      );
-      dispatch(
-        addActivityLog({
-          user: "Admin Alex",
-          action: `Added new category: ${data.name}`,
-          module: "Categories",
-          status: "success",
-        }),
-      );
-      setIsAddingNew(false);
-      setSelectedCategoryId("cat-1");
-      alert(`Category "${data.name}" added successfully.`);
-    } else if (selectedCategoryId) {
-      const existing = categories.find((c) => c.id === selectedCategoryId);
-      if (existing) {
+          status: data.status === "active",
+        };
+        const result = await apiClient<any>("/products/categories", {
+          method: "POST",
+          body: JSON.stringify(payload),
+        });
+        setIsAddingNew(false);
+        await fetchCategories();
+        setSelectedCategoryId(result.data?.id || result.id);
+
         dispatch(
-          updateCategory({
-            ...existing,
-            name: data.name,
-            slug: data.slug,
-            description: data.description,
-            parentId: parentVal,
-            image: data.image,
-            status: data.status,
+          addActivityLog({
+            user: "Admin Alex",
+            action: `Added new category: ${data.name}`,
+            module: "Categories",
+            status: "success",
           }),
         );
+
+        // Reset the form fields to clear it
+        reset({
+          name: "",
+          slug: "",
+          description: "",
+          parentId: "none",
+          status: "active",
+          image: "",
+        });
+
+        showNotification(
+          `Category "${data.name}" added successfully.`,
+          "success",
+        );
+      } else if (selectedCategoryId) {
+        const payload = {
+          name: data.name,
+          slug: data.slug,
+          description: data.description,
+          parentId: parentVal,
+          image: data.image,
+          status: data.status === "active",
+        };
+        await apiClient(`/products/categories/${selectedCategoryId}`, {
+          method: "PATCH",
+          body: JSON.stringify(payload),
+        });
+        await fetchCategories();
+
         dispatch(
           addActivityLog({
             user: "Admin Alex",
@@ -220,8 +277,14 @@ export default function CategoriesPage() {
             status: "success",
           }),
         );
-        alert(`Category "${data.name}" updated successfully.`);
+        showNotification(
+          `Category "${data.name}" updated successfully.`,
+          "success",
+        );
       }
+    } catch (err: any) {
+      console.error(err);
+      showNotification(err.message || "Failed to save category.", "error");
     }
   };
 
@@ -230,18 +293,26 @@ export default function CategoriesPage() {
     setDeleteDialogOpen(true);
   };
 
-  const confirmDelete = () => {
+  const confirmDelete = async () => {
     if (categoryToDelete) {
-      dispatch(deleteCategory(categoryToDelete.id));
-      dispatch(
-        addActivityLog({
-          user: "Admin Alex",
-          action: `Removed category: ${categoryToDelete.name}`,
-          module: "Categories",
-          status: "success",
-        }),
-      );
-      setSelectedCategoryId("cat-1");
+      try {
+        await apiClient(`/products/categories/${categoryToDelete.id}`, {
+          method: "DELETE",
+        });
+        await fetchCategories(true);
+        dispatch(
+          addActivityLog({
+            user: "Admin Alex",
+            action: `Removed category: ${categoryToDelete.name}`,
+            module: "Categories",
+            status: "success",
+          }),
+        );
+        showNotification("Category deleted successfully.", "success");
+      } catch (err) {
+        console.error(err);
+        showNotification("Failed to delete category.", "error");
+      }
     }
     setDeleteDialogOpen(false);
   };
@@ -256,16 +327,34 @@ export default function CategoriesPage() {
     setIsDragging(false);
   };
 
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setValue("image", reader.result as string);
+    };
+    reader.readAsDataURL(file);
+  };
+
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
     setIsDragging(false);
-    // Mock upload URL setting
-    setValue(
-      "image",
-      "https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=300&q=80",
-    );
-    alert("Cover image uploaded successfully (Mock simulation).");
+    const file = e.dataTransfer.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setValue("image", reader.result as string);
+    };
+    reader.readAsDataURL(file);
   };
+
+  // Filter Categories matching Search
+  const filteredCategories = categories.filter(
+    (c) =>
+      c.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      c.slug.toLowerCase().includes(searchTerm.toLowerCase()),
+  );
 
   const selectedCategory = categories.find((c) => c.id === selectedCategoryId);
 
@@ -312,9 +401,7 @@ export default function CategoriesPage() {
             <div className="space-y-1.5 font-sans">
               {parentCategories.map((parent) => {
                 const subCats = categories.filter(
-                  (category) =>
-                    category.parentId === parent.id &&
-                    matchingCategoryIds.has(category.id),
+                  (c) => c.parentId === parent.id,
                 );
                 const hasSubs = subCats.length > 0;
                 const isExpanded = expandedParents[parent.id] ?? false;
@@ -461,17 +548,12 @@ export default function CategoriesPage() {
         <div className="lg:col-span-2 space-y-4">
           <Card
             title={
-              isAddingNew
+              isAddingNew || !selectedCategoryId
                 ? "Create New Category"
                 : `Category Settings: ${selectedCategory?.name || ""}`
             }
           >
-            <form
-              onSubmit={(event) => {
-                void handleSubmit(onSubmit)(event);
-              }}
-              className="space-y-4 mt-2"
-            >
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 mt-2">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <Input
                   label="Category Name"
@@ -587,12 +669,7 @@ export default function CategoriesPage() {
                         type="file"
                         className="hidden"
                         id="category-file-picker"
-                        onChange={() =>
-                          setValue(
-                            "image",
-                            "https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=300&q=80",
-                          )
-                        }
+                        onChange={handleFileChange}
                       />
                       <label
                         htmlFor="category-file-picker"
@@ -609,7 +686,9 @@ export default function CategoriesPage() {
               <div className="flex justify-end gap-2 pt-4 border-t border-border-custom/50">
                 <Button type="submit" className="flex items-center gap-1.5">
                   <Settings className="w-4 h-4" />
-                  {isAddingNew ? "Create Category" : "Save Changes"}
+                  {isAddingNew || !selectedCategoryId
+                    ? "Create Category"
+                    : "Save Changes"}
                 </Button>
               </div>
             </form>
@@ -625,6 +704,24 @@ export default function CategoriesPage() {
         itemName={categoryToDelete?.name}
         title="Delete Taxonomy Category"
       />
+
+      {/* Toast Notification */}
+      {notification && (
+        <div
+          className={`fixed top-4 right-4 z-50 flex items-center gap-2.5 px-4 py-3 rounded-xl shadow-xl border animate-in fade-in slide-in-from-top-4 duration-300 ${
+            notification.type === "success"
+              ? "bg-emerald-50 border-emerald-200 text-emerald-800"
+              : "bg-red-50 border-red-200 text-red-800"
+          }`}
+        >
+          {notification.type === "success" ? (
+            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+          ) : (
+            <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
+          )}
+          <span className="text-xs font-semibold">{notification.message}</span>
+        </div>
+      )}
     </div>
   );
 }

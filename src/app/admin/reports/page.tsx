@@ -117,15 +117,15 @@ export default function ReportsPage() {
 
   // 3. Product Report structure
   const productReportData = products.map((p) => {
-    const quantitySold = p.stock > 0 ? Math.min(p.stock, 10) : 0;
-
+    const quantitySold =
+      p.stock > 0 ? ((p.sku.charCodeAt(0) || 0) % 40) + 10 : 0;
     return {
       id: p.id,
       name: p.name,
       sku: p.sku,
       category: p.category,
       quantitySold,
-      revenue: (p.salePrice || p.price) * quantitySold,
+      revenue: p.stock > 0 ? (p.salePrice || p.price) * quantitySold : 0,
     };
   });
 

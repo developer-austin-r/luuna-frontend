@@ -392,7 +392,7 @@ export default function CustomerDetailsPage() {
                       </div>
                     </div>
                     <p className="text-xs text-text-custom/85 italic">
-                      &quot;{rev.comment}&quot;
+                      "{rev.comment}"
                     </p>
                     <span
                       className="text-3xs text-text-custom/40 font-bold block mt-1"

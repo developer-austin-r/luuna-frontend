@@ -214,9 +214,7 @@ export default function SettingsPage() {
           {activeCategory === "general" && (
             <Card title="General Configurations">
               <form
-                onSubmit={(event) => {
-                  void handleGeneralSubmit(onSaveGeneral)(event);
-                }}
+                onSubmit={handleGeneralSubmit(onSaveGeneral)}
                 className="space-y-4 mt-2"
               >
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -285,9 +283,7 @@ export default function SettingsPage() {
           {activeCategory === "profile" && (
             <Card title="Profile Credentials & Security">
               <form
-                onSubmit={(event) => {
-                  void handleProfileSubmit(onSaveProfile)(event);
-                }}
+                onSubmit={handleProfileSubmit(onSaveProfile)}
                 className="space-y-4 mt-2"
               >
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

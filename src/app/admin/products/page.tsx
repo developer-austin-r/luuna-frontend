@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Archive, Edit, Eye, Plus, RotateCcw, Tag, Trash } from "lucide-react";
 
@@ -19,11 +19,8 @@ import {
   StatusBadge,
 } from "@/components/admin";
 import { useAppDispatch, useAppSelector } from "@/redux/hooks";
-import {
-  addActivityLog,
-  deleteProduct,
-  updateProduct,
-} from "@/redux/slices/admin-slice";
+import { addActivityLog, setProducts } from "@/redux/slices/admin-slice";
+import { apiClient } from "@/services/api-client";
 import { type Product } from "@/types/admin";
 
 export default function ProductsPage() {
@@ -36,6 +33,52 @@ export default function ProductsPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
+  const [loading, setLoading] = useState(true);
+
+  // Toast Notification state
+  const [notification, setNotification] = useState<{
+    message: string;
+    type: "success" | "error";
+  } | null>(null);
+
+  const showNotification = (message: string, type: "success" | "error") => {
+    setNotification({ message, type });
+    setTimeout(() => {
+      setNotification(null);
+    }, 4500);
+  };
+
+  const fetchProducts = async () => {
+    try {
+      setLoading(true);
+      const res = await apiClient<{ data: { data: any[] } }>("/products");
+      if (res && res.data && Array.isArray(res.data.data)) {
+        const mapped: Product[] = res.data.data.map((p: any) => ({
+          id: p.id,
+          name: p.name,
+          sku: p.sku,
+          category: p.productCategories?.[0]?.category?.name || "Uncategorized",
+          price: Number(p.basePrice),
+          salePrice: p.discountPrice ? Number(p.discountPrice) : undefined,
+          stock: p.stock,
+          status: p.status ? "active" : "draft",
+          image:
+            p.images?.[0]?.imageUrl ||
+            "https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=300&q=80",
+          description: p.description || "",
+        }));
+        dispatch(setProducts(mapped));
+      }
+    } catch (err) {
+      console.error("Error fetching live products:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchProducts();
+  }, [dispatch]);
 
   // Pagination State
   const [currentPage, setCurrentPage] = useState(1);
@@ -45,32 +88,46 @@ export default function ProductsPage() {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
-  const handleArchive = (prod: Product) => {
-    const updated = { ...prod, status: "draft" as const };
-    dispatch(updateProduct(updated));
-    dispatch(
-      addActivityLog({
-        user: "Admin Alex",
-        action: `Archived product listing: ${prod.name}`,
-        module: "Products",
-        status: "success",
-      }),
-    );
-    alert(`Product "${prod.name}" has been archived (status set to draft).`);
+  const handleArchive = async (prod: Product) => {
+    try {
+      await apiClient(`/products/${prod.id}/archive`, {
+        method: "PATCH",
+      });
+      await fetchProducts();
+      dispatch(
+        addActivityLog({
+          user: "Admin Alex",
+          action: `Archived product listing: ${prod.name}`,
+          module: "Products",
+          status: "success",
+        }),
+      );
+      showNotification(`Product "${prod.name}" has been archived.`, "success");
+    } catch (err) {
+      console.error(err);
+      showNotification("Failed to archive product.", "error");
+    }
   };
 
-  const handleRestore = (prod: Product) => {
-    const updated = { ...prod, status: "active" as const };
-    dispatch(updateProduct(updated));
-    dispatch(
-      addActivityLog({
-        user: "Admin Alex",
-        action: `Restored product listing: ${prod.name}`,
-        module: "Products",
-        status: "success",
-      }),
-    );
-    alert(`Product "${prod.name}" has been restored (status set to active).`);
+  const handleRestore = async (prod: Product) => {
+    try {
+      await apiClient(`/products/${prod.id}/restore`, {
+        method: "PATCH",
+      });
+      await fetchProducts();
+      dispatch(
+        addActivityLog({
+          user: "Admin Alex",
+          action: `Restored product listing: ${prod.name}`,
+          module: "Products",
+          status: "success",
+        }),
+      );
+      showNotification(`Product "${prod.name}" has been restored.`, "success");
+    } catch (err) {
+      console.error(err);
+      showNotification("Failed to restore product.", "error");
+    }
   };
 
   const handleDeleteClick = (prod: Product) => {
@@ -78,17 +135,29 @@ export default function ProductsPage() {
     setDeleteDialogOpen(true);
   };
 
-  const confirmDelete = () => {
+  const confirmDelete = async () => {
     if (selectedProduct) {
-      dispatch(deleteProduct(selectedProduct.id));
-      dispatch(
-        addActivityLog({
-          user: "Admin Alex",
-          action: `Permanently deleted product listing: ${selectedProduct.name}`,
-          module: "Products",
-          status: "success",
-        }),
-      );
+      try {
+        await apiClient(`/products/${selectedProduct.id}`, {
+          method: "DELETE",
+        });
+        await fetchProducts();
+        dispatch(
+          addActivityLog({
+            user: "Admin Alex",
+            action: `Permanently deleted product listing: ${selectedProduct.name}`,
+            module: "Products",
+            status: "success",
+          }),
+        );
+        showNotification(
+          `Product "${selectedProduct.name}" deleted successfully.`,
+          "success",
+        );
+      } catch (err) {
+        console.error(err);
+        showNotification("Failed to delete product.", "error");
+      }
     }
     setDeleteDialogOpen(false);
   };
@@ -305,7 +374,16 @@ export default function ProductsPage() {
             </div>
           </div>
 
-          <DataTable columns={columns} data={paginatedProducts} />
+          {loading ? (
+            <div className="flex flex-col items-center justify-center py-12 gap-2 text-text-custom/50">
+              <div className="w-8 h-8 rounded-full border-4 border-primary/20 border-t-primary animate-spin" />
+              <span className="text-xs font-semibold">
+                Loading live product catalog...
+              </span>
+            </div>
+          ) : (
+            <DataTable columns={columns} data={paginatedProducts} />
+          )}
 
           <Pagination
             currentPage={currentPage}
@@ -323,6 +401,24 @@ export default function ProductsPage() {
         itemName={selectedProduct?.name}
         title="Delete Product Listing"
       />
+
+      {/* Toast Notification */}
+      {notification && (
+        <div
+          className={`fixed top-4 right-4 z-50 flex items-center gap-2.5 px-4 py-3 rounded-xl shadow-xl border animate-in fade-in slide-in-from-top-4 duration-300 ${
+            notification.type === "success"
+              ? "bg-emerald-50 border-emerald-200 text-emerald-800"
+              : "bg-red-50 border-red-200 text-red-800"
+          }`}
+        >
+          {notification.type === "success" ? (
+            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+          ) : (
+            <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
+          )}
+          <span className="text-xs font-semibold">{notification.message}</span>
+        </div>
+      )}
     </div>
   );
 }

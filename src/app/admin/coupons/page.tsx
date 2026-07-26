@@ -333,12 +333,7 @@ export default function CouponsPage() {
             <Button variant="outline" onClick={() => setModalOpen(false)}>
               Cancel
             </Button>
-            <Button
-              variant="primary"
-              onClick={() => {
-                void handleSubmit(onSubmitCoupon)();
-              }}
-            >
+            <Button variant="primary" onClick={handleSubmit(onSubmitCoupon)}>
               {isAddMode ? "Create Coupon" : "Save Changes"}
             </Button>
           </>

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import Link from "next/link";
 import {
@@ -34,7 +34,9 @@ import {
   addActivityLog,
   addCoupon,
   addProduct,
+  setProducts,
 } from "@/redux/slices/admin-slice";
+import { apiClient } from "@/services/api-client";
 import { type Coupon, type Order, type Product } from "@/types/admin";
 
 export default function DashboardPage() {
@@ -48,6 +50,39 @@ export default function DashboardPage() {
     reportData,
     categories,
   } = useAppSelector((state) => state.admin);
+
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+
+    async function loadProducts() {
+      try {
+        const res = await apiClient<{ data: { data: any[] } }>("/products");
+        if (res && res.data && Array.isArray(res.data.data)) {
+          const mapped: Product[] = res.data.data.map((p: any) => ({
+            id: p.id,
+            name: p.name,
+            sku: p.sku,
+            category:
+              p.productCategories?.[0]?.category?.name || "Uncategorized",
+            price: Number(p.basePrice),
+            salePrice: p.discountPrice ? Number(p.discountPrice) : undefined,
+            stock: p.stock,
+            status: p.status ? "active" : "draft",
+            image:
+              p.images?.[0]?.imageUrl ||
+              "https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=300&q=80",
+            description: p.description || "",
+          }));
+          dispatch(setProducts(mapped));
+        }
+      } catch (err) {
+        console.error("Error loading dashboard products:", err);
+      }
+    }
+    loadProducts();
+  }, [dispatch]);
 
   // Chart Tab State
   const [activeChartTab, setActiveChartTab] = useState("sales");
@@ -536,7 +571,11 @@ export default function DashboardPage() {
                   <div className="flex gap-2 text-3xs text-text-custom/40 font-semibold uppercase tracking-wider">
                     <span>{log.user}</span>
                     <span>•</span>
-                    <span>{new Date(log.timestamp).toLocaleTimeString()}</span>
+                    <span>
+                      {mounted
+                        ? new Date(log.timestamp).toLocaleTimeString()
+                        : ""}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -560,9 +599,7 @@ export default function DashboardPage() {
             </Button>
             <Button
               variant="primary"
-              onClick={() => {
-                void handleSubmitProd(handleAddProductShortcut)();
-              }}
+              onClick={handleSubmitProd(handleAddProductShortcut)}
             >
               Create listing
             </Button>
@@ -628,9 +665,7 @@ export default function DashboardPage() {
             </Button>
             <Button
               variant="primary"
-              onClick={() => {
-                void handleSubmitCoup(handleAddCouponShortcut)();
-              }}
+              onClick={handleSubmitCoup(handleAddCouponShortcut)}
             >
               Launch Coupon
             </Button>

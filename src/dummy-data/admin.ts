@@ -119,7 +119,7 @@ export const initialProducts: Product[] = [
 
 export const initialCategories: Category[] = [
   {
-    id: "cat-1",
+    id: "a1a1a1a1-a1a1-a1a1-a1a1-a1a1a1a1a1a1",
     name: "Apparel",
     slug: "apparel",
     description: "Stylish shirts, dresses, trousers and outerwear.",
@@ -129,7 +129,7 @@ export const initialCategories: Category[] = [
       "https://images.unsplash.com/photo-1483985988355-763728e1935b?w=300&q=80",
   },
   {
-    id: "cat-2",
+    id: "b2b2b2b2-b2b2-b2b2-b2b2-b2b2b2b2b2b2",
     name: "Bags",
     slug: "bags",
     description: "Handcrafted leather totes, wallets, and daily backpacks.",
@@ -139,7 +139,7 @@ export const initialCategories: Category[] = [
       "https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=300&q=80",
   },
   {
-    id: "cat-3",
+    id: "c3c3c3c3-c3c3-c3c3-c3c3-c3c3c3c3c3c3",
     name: "Jewelry",
     slug: "jewelry",
     description: "High-quality gold, sterling silver, and precious stones.",
@@ -149,7 +149,7 @@ export const initialCategories: Category[] = [
       "https://images.unsplash.com/photo-1605100804763-247f67b3557e?w=300&q=80",
   },
   {
-    id: "cat-4",
+    id: "d4d4d4d4-d4d4-d4d4-d4d4-d4d4d4d4d4d4",
     name: "Shoes",
     slug: "shoes",
     description:
@@ -160,7 +160,7 @@ export const initialCategories: Category[] = [
       "https://images.unsplash.com/photo-1520639888713-7851133b1ed0?w=300&q=80",
   },
   {
-    id: "cat-5",
+    id: "e5e5e5e5-e5e5-e5e5-e5e5-e5e5e5e5e5e5",
     name: "Accessories",
     slug: "accessories",
     description: "Scarves, belts, sunglasses and small tech items.",

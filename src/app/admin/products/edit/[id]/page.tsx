@@ -1,9 +1,19 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { useParams, useRouter } from "next/navigation";
-import { ArrowLeft, Eye, Save, Sparkles } from "lucide-react";
+import {
+  AlertCircle,
+  ArrowLeft,
+  Eye,
+  Film,
+  Image as ImageIcon,
+  Save,
+  Sparkles,
+  UploadCloud,
+  X,
+} from "lucide-react";
 
 import {
   Breadcrumb,
@@ -14,25 +24,58 @@ import {
   StatusBadge,
 } from "@/components/admin";
 import { useAppDispatch, useAppSelector } from "@/redux/hooks";
-import { addActivityLog, updateProduct } from "@/redux/slices/admin-slice";
+import { addActivityLog, setCategories } from "@/redux/slices/admin-slice";
+import { apiClient } from "@/services/api-client";
 
 interface ProductFormValues {
   name: string;
   sku: string;
-  category: string;
-  brand: string;
-  price: number;
-  salePrice?: number | undefined;
-  taxRate: number;
+  categoryIds: string[];
+  brandId: string;
+  brandName?: string;
+  basePrice: number;
+  discountPrice?: number | null;
+  taxPercentage: number;
   stock: number;
+  reservedStock: number;
   alertLevel: number;
   status: "active" | "draft" | "out_of_stock";
-  image: string;
+  archive: boolean;
   description: string;
-  metaTitle?: string | undefined;
-  metaDescription?: string | undefined;
-  slug?: string | undefined;
+  slug: string;
+  warehouse: string;
+  keywords: string;
 }
+
+interface ImageUploadItem {
+  id: string;
+  imageUrl: string;
+  displayOrder: number;
+  file?: File;
+  uploading: boolean;
+  progress: number;
+}
+
+interface VideoUploadItem {
+  id: string;
+  videoUrl: string;
+  fileSize: number;
+  uploading: boolean;
+  progress: number;
+}
+
+const MOCK_IMAGES = [
+  "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=600&q=80",
+  "https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=600&q=80",
+  "https://images.unsplash.com/photo-1485968579580-b6d095142e6e?w=600&q=80",
+  "https://images.unsplash.com/photo-1605100804763-247f67b3557e?w=600&q=80",
+  "https://images.unsplash.com/photo-1520639888713-7851133b1ed0?w=600&q=80",
+  "https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=600&q=80",
+  "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=600&q=80",
+];
+
+const MOCK_VIDEO =
+  "https://assets.mixkit.co/videos/preview/mixkit-fashion-woman-with-silver-glitter-makeup-40409-large.mp4";
 
 export default function EditProductPage() {
   const params = useParams();
@@ -40,10 +83,15 @@ export default function EditProductPage() {
   const dispatch = useAppDispatch();
   const id = params.id as string;
 
-  // Retrieve products & categories
-  const products = useAppSelector((state) => state.admin.products);
+  // Retrieve states
   const categories = useAppSelector((state) => state.admin.categories);
-  const product = products.find((p) => p.id === id);
+
+  // Upload States
+  const [images, setImages] = useState<ImageUploadItem[]>([]);
+  const [video, setVideo] = useState<VideoUploadItem | null>(null);
+  const [apiError, setApiError] = useState<string | null>(null);
+  const [successMsg, setSuccessMsg] = useState<string | null>(null);
+  const [loadingProduct, setLoadingProduct] = useState(true);
 
   // Form setup
   const {
@@ -56,122 +104,336 @@ export default function EditProductPage() {
   } = useForm<ProductFormValues>();
 
   useEffect(() => {
-    if (product) {
-      reset({
-        name: product.name,
-        sku: product.sku,
-        category: product.category,
-        brand: "Luuna Luxury",
-        price: product.price,
-        salePrice: product.salePrice,
-        taxRate: 8,
-        stock: product.stock,
-        alertLevel: 10,
-        status: product.status,
-        image: product.image,
-        description: product.description || "",
-      });
+    async function fetchProduct() {
+      try {
+        setLoadingProduct(true);
+
+        // Load categories first
+        const res = await apiClient<{ data: any[] }>(
+          "/products/categories/all",
+        );
+        if (res && res.data) {
+          dispatch(setCategories(res.data));
+        }
+
+        const prodRes = await apiClient<any>(`/products/${id}`);
+        const prod = prodRes?.data;
+        if (prod) {
+          reset({
+            name: prod.name,
+            sku: prod.sku,
+            categoryIds: prod.productCategories
+              ? prod.productCategories.map((pc: any) => pc.categoryId)
+              : [],
+            brandName: prod.brand?.name || "",
+            basePrice: Number(prod.basePrice),
+            discountPrice: prod.discountPrice
+              ? Number(prod.discountPrice)
+              : null,
+            taxPercentage: Number(prod.taxPercentage || 0),
+            stock: prod.stock,
+            reservedStock: prod.reservedStock || 0,
+            alertLevel: 10,
+            status: prod.status ? "active" : "draft",
+            archive: prod.archive || false,
+            description: prod.description || "",
+            slug: prod.slug,
+            warehouse: prod.inventories?.[0]?.warehouse || "Warehouse East",
+            keywords: prod.keywords
+              ? prod.keywords.map((k: any) => k.keyword).join(", ")
+              : "",
+          });
+
+          if (prod.images) {
+            setImages(
+              prod.images.map((img: any) => ({
+                id: img.id,
+                imageUrl: img.imageUrl,
+                displayOrder: img.displayOrder,
+                uploading: false,
+                progress: 100,
+              })),
+            );
+          }
+
+          if (prod.videos && prod.videos.length > 0) {
+            setVideo({
+              id: prod.videos[0].id,
+              videoUrl: prod.videos[0].videoUrl,
+              fileSize: Number(prod.videos[0].fileSize || 0),
+              uploading: false,
+              progress: 100,
+            });
+          }
+        }
+      } catch (err: any) {
+        console.error(err);
+        setApiError("Failed to load product details from backend.");
+      } finally {
+        setLoadingProduct(false);
+      }
     }
-  }, [product, reset]);
+    fetchProduct();
+  }, [id, reset]);
 
   // Watch fields for live preview card
   const watchedName = useWatch({
     control,
     name: "name",
-    defaultValue: product?.name || "Product Title",
+    defaultValue: "Product Title",
   });
-  const watchedPrice = useWatch({
+  const watchedBasePrice = useWatch({
     control,
-    name: "price",
-    defaultValue: product?.price || 0,
+    name: "basePrice",
+    defaultValue: 0,
   });
-  const watchedSalePrice = useWatch({
-    control,
-    name: "salePrice",
-    defaultValue: product?.salePrice,
-  });
-  const watchedImage = useWatch({
-    control,
-    name: "image",
-    defaultValue:
-      product?.image ||
-      "https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=300&q=80",
-  });
+  const watchedDiscountPrice = useWatch({ control, name: "discountPrice" });
   const watchedStatus = useWatch({
     control,
     name: "status",
-    defaultValue: product?.status || "active",
+    defaultValue: "active",
   });
-  const watchedBrand = useWatch({
+  const watchedKeywords = useWatch({
     control,
-    name: "brand",
-    defaultValue: "Luuna",
+    name: "keywords",
+    defaultValue: "",
   });
-
-  if (!product) {
-    return (
-      <div className="space-y-6">
-        <Breadcrumb
-          items={[
-            { label: "Products", href: "/admin/products" },
-            { label: "Not Found" },
-          ]}
-        />
-        <Card className="text-center py-12">
-          <p className="text-sm font-semibold text-text-custom/60">
-            Product listing not found.
-          </p>
-          <Button
-            onClick={() => router.push("/admin/products")}
-            className="mt-4"
-          >
-            Back to Catalog
-          </Button>
-        </Card>
-      </div>
-    );
-  }
 
   // Generate SEO slug helper
   const handleAutoGenerateSlug = () => {
     const nameVal = watchedName || "";
     const generated = nameVal
       .toLowerCase()
+      .trim()
       .replace(/[^a-z0-9]+/g, "-")
       .replace(/(^-|-$)+/g, "");
     setValue("slug", generated);
-    setValue("metaTitle", `${nameVal} | Luuna Luxury E-Commerce`);
   };
 
-  const onSubmit = (data: ProductFormValues) => {
-    // Dispatch edit update
-    dispatch(
-      updateProduct({
-        id: product.id,
+  // Mock Upload Simulator
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files) return;
+    const filesArray = Array.from(e.target.files);
+
+    if (images.length + filesArray.length > 7) {
+      alert("You can upload a maximum of 7 images.");
+      return;
+    }
+
+    filesArray.forEach((file, index) => {
+      const imgId = Math.random().toString(36).substr(2, 9);
+      const newItem: ImageUploadItem = {
+        id: imgId,
+        imageUrl: "",
+        displayOrder: images.length + index,
+        file,
+        uploading: true,
+        progress: 0,
+      };
+
+      setImages((prev) => [...prev, newItem]);
+
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const base64Url = reader.result as string;
+
+        let prg = 0;
+        const interval = setInterval(() => {
+          prg += 20;
+          setImages((prev) =>
+            prev.map((item) => {
+              if (item.id === imgId) {
+                if (prg >= 100) {
+                  clearInterval(interval);
+                  return {
+                    ...item,
+                    uploading: false,
+                    progress: 100,
+                    imageUrl: base64Url,
+                  };
+                }
+                return { ...item, progress: prg };
+              }
+              return item;
+            }),
+          );
+        }, 100);
+      };
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const handleVideoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files || e.target.files.length === 0) return;
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const videoId = "video-upload";
+    const newItem: VideoUploadItem = {
+      id: videoId,
+      videoUrl: "",
+      fileSize: file.size,
+      uploading: true,
+      progress: 0,
+    };
+
+    setVideo(newItem);
+
+    let prg = 0;
+    const interval = setInterval(() => {
+      prg += 10;
+      if (prg >= 100) {
+        clearInterval(interval);
+        setVideo({
+          id: videoId,
+          videoUrl: MOCK_VIDEO,
+          fileSize: file.size,
+          uploading: false,
+          progress: 100,
+        });
+      } else {
+        setVideo((prev) => (prev ? { ...prev, progress: prg } : null));
+      }
+    }, 150);
+  };
+
+  const removeImage = (imgId: string) => {
+    setImages((prev) =>
+      prev
+        .filter((img) => img.id !== imgId)
+        .map((img, i) => ({ ...img, displayOrder: i })),
+    );
+  };
+
+  const removeVideo = () => {
+    setVideo(null);
+  };
+
+  const onSubmit = async (data: ProductFormValues) => {
+    setApiError(null);
+    setSuccessMsg(null);
+
+    if (
+      data.discountPrice &&
+      Number(data.discountPrice) > Number(data.basePrice)
+    ) {
+      setApiError(
+        "Validation Error: Discount price must be less than or equal to base price.",
+      );
+      return;
+    }
+
+    if (Number(data.reservedStock) > Number(data.stock)) {
+      setApiError(
+        "Validation Error: Reserved stock cannot exceed total stock quantity.",
+      );
+      return;
+    }
+
+    if (images.length === 0) {
+      setApiError("Validation Error: Please upload at least 1 product image.");
+      return;
+    }
+
+    if (images.some((img) => img.uploading) || (video && video.uploading)) {
+      setApiError(
+        "Validation Error: Please wait for media uploads to complete.",
+      );
+      return;
+    }
+
+    try {
+      const cleanedCategoryIds = (
+        Array.isArray(data.categoryIds)
+          ? data.categoryIds
+          : data.categoryIds
+            ? [data.categoryIds]
+            : []
+      ).filter((id) => id && id !== "none");
+
+      const payload = {
         name: data.name,
         sku: data.sku,
-        category: data.category,
-        price: data.price,
-        salePrice: data.salePrice || undefined,
-        stock: data.stock,
-        status: data.status,
-        image: data.image,
+        slug: data.slug || data.name.toLowerCase().replace(/[^a-z0-9]+/g, "-"),
+        shortDescription: data.name,
         description: data.description,
-      }),
-    );
+        brandName: data.brandName ? data.brandName.trim() : undefined,
+        basePrice: Number(data.basePrice),
+        discountPrice: data.discountPrice
+          ? Number(data.discountPrice)
+          : undefined,
+        taxPercentage: Number(data.taxPercentage || 0),
+        finalPrice: data.discountPrice
+          ? Number(data.discountPrice)
+          : Number(data.basePrice),
+        stock: Number(data.stock || 0),
+        reservedStock: Number(data.reservedStock || 0),
+        availableStock:
+          Number(data.stock || 0) - Number(data.reservedStock || 0),
+        status: data.status === "active",
+        archive: !!data.archive,
+        categoryIds: cleanedCategoryIds,
+        warehouse: data.warehouse || "Warehouse East",
+        keywords: data.keywords
+          ? data.keywords
+              .split(",")
+              .map((k) => k.trim())
+              .filter(Boolean)
+          : [],
+        images: images.map((img) => ({
+          imageUrl: img.imageUrl,
+          displayOrder: img.displayOrder,
+        })),
+        videos: video
+          ? [
+              {
+                videoUrl: video.videoUrl,
+                fileSize: video.fileSize,
+              },
+            ]
+          : [],
+      };
 
-    dispatch(
-      addActivityLog({
-        user: "Admin Alex",
-        action: `Modified product listing details: ${data.name}`,
-        module: "Products",
-        status: "success",
-      }),
-    );
+      const result = await apiClient<any>(`/products/${id}`, {
+        method: "PATCH",
+        body: JSON.stringify(payload),
+      });
 
-    alert(`Product listing details for "${data.name}" updated successfully.`);
-    router.push("/admin/products");
+      setSuccessMsg(
+        `Product listing "${result?.data?.name || data.name}" updated successfully!`,
+      );
+
+      dispatch(
+        addActivityLog({
+          user: "Admin Alex",
+          action: `Modified product listing details: ${data.name}`,
+          module: "Products",
+          status: "success",
+        }),
+      );
+
+      setTimeout(() => {
+        router.push("/admin/products");
+      }, 2000);
+    } catch (err: any) {
+      console.error(err);
+      setApiError(
+        err.message ||
+          "An error occurred while updating the product in NestJS.",
+      );
+    }
   };
+
+  if (loadingProduct) {
+    return (
+      <div className="flex flex-col items-center justify-center py-24 gap-4">
+        <div className="w-12 h-12 rounded-full border-4 border-primary/20 border-t-primary animate-spin" />
+        <span className="text-sm font-semibold text-text-custom/60">
+          Fetching product details...
+        </span>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -181,7 +443,7 @@ export default function EditProductPage() {
           variant="outline"
           size="sm"
           onClick={() => router.push("/admin/products")}
-          className="p-2"
+          className="p-2 border-border-custom hover:bg-bg-secondary"
         >
           <ArrowLeft className="w-4 h-4" />
         </Button>
@@ -189,7 +451,7 @@ export default function EditProductPage() {
           <Breadcrumb
             items={[
               { label: "Products", href: "/admin/products" },
-              { label: `Edit ${product.name}` },
+              { label: `Edit ${watchedName}` },
             ]}
           />
           <h1 className="text-2xl font-bold text-text-custom mt-1">
@@ -197,6 +459,20 @@ export default function EditProductPage() {
           </h1>
         </div>
       </div>
+
+      {apiError && (
+        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg flex items-start gap-2 shadow-sm animate-shake">
+          <AlertCircle className="w-5 h-5 shrink-0 mt-0.5" />
+          <span className="text-sm font-semibold">{apiError}</span>
+        </div>
+      )}
+
+      {successMsg && (
+        <div className="bg-emerald-50 border border-emerald-200 text-emerald-700 px-4 py-3 rounded-lg flex items-start gap-2 shadow-sm">
+          <Sparkles className="w-5 h-5 shrink-0 mt-0.5 text-emerald-500" />
+          <span className="text-sm font-semibold">{successMsg}</span>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left Column: Edit Form */}
@@ -223,13 +499,18 @@ export default function EditProductPage() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <Select
                   label="Category Taxonomy"
-                  {...register("category")}
+                  {...register("categoryIds")}
+                  multiple
                   options={categories.map((c) => ({
-                    value: c.name,
+                    value: c.id,
                     label: c.name,
                   }))}
                 />
-                <Input label="Brand Name" {...register("brand")} />
+                <Input
+                  label="Product Brand"
+                  {...register("brandName")}
+                  placeholder="e.g. Nike, Adidas, Gucci"
+                />
               </div>
             </div>
           </Card>
@@ -241,29 +522,34 @@ export default function EditProductPage() {
                 label="Regular Retail Price ($)"
                 type="number"
                 step="0.01"
-                {...register("price", {
+                {...register("basePrice", {
                   valueAsNumber: true,
                   required: "Retail price is required",
                 })}
-                error={errors.price?.message}
+                error={errors.basePrice?.message}
               />
               <Input
                 label="Discount Price ($)"
                 type="number"
                 step="0.01"
-                {...register("salePrice", { valueAsNumber: true })}
+                {...register("discountPrice", { valueAsNumber: true })}
               />
               <Input
                 label="Sales Tax Rate (%)"
                 type="number"
-                {...register("taxRate", { valueAsNumber: true })}
+                {...register("taxPercentage", {
+                  valueAsNumber: true,
+                  min: { value: 0, message: "Tax percentage must be >= 0" },
+                  max: { value: 100, message: "Tax percentage must be <= 100" },
+                })}
+                error={errors.taxPercentage?.message}
               />
             </div>
           </Card>
 
           {/* Inventory */}
           <Card title="Inventory Management">
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-2">
+            <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 mt-2">
               <Input
                 label="SKU Code"
                 {...register("sku", { required: "SKU barcode is required" })}
@@ -279,10 +565,147 @@ export default function EditProductPage() {
                 error={errors.stock?.message}
               />
               <Input
+                label="Reserved Stock"
+                type="number"
+                {...register("reservedStock", { valueAsNumber: true })}
+              />
+              <Input
                 label="Alert Level Threshold"
                 type="number"
                 {...register("alertLevel", { valueAsNumber: true })}
               />
+            </div>
+            <div className="mt-4">
+              <Input label="Warehouse Location" {...register("warehouse")} />
+            </div>
+          </Card>
+
+          {/* Product Media (Images & Video) */}
+          <Card title="Product Media Assets">
+            <div className="space-y-6 mt-2">
+              {/* Image Upload Area */}
+              <div>
+                <label className="text-xs font-semibold text-text-custom/80 uppercase tracking-wider block mb-2">
+                  Images (Upload up to 7, {images.length}/7 uploaded)
+                </label>
+
+                <div className="border-2 border-dashed border-border-custom hover:border-primary/50 transition-all rounded-xl p-6 flex flex-col items-center justify-center bg-bg-secondary/50 cursor-pointer relative group">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    disabled={images.length >= 7}
+                    onChange={handleImageUpload}
+                    className="absolute inset-0 opacity-0 cursor-pointer disabled:cursor-not-allowed"
+                  />
+                  <UploadCloud className="w-10 h-10 text-text-custom/30 group-hover:text-primary transition-all mb-2" />
+                  <p className="text-sm font-semibold text-text-custom">
+                    Click or drag images to upload
+                  </p>
+                  <p className="text-xs text-text-custom/40 mt-1">
+                    Supports PNG, JPG, WEBP formats (Max 7)
+                  </p>
+                </div>
+
+                {images.length > 0 && (
+                  <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-7 gap-3 mt-4">
+                    {images.map((img) => (
+                      <div
+                        key={img.id}
+                        className="relative aspect-square rounded-lg border border-border-custom bg-bg-secondary overflow-hidden group"
+                      >
+                        {img.uploading ? (
+                          <div className="absolute inset-0 bg-white/80 flex flex-col items-center justify-center p-2 text-center">
+                            <div className="w-8 h-8 rounded-full border-4 border-primary/20 border-t-primary animate-spin" />
+                            <span className="text-3xs font-semibold mt-1.5">
+                              {img.progress}%
+                            </span>
+                          </div>
+                        ) : (
+                          <>
+                            <img
+                              src={img.imageUrl}
+                              alt="preview"
+                              className="w-full h-full object-cover"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => removeImage(img.id)}
+                              className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 shadow hover:bg-red-600 transition-all"
+                            >
+                              <X className="w-3.5 h-3.5" />
+                            </button>
+                            <div className="absolute bottom-1 left-1 bg-black/60 text-white text-3xs px-1 rounded font-mono">
+                              #{img.displayOrder + 1}
+                            </div>
+                          </>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Video Upload Area */}
+              <div>
+                <label className="text-xs font-semibold text-text-custom/80 uppercase tracking-wider block mb-2">
+                  Product Video (Exactly 1 Video)
+                </label>
+
+                {!video ? (
+                  <div className="border-2 border-dashed border-border-custom hover:border-primary/50 transition-all rounded-xl p-6 flex flex-col items-center justify-center bg-bg-secondary/50 cursor-pointer relative group">
+                    <input
+                      type="file"
+                      accept="video/*"
+                      onChange={handleVideoUpload}
+                      className="absolute inset-0 opacity-0 cursor-pointer"
+                    />
+                    <UploadCloud className="w-10 h-10 text-text-custom/30 group-hover:text-primary transition-all mb-2" />
+                    <p className="text-sm font-semibold text-text-custom">
+                      Click or drag video to upload
+                    </p>
+                    <p className="text-xs text-text-custom/40 mt-1">
+                      Supports MP4, MOV formats (Max 1)
+                    </p>
+                  </div>
+                ) : (
+                  <div className="border border-border-custom rounded-lg p-4 bg-bg-secondary/30 flex items-center justify-between gap-4">
+                    <div className="flex items-center gap-3">
+                      <Film className="w-8 h-8 text-primary shrink-0" />
+                      <div>
+                        <p className="text-sm font-bold text-text-custom">
+                          Product Video Asset
+                        </p>
+                        <p className="text-xs text-text-custom/40 font-mono">
+                          Size: {(video.fileSize / 1024 / 1024).toFixed(2)} MB
+                        </p>
+                      </div>
+                    </div>
+
+                    {video.uploading ? (
+                      <div className="flex items-center gap-2">
+                        <div className="w-24 bg-border-custom h-2 rounded-full overflow-hidden">
+                          <div
+                            className="bg-primary h-full transition-all duration-300"
+                            style={{ width: `${video.progress}%` }}
+                          />
+                        </div>
+                        <span className="text-xs font-bold font-mono">
+                          {video.progress}%
+                        </span>
+                      </div>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={removeVideo}
+                        className="bg-red-50 hover:bg-red-100 text-red-600 rounded-lg p-2 transition-all border border-red-200"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    )}
+                  </div>
+                )}
+              </div>
             </div>
           </Card>
 
@@ -303,18 +726,16 @@ export default function EditProductPage() {
             }
           >
             <div className="space-y-4 mt-2">
-              <Input label="SEO Meta Title" {...register("metaTitle")} />
-              <Input label="URL Slug Link" {...register("slug")} />
-              <div>
-                <label className="text-xs font-semibold text-text-custom/80 uppercase tracking-wider block mb-1.5">
-                  SEO Meta Description
-                </label>
-                <textarea
-                  rows={2}
-                  {...register("metaDescription")}
-                  className="w-full px-3 py-2 text-sm border border-border-custom rounded-lg bg-white focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all"
-                />
-              </div>
+              <Input
+                label="URL Slug Link"
+                {...register("slug", { required: "Slug URL is required" })}
+                error={errors.slug?.message}
+              />
+              <Input
+                label="Search Keywords"
+                {...register("keywords")}
+                placeholder="silk, clothing, apparel, summer"
+              />
             </div>
           </Card>
         </div>
@@ -328,11 +749,10 @@ export default function EditProductPage() {
                 {...register("status")}
                 options={[
                   { value: "active", label: "Active" },
-                  { value: "draft", label: "Draft / Archived" },
+                  { value: "draft", label: "Draft" },
                   { value: "out_of_stock", label: "Out of Stock" },
                 ]}
               />
-              <Input label="Image Address URL" {...register("image")} />
             </div>
           </Card>
 
@@ -345,42 +765,77 @@ export default function EditProductPage() {
 
             <div className="bg-white rounded-xl border border-border-custom shadow-lg overflow-hidden group">
               <div className="relative aspect-square w-full bg-bg-secondary overflow-hidden">
-                <img
-                  src={watchedImage}
-                  alt={watchedName}
-                  className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                  onError={(e) => {
-                    (e.target as HTMLImageElement).src =
-                      "https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=300&q=80";
-                  }}
-                />
+                {images.length > 0 && images[0] && !images[0].uploading ? (
+                  <img
+                    src={images[0].imageUrl}
+                    alt={watchedName}
+                    className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                  />
+                ) : (
+                  <div className="w-full h-full flex flex-col items-center justify-center text-text-custom/30 gap-2">
+                    <ImageIcon className="w-12 h-12" />
+                    <span className="text-xs font-semibold">
+                      No Image Uploaded
+                    </span>
+                  </div>
+                )}
                 <div className="absolute top-3 right-3 z-10">
                   <StatusBadge status={watchedStatus} />
                 </div>
               </div>
+
+              {/* Video Player in preview if uploaded */}
+              {video && !video.uploading && (
+                <div className="border-t border-border-custom p-3 bg-bg-secondary/40">
+                  <div className="text-3xs uppercase tracking-widest text-text-custom/50 font-bold mb-1.5 flex items-center gap-1">
+                    <Film className="w-3 h-3 text-primary" /> Video Asset
+                    Preview
+                  </div>
+                  <video
+                    src={video.videoUrl}
+                    controls
+                    className="w-full rounded-lg border border-border-custom aspect-video object-cover"
+                  />
+                </div>
+              )}
+
               <div className="p-4 space-y-2">
                 <span className="text-3xs uppercase tracking-widest text-text-custom/50 font-bold">
-                  {watchedBrand}
+                  LUUNA BRAND
                 </span>
                 <h4 className="text-sm font-bold text-text-custom line-clamp-1 leading-tight">
                   {watchedName}
                 </h4>
+
                 <div className="flex items-baseline gap-2 pt-1">
-                  {watchedSalePrice ? (
+                  {watchedDiscountPrice ? (
                     <>
                       <span className="text-sm font-extrabold text-primary">
-                        ${Number(watchedSalePrice).toFixed(2)}
+                        ${Number(watchedDiscountPrice).toFixed(2)}
                       </span>
                       <span className="text-xs text-text-custom/35 line-through">
-                        ${Number(watchedPrice).toFixed(2)}
+                        ${Number(watchedBasePrice).toFixed(2)}
                       </span>
                     </>
                   ) : (
                     <span className="text-sm font-extrabold text-text-custom">
-                      ${Number(watchedPrice).toFixed(2)}
+                      ${Number(watchedBasePrice).toFixed(2)}
                     </span>
                   )}
                 </div>
+
+                {watchedKeywords && (
+                  <div className="flex flex-wrap gap-1 mt-2">
+                    {watchedKeywords.split(",").map((k, i) => (
+                      <span
+                        key={i}
+                        className="text-3xs bg-bg-secondary px-1.5 py-0.5 rounded text-text-custom/60 font-semibold"
+                      >
+                        #{k.trim()}
+                      </span>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
 
@@ -395,9 +850,7 @@ export default function EditProductPage() {
               </Button>
               <Button
                 variant="primary"
-                onClick={() => {
-                  void handleSubmit(onSubmit)();
-                }}
+                onClick={handleSubmit(onSubmit)}
                 className="flex-1"
                 isLoading={isSubmitting}
               >

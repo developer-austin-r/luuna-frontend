@@ -2,12 +2,9 @@ import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 
 import {
   initialActivityLogs,
-  initialCategories,
   initialCoupons,
   initialCustomers,
-  initialInventory,
   initialOrders,
-  initialProducts,
   initialShippingMethods,
   mockReportData,
 } from "@/dummy-data/admin";
@@ -45,11 +42,11 @@ interface AdminState {
 }
 
 const initialState: AdminState = {
-  products: initialProducts,
-  categories: initialCategories,
+  products: [],
+  categories: [],
   orders: initialOrders,
   customers: initialCustomers,
-  inventory: initialInventory,
+  inventory: [],
   coupons: initialCoupons,
   shippingMethods: initialShippingMethods,
   activityLogs: initialActivityLogs,
@@ -67,6 +64,28 @@ const adminSlice = createSlice({
   name: "admin",
   initialState,
   reducers: {
+    setProducts: (state, action: PayloadAction<Product[]>) => {
+      state.products = action.payload;
+      state.inventory = action.payload.map((p) => ({
+        id: `inv-${p.id}`,
+        productName: p.name,
+        sku: p.sku,
+        stock: p.stock,
+        reserved: p.reservedStock || 0,
+        available: p.availableStock !== undefined ? p.availableStock : p.stock,
+        warehouse: "Warehouse East",
+        alertLevel: state.settings.lowStockAlert,
+        status:
+          p.stock === 0
+            ? "out_of_stock"
+            : p.stock <= state.settings.lowStockAlert
+              ? "low_stock"
+              : "in_stock",
+      }));
+    },
+    setCategories: (state, action: PayloadAction<Category[]>) => {
+      state.categories = action.payload;
+    },
     // Products
     addProduct: (state, action: PayloadAction<Omit<Product, "id">>) => {
       const newProduct: Product = {
@@ -293,6 +312,8 @@ const adminSlice = createSlice({
 });
 
 export const {
+  setProducts,
+  setCategories,
   addProduct,
   updateProduct,
   deleteProduct,

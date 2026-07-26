@@ -13,7 +13,14 @@ export async function apiClient<TResponse>(
   });
 
   if (!response.ok) {
-    throw new Error(`Request failed with status ${response.status}`);
+    let errorMessage = `Request failed with status ${response.status}`;
+    try {
+      const errorData = await response.json();
+      if (errorData) {
+        errorMessage = errorData.message || errorData.error || errorMessage;
+      }
+    } catch {}
+    throw new Error(errorMessage);
   }
 
   return response.json() as Promise<TResponse>;

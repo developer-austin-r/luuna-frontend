@@ -618,12 +618,7 @@ export default function ShippingPage() {
             <Button variant="outline" onClick={() => setMethodModalOpen(false)}>
               Cancel
             </Button>
-            <Button
-              variant="primary"
-              onClick={() => {
-                void handleSubmit(onSubmitMethod)();
-              }}
-            >
+            <Button variant="primary" onClick={handleSubmit(onSubmitMethod)}>
               {isAddMode ? "Create Method" : "Save Changes"}
             </Button>
           </>
