@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { Download, Edit, Plus, Tag, Trash } from "lucide-react";
+import { Edit, Plus, Tag, Trash } from "lucide-react";
 
 import {
   ActionMenu,
@@ -20,18 +20,22 @@ import {
   Select,
   StatusBadge,
 } from "@/components/admin";
+import { useToast } from "@/providers/toast-provider";
 import { useAppDispatch, useAppSelector } from "@/redux/hooks";
 import {
   addActivityLog,
   addCoupon,
   deleteCoupon,
+  setCoupons,
   updateCoupon,
 } from "@/redux/slices/admin-slice";
+import { apiClient } from "@/services/api-client";
 import { type Coupon } from "@/types/admin";
 
 export default function CouponsPage() {
   const dispatch = useAppDispatch();
-  const coupons = useAppSelector((state) => state.admin.coupons);
+  const coupons = useAppSelector((state) => state.admin.coupons) || [];
+  const { success: toastSuccess, error: toastError } = useToast();
 
   // Search & Filter States
   const [searchTerm, setSearchTerm] = useState("");
@@ -53,19 +57,35 @@ export default function CouponsPage() {
     handleSubmit,
     reset,
     formState: { errors },
-  } = useForm<Omit<Coupon, "id" | "usageCount">>();
+  } = useForm<Omit<Coupon, "id" | "redeemedCount">>();
+
+  useEffect(() => {
+    async function loadCoupons() {
+      try {
+        const res = await apiClient<{ data: Coupon[] }>("/coupons");
+        dispatch(setCoupons(res.data || []));
+      } catch (err: any) {
+        console.warn(err);
+        toastError(err.message || "Failed to load coupons from backend.");
+      }
+    }
+    loadCoupons();
+  }, [dispatch]);
 
   const handleAddClick = () => {
     setIsAddMode(true);
     reset({
       code: "",
-      type: "percentage",
-      value: 10,
-      minSpend: 0,
+      discountType: "PERCENTAGE",
+      discountValue: 10,
+      minimumOrderAmount: 0,
+      redemptionLimit: null,
+      activeDate: new Date().toISOString().substring(0, 10),
       expiryDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
         .toISOString()
         .substring(0, 10),
-      status: "active",
+      status: "ACTIVE",
+      description: "",
     });
     setModalOpen(true);
   };
@@ -75,12 +95,16 @@ export default function CouponsPage() {
     setSelectedCoupon(coup);
     reset({
       code: coup.code,
-      type: coup.type,
-      value: coup.value,
-      minSpend: coup.minSpend || 0,
-      usageLimit: coup.usageLimit || undefined,
-      expiryDate: coup.expiryDate,
+      discountType: coup.discountType,
+      discountValue: coup.discountValue,
+      minimumOrderAmount: coup.minimumOrderAmount || 0,
+      redemptionLimit: coup.redemptionLimit || null,
+      activeDate: coup.activeDate
+        ? coup.activeDate.substring(0, 10)
+        : new Date().toISOString().substring(0, 10),
+      expiryDate: coup.expiryDate ? coup.expiryDate.substring(0, 10) : "",
       status: coup.status,
+      description: coup.description || "",
     });
     setModalOpen(true);
   };
@@ -90,69 +114,85 @@ export default function CouponsPage() {
     setDeleteDialogOpen(true);
   };
 
-  const onSubmitCoupon = (data: any) => {
-    // Standardize optional fields
-    const formattedData = {
+  const onSubmitCoupon = async (data: any) => {
+    const payload = {
       code: data.code.toUpperCase(),
-      type: data.type,
-      value: Number(data.value),
-      minSpend: data.minSpend ? Number(data.minSpend) : undefined,
-      usageLimit: data.usageLimit ? Number(data.usageLimit) : undefined,
-      expiryDate: data.expiryDate,
+      discountType: data.discountType,
+      discountValue: Number(data.discountValue),
+      minimumOrderAmount: Number(data.minimumOrderAmount || 0),
+      redemptionLimit: data.redemptionLimit
+        ? Number(data.redemptionLimit)
+        : null,
+      activeDate: new Date(data.activeDate).toISOString(),
+      expiryDate: new Date(data.expiryDate).toISOString(),
       status: data.status,
+      description: data.description || null,
     };
 
-    if (isAddMode) {
-      dispatch(addCoupon(formattedData));
-      dispatch(
-        addActivityLog({
-          user: "Admin Alex",
-          action: `Created coupon code: ${formattedData.code}`,
-          module: "Coupons",
-          status: "success",
-        }),
-      );
-      alert(`Coupon "${formattedData.code}" created successfully.`);
-    } else if (selectedCoupon) {
-      dispatch(
-        updateCoupon({
-          ...formattedData,
-          id: selectedCoupon.id,
-          usageCount: selectedCoupon.usageCount,
-        }),
-      );
-      dispatch(
-        addActivityLog({
-          user: "Admin Alex",
-          action: `Updated campaign rules for: ${formattedData.code}`,
-          module: "Coupons",
-          status: "success",
-        }),
-      );
-      alert(`Coupon "${formattedData.code}" updated successfully.`);
+    try {
+      if (isAddMode) {
+        const res = await apiClient<{ data: Coupon }>("/coupons", {
+          method: "POST",
+          body: JSON.stringify(payload),
+        });
+        dispatch(addCoupon(res.data));
+        dispatch(
+          addActivityLog({
+            user: "Admin Alex",
+            action: `Created coupon code: ${payload.code}`,
+            module: "Coupons",
+            status: "success",
+          }),
+        );
+        toastSuccess(`Coupon "${payload.code}" created successfully.`);
+      } else if (selectedCoupon) {
+        const res = await apiClient<{ data: Coupon }>(
+          `/coupons/${selectedCoupon.id}`,
+          {
+            method: "PATCH",
+            body: JSON.stringify(payload),
+          },
+        );
+        dispatch(updateCoupon(res.data));
+        dispatch(
+          addActivityLog({
+            user: "Admin Alex",
+            action: `Updated campaign rules for: ${payload.code}`,
+            module: "Coupons",
+            status: "success",
+          }),
+        );
+        toastSuccess(`Coupon "${payload.code}" updated successfully.`);
+      }
+      setModalOpen(false);
+    } catch (err: any) {
+      console.warn(err);
+      toastError(err.message || "An error occurred while saving the coupon.");
     }
-    setModalOpen(false);
   };
 
-  const confirmDelete = () => {
+  const confirmDelete = async () => {
     if (selectedCoupon) {
-      dispatch(deleteCoupon(selectedCoupon.id));
-      dispatch(
-        addActivityLog({
-          user: "Admin Alex",
-          action: `Removed coupon: ${selectedCoupon.code}`,
-          module: "Coupons",
-          status: "success",
-        }),
-      );
+      try {
+        await apiClient<any>(`/coupons/${selectedCoupon.id}`, {
+          method: "DELETE",
+        });
+        dispatch(deleteCoupon(selectedCoupon.id));
+        dispatch(
+          addActivityLog({
+            user: "Admin Alex",
+            action: `Removed coupon: ${selectedCoupon.code}`,
+            module: "Coupons",
+            status: "success",
+          }),
+        );
+        toastSuccess(`Coupon "${selectedCoupon.code}" deleted successfully.`);
+      } catch (err: any) {
+        console.warn(err);
+        toastError(err.message || "Failed to delete the coupon.");
+      }
     }
     setDeleteDialogOpen(false);
-  };
-
-  const handleExport = () => {
-    alert(
-      "Exporting active promo codes list. The download will start shortly.",
-    );
   };
 
   // Filter & Paginate
@@ -180,31 +220,40 @@ export default function CouponsPage() {
       ),
     },
     {
-      key: "type",
+      key: "discountType",
       label: "Discount Value",
-      render: (type, item) => (
+      render: (discountType, item) => (
         <span className="font-bold text-text-custom">
-          {type === "percentage"
-            ? `${item.value}% Off`
-            : `$${item.value.toFixed(2)} Off`}
+          {discountType === "PERCENTAGE"
+            ? `${item.discountValue}% Off`
+            : `$${Number(item.discountValue).toFixed(2)} Off`}
         </span>
       ),
     },
     {
-      key: "minSpend",
+      key: "minimumOrderAmount",
       label: "Minimum Purchase",
       render: (val) => (
         <span className="text-text-custom/60 font-semibold">
-          ${val ? val.toFixed(2) : "0.00"}
+          ${val ? Number(val).toFixed(2) : "0.00"}
         </span>
       ),
     },
     {
-      key: "usageCount",
+      key: "redeemedCount",
       label: "Redemptions",
       render: (val, item) => (
         <span className="font-semibold text-text-custom">
-          {val} / {item.usageLimit || "∞"} uses
+          {val} / {item.redemptionLimit || "∞"} uses
+        </span>
+      ),
+    },
+    {
+      key: "activeDate",
+      label: "Active Date",
+      render: (val) => (
+        <span suppressHydrationWarning>
+          {val ? new Date(val).toLocaleDateString() : "-"}
         </span>
       ),
     },
@@ -213,7 +262,7 @@ export default function CouponsPage() {
       label: "Expiry Date",
       render: (val) => (
         <span suppressHydrationWarning>
-          {new Date(val).toLocaleDateString()}
+          {val ? new Date(val).toLocaleDateString() : "-"}
         </span>
       ),
     },
@@ -257,14 +306,6 @@ export default function CouponsPage() {
         </div>
         <div className="flex gap-2 self-start sm:self-auto shrink-0">
           <Button
-            onClick={handleExport}
-            variant="outline"
-            className="flex items-center gap-1.5"
-          >
-            <Download className="w-4 h-4" />
-            Export Rules
-          </Button>
-          <Button
             onClick={handleAddClick}
             className="flex items-center gap-1.5"
           >
@@ -304,9 +345,9 @@ export default function CouponsPage() {
                   }}
                   options={[
                     { value: "all", label: "All Statuses" },
-                    { value: "active", label: "Active" },
-                    { value: "expired", label: "Expired" },
-                    { value: "disabled", label: "Disabled" },
+                    { value: "ACTIVE", label: "Active" },
+                    { value: "EXPIRED", label: "Expired" },
+                    { value: "INACTIVE", label: "Disabled/Inactive" },
                   ]}
                 />
               </Filters>
@@ -350,30 +391,36 @@ export default function CouponsPage() {
           </div>
           <Select
             label="Discount Mode Type"
-            {...register("type")}
+            {...register("discountType")}
             options={[
-              { value: "percentage", label: "Percentage Off (%)" },
-              { value: "fixed_amount", label: "Fixed Price Off ($)" },
+              { value: "PERCENTAGE", label: "Percentage Off (%)" },
+              { value: "FIXED", label: "Fixed Price Off ($)" },
             ]}
           />
           <Input
             label="Value / Rate"
             type="number"
-            {...register("value", {
+            {...register("discountValue", {
               valueAsNumber: true,
               required: "Discount value is required",
             })}
-            error={errors.value?.message}
+            error={errors.discountValue?.message}
           />
           <Input
             label="Minimum Order Spend ($)"
             type="number"
-            {...register("minSpend", { valueAsNumber: true })}
+            {...register("minimumOrderAmount", { valueAsNumber: true })}
           />
           <Input
             label="Redemptions Limit (Uses)"
             type="number"
-            {...register("usageLimit", { valueAsNumber: true })}
+            {...register("redemptionLimit", { valueAsNumber: true })}
+          />
+          <Input
+            label="Active Date"
+            type="date"
+            {...register("activeDate", { required: "Active date is required" })}
+            error={errors.activeDate?.message}
           />
           <Input
             label="Expiry Date"
@@ -385,10 +432,18 @@ export default function CouponsPage() {
             label="Campaign Status"
             {...register("status")}
             options={[
-              { value: "active", label: "Active" },
-              { value: "disabled", label: "Disabled" },
+              { value: "ACTIVE", label: "Active" },
+              { value: "INACTIVE", label: "Disabled/Inactive" },
+              { value: "EXPIRED", label: "Expired" },
             ]}
           />
+          <div className="sm:col-span-2">
+            <Input
+              label="Description"
+              {...register("description")}
+              placeholder="e.g. Special Holiday Promo"
+            />
+          </div>
         </form>
       </Modal>
 

@@ -242,16 +242,11 @@ const adminSlice = createSlice({
     },
 
     // Coupons
-    addCoupon: (
-      state,
-      action: PayloadAction<Omit<Coupon, "id" | "usageCount">>,
-    ) => {
-      const newCoupon: Coupon = {
-        ...action.payload,
-        id: `coup-${Date.now()}`,
-        usageCount: 0,
-      };
-      state.coupons.unshift(newCoupon);
+    setCoupons: (state, action: PayloadAction<Coupon[]>) => {
+      state.coupons = action.payload;
+    },
+    addCoupon: (state, action: PayloadAction<Coupon>) => {
+      state.coupons.unshift(action.payload);
     },
     updateCoupon: (state, action: PayloadAction<Coupon>) => {
       const index = state.coupons.findIndex((c) => c.id === action.payload.id);
@@ -323,6 +318,7 @@ export const {
   updateOrderStatus,
   updateOrderPaymentStatus,
   updateInventoryStock,
+  setCoupons,
   addCoupon,
   updateCoupon,
   deleteCoupon,

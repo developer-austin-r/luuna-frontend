@@ -417,50 +417,7 @@ export const initialInventory: InventoryItem[] = [
   },
 ];
 
-export const initialCoupons: Coupon[] = [
-  {
-    id: "coup-1",
-    code: "SUMMER25",
-    type: "percentage",
-    value: 25,
-    minSpend: 100,
-    usageLimit: 500,
-    usageCount: 243,
-    expiryDate: "2026-08-31",
-    status: "active",
-  },
-  {
-    id: "coup-2",
-    code: "WELCOME10",
-    type: "fixed_amount",
-    value: 10,
-    minSpend: 50,
-    usageCount: 154,
-    expiryDate: "2026-12-31",
-    status: "active",
-  },
-  {
-    id: "coup-3",
-    code: "VIPGOLD",
-    type: "percentage",
-    value: 15,
-    minSpend: 200,
-    usageLimit: 50,
-    usageCount: 50,
-    expiryDate: "2026-06-30",
-    status: "expired",
-  },
-  {
-    id: "coup-4",
-    code: "FREESHIP",
-    type: "fixed_amount",
-    value: 15,
-    minSpend: 75,
-    usageCount: 12,
-    expiryDate: "2026-09-15",
-    status: "disabled",
-  },
-];
+export const initialCoupons: Coupon[] = [];
 
 export const initialShippingMethods: ShippingMethod[] = [
   {

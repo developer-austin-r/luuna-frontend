@@ -23,6 +23,7 @@ import {
   Select,
   StatusBadge,
 } from "@/components/admin";
+import { useToast } from "@/providers/toast-provider";
 import { useAppDispatch, useAppSelector } from "@/redux/hooks";
 import { addActivityLog, setCategories } from "@/redux/slices/admin-slice";
 import { apiClient } from "@/services/api-client";
@@ -39,12 +40,16 @@ interface ProductFormValues {
   stock: number;
   reservedStock: number;
   alertLevel: number;
-  status: "active" | "draft" | "out_of_stock";
-  archive: boolean;
+  statusId: string;
   description: string;
   slug: string;
-  warehouse: string;
   keywords: string;
+}
+
+interface StatusOption {
+  id: string;
+  status: string;
+  slug: string;
 }
 
 interface ImageUploadItem {
@@ -81,28 +86,9 @@ export default function AddProductPage() {
   const router = useRouter();
   const dispatch = useAppDispatch();
   const categories = useAppSelector((state) => state.admin.categories);
+  const { error: toastError, success: toastSuccess } = useToast();
 
-  useEffect(() => {
-    async function loadCategories() {
-      try {
-        const catRes = await apiClient<{ data: any[] }>(
-          "/products/categories/all",
-        );
-        if (catRes && catRes.data) {
-          dispatch(setCategories(catRes.data));
-        }
-      } catch (err) {
-        console.error("Error loading active categories:", err);
-      }
-    }
-    loadCategories();
-  }, [dispatch]);
-
-  // Upload States
-  const [images, setImages] = useState<ImageUploadItem[]>([]);
-  const [video, setVideo] = useState<VideoUploadItem | null>(null);
-  const [apiError, setApiError] = useState<string | null>(null);
-  const [successMsg, setSuccessMsg] = useState<string | null>(null);
+  const [statuses, setStatuses] = useState<StatusOption[]>([]);
 
   // Form setup
   const {
@@ -124,14 +110,47 @@ export default function AddProductPage() {
       stock: 0,
       reservedStock: 0,
       alertLevel: 10,
-      status: "active",
-      archive: false,
+      statusId: "",
       description: "",
       slug: "",
-      warehouse: "Warehouse East",
       keywords: "",
     },
   });
+
+  useEffect(() => {
+    async function loadData() {
+      try {
+        const catRes = await apiClient<{ data: any[] }>(
+          "/products/categories/all",
+        );
+        if (catRes && catRes.data) {
+          dispatch(setCategories(catRes.data));
+        }
+
+        const statusRes = await apiClient<{ data: StatusOption[] }>(
+          "/products/statuses/all",
+        );
+        if (statusRes && statusRes.data) {
+          setStatuses(statusRes.data);
+          const activeStatus = statusRes.data.find((s) => s.slug === "active");
+          if (activeStatus) {
+            setTimeout(() => {
+              setValue("statusId", activeStatus.id);
+            }, 100);
+          }
+        }
+      } catch (err) {
+        console.error("Error loading categories or statuses:", err);
+      }
+    }
+    loadData();
+  }, [dispatch, setValue]);
+
+  // Upload States
+  const [images, setImages] = useState<ImageUploadItem[]>([]);
+  const [video, setVideo] = useState<VideoUploadItem | null>(null);
+  const [apiError, setApiError] = useState<string | null>(null);
+  const [successMsg, setSuccessMsg] = useState<string | null>(null);
 
   // Watch fields for live preview card
   const watchedName = useWatch({
@@ -145,10 +164,10 @@ export default function AddProductPage() {
     defaultValue: 0,
   });
   const watchedDiscountPrice = useWatch({ control, name: "discountPrice" });
-  const watchedStatus = useWatch({
+  const watchedStatusId = useWatch({
     control,
-    name: "status",
-    defaultValue: "active",
+    name: "statusId",
+    defaultValue: "",
   });
   const watchedKeywords = useWatch({
     control,
@@ -313,6 +332,13 @@ export default function AddProductPage() {
             : []
       ).filter((id) => id && id !== "none");
 
+      const fallbackStatusId =
+        data.statusId || statuses.find((s) => s.slug === "active")?.id;
+      if (!fallbackStatusId) {
+        setApiError("Validation Error: Please select a valid product status.");
+        return;
+      }
+
       const payload = {
         name: data.name,
         sku: data.sku,
@@ -333,10 +359,8 @@ export default function AddProductPage() {
         availableStock:
           Number(data.stock || 0) - Number(data.reservedStock || 0),
         rating: 4.5, // initial rating
-        status: data.status === "active",
-        archive: !!data.archive,
+        statusId: fallbackStatusId,
         categoryIds: cleanedCategoryIds,
-        warehouse: data.warehouse || "Warehouse East",
         keywords: data.keywords
           ? data.keywords
               .split(",")
@@ -362,9 +386,9 @@ export default function AddProductPage() {
         body: JSON.stringify(payload),
       });
 
-      setSuccessMsg(
-        `Product listing "${result?.data?.name || data.name}" launched successfully!`,
-      );
+      const msg = `Product listing "${result?.data?.name || data.name}" launched successfully!`;
+      setSuccessMsg(msg);
+      toastSuccess(msg);
 
       dispatch(
         addActivityLog({
@@ -379,11 +403,12 @@ export default function AddProductPage() {
         router.push("/admin/products");
       }, 2000);
     } catch (err: any) {
-      console.error(err);
-      setApiError(
+      console.warn(err);
+      const errMsg =
         err.message ||
-          "An error occurred while creating the product in the NestJS + Prisma backend.",
-      );
+        "An error occurred while creating the product in the NestJS + Prisma backend.";
+      setApiError(errMsg);
+      toastError(errMsg);
     }
   };
 
@@ -529,13 +554,6 @@ export default function AddProductPage() {
                 {...register("alertLevel", { valueAsNumber: true })}
               />
             </div>
-            <div className="mt-4">
-              <Input
-                label="Warehouse Location"
-                {...register("warehouse")}
-                placeholder="e.g. Warehouse East"
-              />
-            </div>
           </Card>
 
           {/* Product Media (Images & Video) */}
@@ -666,37 +684,6 @@ export default function AddProductPage() {
               </div>
             </div>
           </Card>
-
-          {/* SEO Details */}
-          <Card
-            title="SEO Metadata Optimization"
-            extra={
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                onClick={handleAutoGenerateSlug}
-                className="text-primary text-2xs flex items-center gap-1 font-semibold"
-              >
-                <Sparkles className="w-3.5 h-3.5" />
-                Auto-generate
-              </Button>
-            }
-          >
-            <div className="space-y-4 mt-2">
-              <Input
-                label="URL Slug Link"
-                {...register("slug", { required: "Slug URL is required" })}
-                error={errors.slug?.message}
-                placeholder="silk-v-neck-dress"
-              />
-              <Input
-                label="Search Keywords (comma separated)"
-                {...register("keywords")}
-                placeholder="silk, clothing, apparel, summer"
-              />
-            </div>
-          </Card>
         </div>
 
         {/* Right Column: Image and Preview Card */}
@@ -706,12 +693,12 @@ export default function AddProductPage() {
             <div className="space-y-4 mt-2">
               <Select
                 label="Listing Status"
-                {...register("status")}
-                options={[
-                  { value: "active", label: "Active" },
-                  { value: "draft", label: "Draft" },
-                  { value: "out_of_stock", label: "Out of Stock" },
-                ]}
+                {...register("statusId", { required: "Status is required" })}
+                error={errors.statusId?.message}
+                options={statuses.map((s) => ({
+                  value: s.id,
+                  label: s.status,
+                }))}
               />
             </div>
           </Card>
@@ -740,7 +727,12 @@ export default function AddProductPage() {
                   </div>
                 )}
                 <div className="absolute top-3 right-3 z-10">
-                  <StatusBadge status={watchedStatus} />
+                  <StatusBadge
+                    status={
+                      statuses.find((s) => s.id === watchedStatusId)?.slug ||
+                      "active"
+                    }
+                  />
                 </div>
               </div>
 
