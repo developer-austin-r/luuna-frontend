@@ -61,7 +61,7 @@ export default function ProductsPage() {
           price: Number(p.basePrice),
           salePrice: p.discountPrice ? Number(p.discountPrice) : undefined,
           stock: p.stock,
-          status: p.status ? "active" : "draft",
+          status: p.status?.slug || "active",
           image:
             p.images?.[0]?.imageUrl ||
             "https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=300&q=80",

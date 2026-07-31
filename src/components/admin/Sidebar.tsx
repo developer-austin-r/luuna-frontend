@@ -2,7 +2,6 @@ import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
-  BarChart3,
   Compass,
   FileText,
   FolderTree,
@@ -39,7 +38,6 @@ export const menuItems: MenuItem[] = [
   { name: "Orders", href: "/admin/orders", icon: ShoppingCart },
   { name: "Shipping", href: "/admin/shipping", icon: Truck },
   { name: "Reports", href: "/admin/reports", icon: FileText },
-  { name: "Analytics", href: "/admin/analytics", icon: BarChart3 },
   { name: "Activity Logs", href: "/admin/activity-logs", icon: History },
   { name: "Settings", href: "/admin/settings", icon: Settings },
 ];

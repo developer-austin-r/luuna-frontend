@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
-import { Check, Mail, Palette, Save, Upload, User } from "lucide-react";
+import { Check, Save, User } from "lucide-react";
 
 import { Breadcrumb, Button, Card, Input, Select } from "@/components/admin";
 import { useAppDispatch, useAppSelector } from "@/redux/hooks";
@@ -183,28 +183,6 @@ export default function SettingsPage() {
               <User className="w-4 h-4" />
               Profile & Security
             </button>
-            <button
-              onClick={() => setActiveCategory("branding")}
-              className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-xs font-semibold transition-all ${
-                activeCategory === "branding"
-                  ? "bg-primary/10 text-primary"
-                  : "hover:bg-bg-secondary text-text-custom/75"
-              }`}
-            >
-              <Palette className="w-4 h-4" />
-              Theme & Branding
-            </button>
-            <button
-              onClick={() => setActiveCategory("templates")}
-              className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-xs font-semibold transition-all ${
-                activeCategory === "templates"
-                  ? "bg-primary/10 text-primary"
-                  : "hover:bg-bg-secondary text-text-custom/75"
-              }`}
-            >
-              <Mail className="w-4 h-4" />
-              Email Templates
-            </button>
           </Card>
         </div>
 
@@ -347,147 +325,6 @@ export default function SettingsPage() {
                   </Button>
                 </div>
               </form>
-            </Card>
-          )}
-
-          {/* 3. Branding & Theme Settings Form */}
-          {activeCategory === "branding" && (
-            <Card title="Theme Accent & Brand assets">
-              <div className="space-y-6 mt-2 text-xs">
-                {/* Theme Accents */}
-                <div className="space-y-2">
-                  <label className="text-xs font-semibold text-text-custom/80 uppercase tracking-wider block">
-                    Theme Primary Accent Color
-                  </label>
-                  <div className="flex gap-3">
-                    {[
-                      {
-                        id: "violet",
-                        color: "bg-[#7C6EF6]",
-                        label: "Violet (Active)",
-                      },
-                      { id: "slate", color: "bg-slate-600", label: "Slate" },
-                      {
-                        id: "emerald",
-                        color: "bg-emerald-500",
-                        label: "Emerald",
-                      },
-                      { id: "rose", color: "bg-rose-500", label: "Rose" },
-                    ].map((theme) => (
-                      <button
-                        key={theme.id}
-                        type="button"
-                        onClick={() => setThemeAccent(theme.id)}
-                        className={`px-3 py-2 rounded-lg border font-semibold flex items-center gap-1.5 transition-all cursor-pointer ${
-                          themeAccent === theme.id
-                            ? "border-primary bg-primary/5 text-primary"
-                            : "border-border-custom hover:bg-bg-secondary text-text-custom"
-                        }`}
-                      >
-                        <span
-                          className={`w-3 h-3 rounded-full ${theme.color}`}
-                        />
-                        {theme.label}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Slogan */}
-                <Input
-                  label="Brand Slogan / Tagline"
-                  value={storeSlogan}
-                  onChange={(e) => setStoreSlogan(e.target.value)}
-                  placeholder="e.g. Luxury items delivered"
-                />
-
-                {/* Logo Upload Zone */}
-                <div className="space-y-2">
-                  <label className="text-xs font-semibold text-text-custom/80 uppercase tracking-wider block">
-                    Store Brand Logo
-                  </label>
-                  <div className="border border-border-custom bg-bg-secondary/40 rounded-xl p-4 flex items-center justify-between gap-4">
-                    <div className="flex items-center gap-3">
-                      <img
-                        src={logoUrl}
-                        alt="Logo"
-                        className="w-12 h-12 object-cover rounded-lg border border-border-custom"
-                      />
-                      <div>
-                        <p className="font-bold text-text-custom">
-                          store-logo-dark.png
-                        </p>
-                        <p className="text-3xs text-text-custom/40 font-semibold">
-                          WEBP, PNG format accepted (Mock)
-                        </p>
-                      </div>
-                    </div>
-                    <Button
-                      variant="outline"
-                      className="flex items-center gap-1 text-2xs p-2 h-8"
-                    >
-                      <Upload className="w-3.5 h-3.5" />
-                      Replace Asset
-                    </Button>
-                  </div>
-                </div>
-
-                <div className="pt-4 border-t border-border-custom/50 flex justify-end">
-                  <Button
-                    onClick={onSaveBranding}
-                    className="flex items-center gap-1.5 text-xs"
-                  >
-                    <Check className="w-4 h-4" />
-                    Save Branding Configurations
-                  </Button>
-                </div>
-              </div>
-            </Card>
-          )}
-
-          {/* 4. Notification Templates Form */}
-          {activeCategory === "templates" && (
-            <Card title="Transactional Email Template Customizer">
-              <div className="space-y-4 mt-2 text-xs">
-                <Select
-                  label="Select Template to Customize"
-                  value={selectedTemplate}
-                  onChange={(e) => handleTemplateChange(e.target.value)}
-                  options={[
-                    {
-                      value: "order_confirm",
-                      label: "Order Confirmation Email",
-                    },
-                    { value: "ship_alert", label: "Shipping Alert Email" },
-                    {
-                      value: "welcome_customer",
-                      label: "Customer Welcome Email",
-                    },
-                  ]}
-                />
-
-                <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-text-custom/80 uppercase tracking-wider block">
-                    Raw Template Code Markup
-                  </label>
-                  <textarea
-                    rows={8}
-                    value={templateContent}
-                    onChange={(e) => setTemplateContent(e.target.value)}
-                    className="w-full font-mono text-xs px-3 py-2 border border-border-custom rounded-lg bg-bg-secondary/40 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all"
-                  />
-                </div>
-
-                <div className="pt-4 border-t border-border-custom/50 flex justify-end">
-                  <Button
-                    onClick={onSaveTemplate}
-                    className="flex items-center gap-1.5 text-xs"
-                  >
-                    <Check className="w-4 h-4" />
-                    Save HTML Template
-                  </Button>
-                </div>
-              </div>
             </Card>
           )}
         </div>

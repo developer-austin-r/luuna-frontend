@@ -158,7 +158,7 @@ export default function ReportsPage() {
       ),
     },
     {
-      key: "revenue",
+      key: "netProfit",
       label: "Net Profit",
       render: (_, item) => (
         <span className="font-bold text-emerald-600">

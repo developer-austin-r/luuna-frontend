@@ -1,43 +1,31 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { useForm } from "react-hook-form";
 import Link from "next/link";
 import {
   AlertTriangle,
   ArrowUpRight,
   DollarSign,
   Package,
-  Plus,
   RefreshCw,
   ShoppingCart,
-  Ticket,
   Users,
 } from "lucide-react";
 
 import {
-  Avatar,
   Breadcrumb,
   Button,
   Card,
   type Column,
   DataTable,
-  Input,
-  Modal,
-  Select,
   StatsCard,
   StatusBadge,
   Tabs,
 } from "@/components/admin";
 import { useAppDispatch, useAppSelector } from "@/redux/hooks";
-import {
-  addActivityLog,
-  addCoupon,
-  addProduct,
-  setProducts,
-} from "@/redux/slices/admin-slice";
+import { addActivityLog, setProducts } from "@/redux/slices/admin-slice";
 import { apiClient } from "@/services/api-client";
-import { type Coupon, type Order, type Product } from "@/types/admin";
+import { type Order, type Product } from "@/types/admin";
 
 export default function DashboardPage() {
   const dispatch = useAppDispatch();
@@ -69,7 +57,7 @@ export default function DashboardPage() {
             price: Number(p.basePrice),
             salePrice: p.discountPrice ? Number(p.discountPrice) : undefined,
             stock: p.stock,
-            status: p.status ? "active" : "draft",
+            status: p.status?.slug || "active",
             image:
               p.images?.[0]?.imageUrl ||
               "https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=300&q=80",
@@ -88,23 +76,7 @@ export default function DashboardPage() {
   const [activeChartTab, setActiveChartTab] = useState("sales");
 
   // Quick Action Modal States
-  const [productModalOpen, setProductModalOpen] = useState(false);
-  const [couponModalOpen, setCouponModalOpen] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
-
-  // Form Hooks
-  const {
-    register: registerProd,
-    handleSubmit: handleSubmitProd,
-    reset: resetProd,
-    formState: { errors: prodErrors },
-  } = useForm<Omit<Product, "id">>();
-  const {
-    register: registerCoup,
-    handleSubmit: handleSubmitCoup,
-    reset: resetCoup,
-    formState: { errors: coupErrors },
-  } = useForm<Omit<Coupon, "id" | "usageCount">>();
 
   // Compute stats
   const totalSales = orders
@@ -135,34 +107,6 @@ export default function DashboardPage() {
         }),
       );
     }, 600);
-  };
-
-  const handleAddProductShortcut = (data: any) => {
-    dispatch(addProduct(data));
-    dispatch(
-      addActivityLog({
-        user: "Admin Alex",
-        action: `Created product "${data.name}" via dashboard shortcut`,
-        module: "Products",
-        status: "success",
-      }),
-    );
-    setProductModalOpen(false);
-    resetProd();
-  };
-
-  const handleAddCouponShortcut = (data: any) => {
-    dispatch(addCoupon(data));
-    dispatch(
-      addActivityLog({
-        user: "Admin Alex",
-        action: `Created coupon "${data.code}" via dashboard shortcut`,
-        module: "Coupons",
-        status: "success",
-      }),
-    );
-    setCouponModalOpen(false);
-    resetCoup();
   };
 
   const orderColumns: Column<Order>[] = [
@@ -222,24 +166,6 @@ export default function DashboardPage() {
           >
             <RefreshCw className="w-3.5 h-3.5" />
             Sync Feeds
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setProductModalOpen(true)}
-            className="flex items-center gap-1.5"
-          >
-            <Plus className="w-3.5 h-3.5 text-primary" />
-            Add Product
-          </Button>
-          <Button
-            variant="primary"
-            size="sm"
-            onClick={() => setCouponModalOpen(true)}
-            className="flex items-center gap-1.5"
-          >
-            <Ticket className="w-3.5 h-3.5" />
-            New Coupon
           </Button>
         </div>
       </div>
@@ -421,7 +347,7 @@ export default function DashboardPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Latest Orders Table */}
         <Card
-          className="lg:col-span-2"
+          className="lg:col-span-3"
           title="Latest Transactions"
           extra={
             <Link
@@ -434,49 +360,6 @@ export default function DashboardPage() {
           }
         >
           <DataTable columns={orderColumns} data={recentOrders} />
-        </Card>
-
-        {/* Recent Customers List */}
-        <Card
-          title="Recent Signups"
-          extra={
-            <Link
-              href="/admin/customers"
-              className="text-xs font-semibold text-primary hover:text-primary-hover transition-colors"
-            >
-              Manage
-            </Link>
-          }
-        >
-          <div className="space-y-4 mt-2">
-            {recentCustomers.map((cust) => (
-              <div
-                key={cust.id}
-                className="flex items-center gap-3 py-1 border-b border-border-custom/30 last:border-b-0 pb-3 last:pb-0"
-              >
-                <Avatar name={cust.name} src={cust.avatar} size="sm" />
-                <div className="flex-1 min-w-0">
-                  <p className="text-xs font-bold text-text-custom truncate">
-                    {cust.name}
-                  </p>
-                  <p className="text-3xs text-text-custom/50 font-medium truncate">
-                    {cust.email}
-                  </p>
-                </div>
-                <div className="text-right shrink-0">
-                  <p className="text-xs font-bold text-text-custom">
-                    ${cust.totalSpent.toFixed(0)} spent
-                  </p>
-                  <p
-                    className="text-3xs text-text-custom/50 font-medium"
-                    suppressHydrationWarning
-                  >
-                    {new Date(cust.dateJoined).toLocaleDateString()}
-                  </p>
-                </div>
-              </div>
-            ))}
-          </div>
         </Card>
       </div>
 
@@ -583,129 +466,6 @@ export default function DashboardPage() {
           </div>
         </Card>
       </div>
-
-      {/* Quick Action: Add Product Modal */}
-      <Modal
-        isOpen={productModalOpen}
-        onClose={() => setProductModalOpen(false)}
-        title="Add Product Shortcut"
-        footer={
-          <>
-            <Button
-              variant="outline"
-              onClick={() => setProductModalOpen(false)}
-            >
-              Cancel
-            </Button>
-            <Button
-              variant="primary"
-              onClick={handleSubmitProd(handleAddProductShortcut)}
-            >
-              Create listing
-            </Button>
-          </>
-        }
-      >
-        <form className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div className="sm:col-span-2">
-            <Input
-              label="Product Title"
-              {...registerProd("name", { required: "Name is required" })}
-              error={prodErrors.name?.message}
-            />
-          </div>
-          <Input
-            label="SKU"
-            {...registerProd("sku", { required: "SKU is required" })}
-            error={prodErrors.sku?.message}
-          />
-          <Select
-            label="Category"
-            {...registerProd("category")}
-            options={categories.map((c) => ({ value: c.name, label: c.name }))}
-          />
-          <Input
-            label="Price ($)"
-            type="number"
-            step="0.01"
-            {...registerProd("price", {
-              valueAsNumber: true,
-              required: "Price is required",
-            })}
-            error={prodErrors.price?.message}
-          />
-          <Input
-            label="Stock"
-            type="number"
-            {...registerProd("stock", {
-              valueAsNumber: true,
-              required: "Stock count is required",
-            })}
-            error={prodErrors.stock?.message}
-          />
-          <div className="sm:col-span-2">
-            <Input
-              label="Image URL"
-              {...registerProd("image")}
-              placeholder="https://images.unsplash.com/..."
-            />
-          </div>
-        </form>
-      </Modal>
-
-      {/* Quick Action: Add Coupon Modal */}
-      <Modal
-        isOpen={couponModalOpen}
-        onClose={() => setCouponModalOpen(false)}
-        title="Create Campaign Coupon"
-        footer={
-          <>
-            <Button variant="outline" onClick={() => setCouponModalOpen(false)}>
-              Cancel
-            </Button>
-            <Button
-              variant="primary"
-              onClick={handleSubmitCoup(handleAddCouponShortcut)}
-            >
-              Launch Coupon
-            </Button>
-          </>
-        }
-      >
-        <form className="space-y-4">
-          <Input
-            label="Promo Coupon Code"
-            {...registerCoup("code", { required: "Code is required" })}
-            error={coupErrors.code?.message}
-            placeholder="e.g. SAVE20"
-          />
-          <Select
-            label="Discount Type"
-            {...registerCoup("type")}
-            options={[
-              { value: "percentage", label: "Percentage (%)" },
-              { value: "fixed_amount", label: "Fixed Amount ($)" },
-            ]}
-          />
-          <Input
-            label="Discount Value"
-            type="number"
-            {...registerCoup("value", {
-              valueAsNumber: true,
-              required: "Discount rate is required",
-            })}
-            error={coupErrors.value?.message}
-          />
-          <Input
-            label="Expiry Date"
-            type="date"
-            {...registerCoup("expiryDate", {
-              required: "Expiry date is required",
-            })}
-            error={coupErrors.expiryDate?.message}
-          />
-        </form>
-      </Modal>
     </div>
   );
 }
