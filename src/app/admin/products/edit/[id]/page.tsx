@@ -39,12 +39,16 @@ interface ProductFormValues {
   stock: number;
   reservedStock: number;
   alertLevel: number;
-  status: "active" | "draft" | "out_of_stock";
-  archive: boolean;
+  statusId: string;
   description: string;
   slug: string;
-  warehouse: string;
   keywords: string;
+}
+
+interface StatusOption {
+  id: string;
+  status: string;
+  slug: string;
 }
 
 interface ImageUploadItem {
@@ -92,6 +96,7 @@ export default function EditProductPage() {
   const [apiError, setApiError] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const [loadingProduct, setLoadingProduct] = useState(true);
+  const [statuses, setStatuses] = useState<StatusOption[]>([]);
 
   // Form setup
   const {
@@ -108,12 +113,16 @@ export default function EditProductPage() {
       try {
         setLoadingProduct(true);
 
-        // Load categories first
-        const res = await apiClient<{ data: any[] }>(
-          "/products/categories/all",
-        );
+        // Load categories and statuses first
+        const [res, statusRes] = await Promise.all([
+          apiClient<{ data: any[] }>("/products/categories/all"),
+          apiClient<{ data: StatusOption[] }>("/products/statuses/all"),
+        ]);
         if (res && res.data) {
           dispatch(setCategories(res.data));
+        }
+        if (statusRes && statusRes.data) {
+          setStatuses(statusRes.data);
         }
 
         const prodRes = await apiClient<any>(`/products/${id}`);
@@ -134,11 +143,9 @@ export default function EditProductPage() {
             stock: prod.stock,
             reservedStock: prod.reservedStock || 0,
             alertLevel: 10,
-            status: prod.status ? "active" : "draft",
-            archive: prod.archive || false,
+            statusId: prod.statusId,
             description: prod.description || "",
             slug: prod.slug,
-            warehouse: prod.inventories?.[0]?.warehouse || "Warehouse East",
             keywords: prod.keywords
               ? prod.keywords.map((k: any) => k.keyword).join(", ")
               : "",
@@ -188,10 +195,10 @@ export default function EditProductPage() {
     defaultValue: 0,
   });
   const watchedDiscountPrice = useWatch({ control, name: "discountPrice" });
-  const watchedStatus = useWatch({
+  const watchedStatusId = useWatch({
     control,
-    name: "status",
-    defaultValue: "active",
+    name: "statusId",
+    defaultValue: "",
   });
   const watchedKeywords = useWatch({
     control,
@@ -351,6 +358,13 @@ export default function EditProductPage() {
             : []
       ).filter((id) => id && id !== "none");
 
+      const fallbackStatusId =
+        data.statusId || statuses.find((s) => s.slug === "active")?.id;
+      if (!fallbackStatusId) {
+        setApiError("Validation Error: Please select a valid product status.");
+        return;
+      }
+
       const payload = {
         name: data.name,
         sku: data.sku,
@@ -370,10 +384,8 @@ export default function EditProductPage() {
         reservedStock: Number(data.reservedStock || 0),
         availableStock:
           Number(data.stock || 0) - Number(data.reservedStock || 0),
-        status: data.status === "active",
-        archive: !!data.archive,
+        statusId: fallbackStatusId,
         categoryIds: cleanedCategoryIds,
-        warehouse: data.warehouse || "Warehouse East",
         keywords: data.keywords
           ? data.keywords
               .split(",")
@@ -575,9 +587,6 @@ export default function EditProductPage() {
                 {...register("alertLevel", { valueAsNumber: true })}
               />
             </div>
-            <div className="mt-4">
-              <Input label="Warehouse Location" {...register("warehouse")} />
-            </div>
           </Card>
 
           {/* Product Media (Images & Video) */}
@@ -708,36 +717,6 @@ export default function EditProductPage() {
               </div>
             </div>
           </Card>
-
-          {/* SEO Details */}
-          <Card
-            title="SEO Optimization"
-            extra={
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                onClick={handleAutoGenerateSlug}
-                className="text-primary text-2xs flex items-center gap-1 font-semibold"
-              >
-                <Sparkles className="w-3.5 h-3.5" />
-                Auto-generate
-              </Button>
-            }
-          >
-            <div className="space-y-4 mt-2">
-              <Input
-                label="URL Slug Link"
-                {...register("slug", { required: "Slug URL is required" })}
-                error={errors.slug?.message}
-              />
-              <Input
-                label="Search Keywords"
-                {...register("keywords")}
-                placeholder="silk, clothing, apparel, summer"
-              />
-            </div>
-          </Card>
         </div>
 
         {/* Right Column: Preview & Status */}
@@ -746,12 +725,12 @@ export default function EditProductPage() {
             <div className="space-y-4 mt-2">
               <Select
                 label="Listing Status"
-                {...register("status")}
-                options={[
-                  { value: "active", label: "Active" },
-                  { value: "draft", label: "Draft" },
-                  { value: "out_of_stock", label: "Out of Stock" },
-                ]}
+                {...register("statusId", { required: "Status is required" })}
+                error={errors.statusId?.message}
+                options={statuses.map((s) => ({
+                  value: s.id,
+                  label: s.status,
+                }))}
               />
             </div>
           </Card>
@@ -780,7 +759,12 @@ export default function EditProductPage() {
                   </div>
                 )}
                 <div className="absolute top-3 right-3 z-10">
-                  <StatusBadge status={watchedStatus} />
+                  <StatusBadge
+                    status={
+                      statuses.find((s) => s.id === watchedStatusId)?.slug ||
+                      "active"
+                    }
+                  />
                 </div>
               </div>
 

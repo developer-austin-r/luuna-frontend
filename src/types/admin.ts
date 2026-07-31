@@ -63,13 +63,15 @@ export interface InventoryItem {
 export interface Coupon {
   id: string;
   code: string;
-  type: "percentage" | "fixed_amount";
-  value: number;
-  minSpend?: number | undefined;
-  usageLimit?: number | undefined;
-  usageCount: number;
+  discountType: "PERCENTAGE" | "FIXED";
+  discountValue: number;
+  minimumOrderAmount: number;
+  redemptionLimit?: number | null;
+  redeemedCount: number;
+  activeDate: string;
   expiryDate: string;
-  status: "active" | "expired" | "disabled";
+  status: "ACTIVE" | "INACTIVE" | "EXPIRED";
+  description?: string | null;
 }
 
 export interface ShippingMethod {
