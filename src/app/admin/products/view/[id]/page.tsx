@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import {
   ArrowLeft,
@@ -20,15 +20,78 @@ import {
   StatusBadge,
 } from "@/components/admin";
 import { useAppSelector } from "@/redux/hooks";
+import { apiClient } from "@/services/api-client";
 
 export default function ViewProductPage() {
   const params = useParams();
   const router = useRouter();
   const id = params.id as string;
 
-  // Retrieve product
+  const [product, setProduct] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+
+  // Retrieve product from Redux store as initial cache
   const products = useAppSelector((state) => state.admin.products);
-  const product = products.find((p) => p.id === id);
+
+  useEffect(() => {
+    const fetchProduct = async () => {
+      try {
+        setLoading(true);
+        // Look up in Redux cache first to render instantly
+        const cached = products.find((p) => p.id === id);
+        if (cached) {
+          setProduct(cached);
+        }
+
+        // Fetch from API to get fresh details/allow direct refresh
+        const res = await apiClient<{ data: any }>(`/products/${id}`);
+        const p = res?.data;
+        if (p) {
+          const mapped = {
+            id: p.id,
+            name: p.name,
+            sku: p.sku,
+            category:
+              p.productCategories?.[0]?.category?.name || "Uncategorized",
+            price: Number(p.basePrice),
+            salePrice: p.discountPrice ? Number(p.discountPrice) : undefined,
+            stock: p.stock,
+            status: p.status?.slug || "active",
+            image:
+              p.images?.[0]?.imageUrl ||
+              "https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=300&q=80",
+            description: p.description || "",
+          };
+          setProduct(mapped);
+        }
+      } catch (err) {
+        console.error("Failed to load product details:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProduct();
+  }, [id, products]);
+
+  if (loading && !product) {
+    return (
+      <div className="space-y-6">
+        <Breadcrumb
+          items={[
+            { label: "Products", href: "/admin/products" },
+            { label: "Loading..." },
+          ]}
+        />
+        <Card className="text-center py-12">
+          <div className="w-8 h-8 rounded-full border-4 border-primary/20 border-t-primary animate-spin mx-auto" />
+          <p className="text-sm font-semibold text-text-custom/60 mt-4">
+            Loading product details...
+          </p>
+        </Card>
+      </div>
+    );
+  }
 
   if (!product) {
     return (
