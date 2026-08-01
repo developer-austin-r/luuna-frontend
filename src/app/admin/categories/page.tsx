@@ -25,6 +25,7 @@ import {
 import { useAppDispatch, useAppSelector } from "@/redux/hooks";
 import { addActivityLog, setCategories } from "@/redux/slices/admin-slice";
 import { apiClient } from "@/services/api-client";
+import { uploadImage } from "@/services/media-upload";
 import { type Category } from "@/types/admin";
 
 interface CategoryFormValues {
@@ -327,14 +328,19 @@ export default function CategoriesPage() {
     setIsDragging(false);
   };
 
+  const uploadCategoryImage = async (file: File) => {
+    try {
+      setValue("image", await uploadImage(file));
+    } catch (err) {
+      console.error(err);
+      showNotification("Failed to upload category image.", "error");
+    }
+  };
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      setValue("image", reader.result as string);
-    };
-    reader.readAsDataURL(file);
+    void uploadCategoryImage(file);
   };
 
   const handleDrop = (e: React.DragEvent) => {
@@ -342,11 +348,7 @@ export default function CategoriesPage() {
     setIsDragging(false);
     const file = e.dataTransfer.files?.[0];
     if (!file) return;
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      setValue("image", reader.result as string);
-    };
-    reader.readAsDataURL(file);
+    void uploadCategoryImage(file);
   };
 
   // Filter Categories matching Search

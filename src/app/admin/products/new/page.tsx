@@ -27,6 +27,7 @@ import { useToast } from "@/providers/toast-provider";
 import { useAppDispatch, useAppSelector } from "@/redux/hooks";
 import { addActivityLog, setCategories } from "@/redux/slices/admin-slice";
 import { apiClient } from "@/services/api-client";
+import { uploadImage } from "@/services/media-upload";
 
 interface ProductFormValues {
   name: string;
@@ -210,34 +211,22 @@ export default function AddProductPage() {
 
       setImages((prev) => [...prev, newItem]);
 
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        const base64Url = reader.result as string;
-
-        // Simulate upload progress
-        let prg = 0;
-        const interval = setInterval(() => {
-          prg += 20;
+      void uploadImage(file)
+        .then((imageUrl) => {
           setImages((prev) =>
-            prev.map((item) => {
-              if (item.id === id) {
-                if (prg >= 100) {
-                  clearInterval(interval);
-                  return {
-                    ...item,
-                    uploading: false,
-                    progress: 100,
-                    imageUrl: base64Url,
-                  };
-                }
-                return { ...item, progress: prg };
-              }
-              return item;
-            }),
+            prev.map((item) =>
+              item.id === id
+                ? { ...item, imageUrl, uploading: false, progress: 100 }
+                : item,
+            ),
           );
-        }, 100);
-      };
-      reader.readAsDataURL(file);
+        })
+        .catch((err: unknown) => {
+          setImages((prev) => prev.filter((item) => item.id !== id));
+          setApiError(
+            err instanceof Error ? err.message : "Failed to upload image.",
+          );
+        });
     });
   };
 
