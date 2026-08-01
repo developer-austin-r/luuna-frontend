@@ -49,7 +49,16 @@ export default function OrdersPage() {
   ) => {
     dispatch(updateOrderTracking({ id: orderId, deliveryStatus }));
     if (selectedOrder && selectedOrder.id === orderId) {
-      setSelectedOrder((prev) => (prev ? { ...prev, deliveryStatus } : null));
+      setSelectedOrder((prev) => {
+        if (!prev) return null;
+        const updated = { ...prev };
+        if (deliveryStatus === undefined) {
+          delete updated.deliveryStatus;
+        } else {
+          updated.deliveryStatus = deliveryStatus;
+        }
+        return updated;
+      });
     }
     dispatch(
       addActivityLog({
