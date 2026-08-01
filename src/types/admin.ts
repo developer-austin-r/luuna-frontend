@@ -34,6 +34,15 @@ export interface Order {
   paymentStatus: "paid" | "unpaid" | "refunded";
   date: string;
   shippingMethod: string;
+  trackingId?: string;
+  carrier?: string;
+  deliveryStatus?:
+    | "pending"
+    | "in_transit"
+    | "out_for_delivery"
+    | "delivered"
+    | "returned"
+    | "cancelled";
 }
 
 export interface Customer {
