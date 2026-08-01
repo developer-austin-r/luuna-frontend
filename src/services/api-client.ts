@@ -8,6 +8,7 @@ export async function apiClient<TResponse>(
     typeof FormData !== "undefined" && init?.body instanceof FormData;
   const response = await fetch(`${appConfig.apiBaseUrl}${path}`, {
     ...init,
+    credentials: "include", // Always send HttpOnly cookies
     headers: {
       ...(isFormData ? {} : { "Content-Type": "application/json" }),
       ...init?.headers,
@@ -19,9 +20,11 @@ export async function apiClient<TResponse>(
     try {
       const errorData = await response.json();
       if (errorData) {
-        errorMessage = errorData.message || errorData.error || errorMessage;
+        errorMessage = errorData.error || errorData.message || errorMessage;
       }
-    } catch {}
+    } catch {
+      // Ignore parse errors
+    }
     throw new Error(errorMessage);
   }
 
