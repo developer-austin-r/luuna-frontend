@@ -28,7 +28,9 @@ import {
   addActivityLog,
   updateOrderPaymentStatus,
   updateOrderStatus,
+  updateOrderTracking,
 } from "@/redux/slices/admin-slice";
+import type { Order } from "@/types/admin";
 
 interface RefundFormValues {
   refundAmount: number;
@@ -128,6 +130,69 @@ export default function OrderDetailsPage() {
       addActivityLog({
         user: "Admin Sarah",
         action: `Set shipment progress of order ${order.id} to "${status}"`,
+        module: "Orders",
+        status: "success",
+      }),
+    );
+  };
+
+  const handlePaymentChange = (paymentStatus: Order["paymentStatus"]) => {
+    dispatch(updateOrderPaymentStatus({ id: order.id, paymentStatus }));
+    dispatch(
+      addActivityLog({
+        user: "Admin Sarah",
+        action: `Changed settlement status of order ${order.id} to "${paymentStatus}"`,
+        module: "Orders",
+        status: "success",
+      }),
+    );
+  };
+
+  const handleOrderStatusChange = (status: Order["status"]) => {
+    dispatch(updateOrderStatus({ id: order.id, status }));
+    // Automatically adjust deliveryStatus to stay reasonably in sync
+    let deliveryStatus = order.deliveryStatus;
+    if (status === "delivered") deliveryStatus = "delivered";
+    else if (status === "shipped") deliveryStatus = "in_transit";
+    else if (status === "cancelled") deliveryStatus = "cancelled";
+    else if (status === "pending") deliveryStatus = "pending";
+
+    dispatch(updateOrderTracking({ id: order.id, deliveryStatus }));
+
+    dispatch(
+      addActivityLog({
+        user: "Admin Sarah",
+        action: `Changed shipment state of order ${order.id} to "${status}"`,
+        module: "Orders",
+        status: "success",
+      }),
+    );
+  };
+
+  const handleDeliveryStatusChange = (
+    deliveryStatus: Order["deliveryStatus"],
+  ) => {
+    dispatch(updateOrderTracking({ id: order.id, deliveryStatus }));
+    // Also align order.status if appropriate
+    let orderStatus = order.status;
+    if (deliveryStatus === "delivered") orderStatus = "delivered";
+    else if (
+      deliveryStatus === "in_transit" ||
+      deliveryStatus === "out_for_delivery"
+    )
+      orderStatus = "shipped";
+    else if (deliveryStatus === "pending") orderStatus = "pending";
+    else if (deliveryStatus === "cancelled" || deliveryStatus === "returned")
+      orderStatus = "cancelled";
+
+    if (orderStatus !== order.status) {
+      dispatch(updateOrderStatus({ id: order.id, status: orderStatus }));
+    }
+
+    dispatch(
+      addActivityLog({
+        user: "Admin Sarah",
+        action: `Changed delivery status of order ${order.id} to "${deliveryStatus}"`,
         module: "Orders",
         status: "success",
       }),
@@ -354,19 +419,29 @@ export default function OrderDetailsPage() {
                 </div>
                 <div className="flex items-start gap-2 border-t border-border-custom/50 pt-3">
                   <CreditCard className="w-4 h-4 text-text-custom/40 shrink-0 mt-0.5" />
-                  <div>
+                  <div className="w-full">
                     <p className="font-bold text-text-custom">
                       Settlement Details
                     </p>
                     <p className="text-text-custom/75 mt-0.5">
                       Payment Method: Visa Ending *2834
                     </p>
-                    <p className="text-3xs text-text-custom/40 font-bold uppercase tracking-wider mt-1">
-                      Payment Status:{" "}
-                      <span className="font-bold text-text-custom uppercase">
-                        {order.paymentStatus}
-                      </span>
-                    </p>
+                    <div className="mt-2">
+                      <label className="text-3xs text-text-custom/50 font-bold uppercase block mb-1">
+                        Update Payment Status
+                      </label>
+                      <select
+                        value={order.paymentStatus}
+                        onChange={(e) =>
+                          handlePaymentChange(e.target.value as any)
+                        }
+                        className="text-xs bg-bg-secondary border border-border-custom rounded px-2 py-1 text-text-custom font-semibold outline-none focus:border-primary w-full"
+                      >
+                        <option value="unpaid">Unpaid</option>
+                        <option value="paid">Paid</option>
+                        <option value="refunded">Refunded</option>
+                      </select>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -375,28 +450,86 @@ export default function OrderDetailsPage() {
 
           {/* Workflow Status Actions */}
           <Card title="Workflow Adjustments">
-            <div className="flex flex-col gap-2 mt-2">
-              <Button
-                onClick={() => handleStatusChange("processing")}
-                variant={order.status === "processing" ? "primary" : "outline"}
-                className="w-full text-xs"
-              >
-                Mark Processing
-              </Button>
-              <Button
-                onClick={() => handleStatusChange("shipped")}
-                variant={order.status === "shipped" ? "primary" : "outline"}
-                className="w-full text-xs"
-              >
-                Mark Shipped
-              </Button>
-              <Button
-                onClick={() => handleStatusChange("delivered")}
-                variant={order.status === "delivered" ? "primary" : "outline"}
-                className="w-full text-xs"
-              >
-                Mark Delivered
-              </Button>
+            <div className="space-y-4 mt-2 text-xs">
+              <div>
+                <label className="text-3xs text-text-custom/50 font-bold uppercase block mb-1">
+                  Order Shipment Status
+                </label>
+                <select
+                  value={order.status}
+                  onChange={(e) =>
+                    handleOrderStatusChange(e.target.value as any)
+                  }
+                  className="text-xs bg-bg-secondary border border-border-custom rounded px-2 py-1 text-text-custom font-semibold outline-none focus:border-primary w-full"
+                >
+                  <option value="pending">Pending</option>
+                  <option value="processing">Processing</option>
+                  <option value="shipped">Shipped</option>
+                  <option value="delivered">Delivered</option>
+                  <option value="cancelled">Cancelled</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="text-3xs text-text-custom/50 font-bold uppercase block mb-1">
+                  Delivery Status
+                </label>
+                <select
+                  value={order.deliveryStatus || "pending"}
+                  onChange={(e) =>
+                    handleDeliveryStatusChange(e.target.value as any)
+                  }
+                  className="text-xs bg-bg-secondary border border-border-custom rounded px-2 py-1 text-text-custom font-semibold outline-none focus:border-primary w-full"
+                >
+                  <option value="pending">Pending</option>
+                  <option value="in_transit">In Transit</option>
+                  <option value="out_for_delivery">Out for Delivery</option>
+                  <option value="delivered">Delivered</option>
+                  <option value="returned">Returned</option>
+                  <option value="cancelled">Cancelled</option>
+                </select>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2 pt-2 border-t border-border-custom/50">
+                <div>
+                  <label className="text-3xs text-text-custom/50 font-bold uppercase block mb-1">
+                    Carrier
+                  </label>
+                  <input
+                    type="text"
+                    value={order.carrier || ""}
+                    onChange={(e) =>
+                      dispatch(
+                        updateOrderTracking({
+                          id: order.id,
+                          carrier: e.target.value,
+                        }),
+                      )
+                    }
+                    placeholder="e.g. FedEx"
+                    className="text-xs bg-bg-secondary border border-border-custom rounded px-2 py-1 text-text-custom outline-none focus:border-primary w-full"
+                  />
+                </div>
+                <div>
+                  <label className="text-3xs text-text-custom/50 font-bold uppercase block mb-1">
+                    Tracking ID
+                  </label>
+                  <input
+                    type="text"
+                    value={order.trackingId || ""}
+                    onChange={(e) =>
+                      dispatch(
+                        updateOrderTracking({
+                          id: order.id,
+                          trackingId: e.target.value,
+                        }),
+                      )
+                    }
+                    placeholder="e.g. TRK-12345"
+                    className="text-xs bg-bg-secondary border border-border-custom rounded px-2 py-1 text-text-custom outline-none focus:border-primary w-full"
+                  />
+                </div>
+              </div>
             </div>
           </Card>
         </div>

@@ -68,6 +68,7 @@ interface VideoUploadItem {
   fileSize: number;
   uploading: boolean;
   progress: number;
+  base64?: string;
 }
 
 const MOCK_IMAGES = [
@@ -236,9 +237,10 @@ export default function AddProductPage() {
     if (!file) return;
 
     const id = "video-upload";
+    const localUrl = URL.createObjectURL(file);
     const newItem: VideoUploadItem = {
       id,
-      videoUrl: "",
+      videoUrl: localUrl,
       fileSize: file.size,
       uploading: true,
       progress: 0,
@@ -246,23 +248,33 @@ export default function AddProductPage() {
 
     setVideo(newItem);
 
-    // Simulate progress
-    let prg = 0;
-    const interval = setInterval(() => {
-      prg += 10;
-      if (prg >= 100) {
-        clearInterval(interval);
-        setVideo({
-          id,
-          videoUrl: MOCK_VIDEO,
-          fileSize: file.size,
-          uploading: false,
-          progress: 100,
-        });
-      } else {
-        setVideo((prev) => (prev ? { ...prev, progress: prg } : null));
+    const reader = new FileReader();
+
+    reader.onprogress = (event) => {
+      if (event.lengthComputable) {
+        const percent = Math.round((event.loaded / event.total) * 100);
+        setVideo((prev) => (prev ? { ...prev, progress: percent } : null));
       }
-    }, 150);
+    };
+
+    reader.onload = () => {
+      const base64String = reader.result as string;
+      setVideo({
+        id,
+        videoUrl: localUrl,
+        fileSize: file.size,
+        uploading: false,
+        progress: 100,
+        base64: base64String,
+      });
+    };
+
+    reader.onerror = () => {
+      setApiError("Failed to read the video file.");
+      setVideo(null);
+    };
+
+    reader.readAsDataURL(file);
   };
 
   const removeImage = (id: string) => {
@@ -363,7 +375,7 @@ export default function AddProductPage() {
         videos: video
           ? [
               {
-                videoUrl: video.videoUrl,
+                videoUrl: video.base64 || video.videoUrl,
                 fileSize: video.fileSize,
               },
             ]

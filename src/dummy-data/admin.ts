@@ -290,6 +290,9 @@ export const initialOrders: Order[] = [
     paymentStatus: "paid",
     date: "2026-07-15T14:32:00Z",
     shippingMethod: "Express Shipping",
+    carrier: "FedEx Express",
+    trackingId: "TRK-FDX-902834",
+    deliveryStatus: "delivered",
   },
   {
     id: "ORD-9833",
@@ -301,6 +304,9 @@ export const initialOrders: Order[] = [
     paymentStatus: "paid",
     date: "2026-07-18T09:15:00Z",
     shippingMethod: "Standard Shipping",
+    carrier: "DHL eCommerce",
+    trackingId: "TRK-DHL-109283",
+    deliveryStatus: "in_transit",
   },
   {
     id: "ORD-9834",
@@ -312,6 +318,9 @@ export const initialOrders: Order[] = [
     paymentStatus: "unpaid",
     date: "2026-07-19T18:45:00Z",
     shippingMethod: "Standard Shipping",
+    carrier: "DHL eCommerce",
+    trackingId: "TRK-DHL-552438",
+    deliveryStatus: "pending",
   },
   {
     id: "ORD-9835",
@@ -323,6 +332,9 @@ export const initialOrders: Order[] = [
     paymentStatus: "paid",
     date: "2026-07-17T11:24:00Z",
     shippingMethod: "Next-Day Courier",
+    carrier: "UPS Premium",
+    trackingId: "TRK-UPS-773829",
+    deliveryStatus: "out_for_delivery",
   },
   {
     id: "ORD-9836",
@@ -334,6 +346,9 @@ export const initialOrders: Order[] = [
     paymentStatus: "refunded",
     date: "2026-07-10T16:00:00Z",
     shippingMethod: "Standard Shipping",
+    carrier: "DHL eCommerce",
+    trackingId: "TRK-DHL-112233",
+    deliveryStatus: "cancelled",
   },
   {
     id: "ORD-9837",
@@ -345,6 +360,9 @@ export const initialOrders: Order[] = [
     paymentStatus: "paid",
     date: "2026-07-12T10:10:00Z",
     shippingMethod: "Express Shipping",
+    carrier: "FedEx Express",
+    trackingId: "TRK-FDX-445566",
+    deliveryStatus: "delivered",
   },
 ];
 

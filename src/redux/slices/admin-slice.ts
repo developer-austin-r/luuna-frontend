@@ -196,6 +196,28 @@ const adminSlice = createSlice({
         state.orders[index].paymentStatus = action.payload.paymentStatus;
       }
     },
+    updateOrderTracking: (
+      state,
+      action: PayloadAction<{
+        id: string;
+        trackingId?: string;
+        carrier?: string;
+        deliveryStatus?: Order["deliveryStatus"];
+      }>,
+    ) => {
+      const index = state.orders.findIndex((o) => o.id === action.payload.id);
+      if (index !== -1 && state.orders[index]) {
+        if (action.payload.trackingId !== undefined) {
+          state.orders[index].trackingId = action.payload.trackingId;
+        }
+        if (action.payload.carrier !== undefined) {
+          state.orders[index].carrier = action.payload.carrier;
+        }
+        if (action.payload.deliveryStatus !== undefined) {
+          state.orders[index].deliveryStatus = action.payload.deliveryStatus;
+        }
+      }
+    },
 
     // Inventory
     updateInventoryStock: (
@@ -317,6 +339,7 @@ export const {
   deleteCategory,
   updateOrderStatus,
   updateOrderPaymentStatus,
+  updateOrderTracking,
   updateInventoryStock,
   setCoupons,
   addCoupon,

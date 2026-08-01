@@ -13,7 +13,6 @@ import {
   ShoppingBag,
   ShoppingCart,
   Ticket,
-  Truck,
   Users,
   X,
 } from "lucide-react";
@@ -43,7 +42,6 @@ export const menuItems: MenuItem[] = [
   { name: "Inventory", href: "/admin/inventory", icon: Layers },
   { name: "Coupons", href: "/admin/coupons", icon: Ticket },
   { name: "Orders", href: "/admin/orders", icon: ShoppingCart },
-  { name: "Shipping", href: "/admin/shipping", icon: Truck },
   { name: "Reports", href: "/admin/reports", icon: FileText },
   { name: "Activity Logs", href: "/admin/activity-logs", icon: History },
   { name: "Settings", href: "/admin/settings", icon: Settings },
