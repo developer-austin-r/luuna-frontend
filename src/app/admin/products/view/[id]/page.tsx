@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-
 import { useParams, useRouter } from "next/navigation";
 import {
   ArrowLeft,
@@ -22,7 +21,6 @@ import {
 } from "@/components/admin";
 import { useAppSelector } from "@/redux/hooks";
 import { apiClient } from "@/services/api-client";
-
 
 export default function ViewProductPage() {
   const params = useParams();
