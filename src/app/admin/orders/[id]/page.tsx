@@ -30,6 +30,7 @@ import {
   updateOrderStatus,
   updateOrderTracking,
 } from "@/redux/slices/admin-slice";
+import type { Order } from "@/types/admin";
 
 interface RefundFormValues {
   refundAmount: number;
