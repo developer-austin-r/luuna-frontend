@@ -1,6 +1,8 @@
-import React from "react";
+import React, { useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { useAppDispatch, useAppSelector } from "@/redux/hooks";
+import { logoutThunk } from "@/redux/slices/auth-slice";
 import {
   Compass,
   FileText,
@@ -15,7 +17,10 @@ import {
   Truck,
   Users,
   X,
+  LogOut,
 } from "lucide-react";
+import { Modal } from "./Modal";
+import { Button } from "./Button";
 
 interface SidebarProps {
   isOpen: boolean;
@@ -44,12 +49,21 @@ export const menuItems: MenuItem[] = [
 
 export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
   const pathname = usePathname();
+  const router = useRouter();
+  const dispatch = useAppDispatch();
+  const { user } = useAppSelector((state) => state.auth);
+  const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
 
   const handleLinkClick = () => {
     // Close sidebar on mobile/tablet after click
     if (window.innerWidth < 1024) {
       onClose();
     }
+  };
+
+  const handleLogout = async () => {
+    await dispatch(logoutThunk());
+    router.push("/login");
   };
 
   const isLinkActive = (href: string) => {
@@ -123,19 +137,49 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
 
         {/* Sidebar Footer */}
         <div className="p-4 border-t border-border-custom bg-bg-secondary/10 flex items-center gap-3">
-          <div className="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center font-bold text-xs">
-            AL
+          <div className="w-8 h-8 shrink-0 rounded-full bg-primary text-white flex items-center justify-center font-bold text-xs uppercase">
+            {user?.email?.[0] ?? "U"}
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-xs font-bold text-text-custom truncate">
-              Alex Lauren
+              {user?.email ?? "User"}
             </p>
             <p className="text-2xs text-text-custom/50 truncate">
-              Store Manager
+              {user?.role ?? "Admin"}
             </p>
           </div>
+          <button
+            onClick={() => setIsLogoutModalOpen(true)}
+            className="p-1.5 rounded-lg text-text-custom/50 hover:text-red-500 hover:bg-red-50 transition-colors cursor-pointer"
+            title="Log out"
+          >
+            <LogOut className="w-4 h-4" />
+          </button>
         </div>
       </aside>
+
+      {/* Logout Confirmation Modal */}
+      <Modal
+        isOpen={isLogoutModalOpen}
+        onClose={() => setIsLogoutModalOpen(false)}
+        title="Confirm Logout"
+        size="sm"
+        footer={
+          <>
+            <Button
+              variant="secondary"
+              onClick={() => setIsLogoutModalOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button variant="danger" onClick={handleLogout}>
+              Log out
+            </Button>
+          </>
+        }
+      >
+        <p>Are you sure you want to log out of your admin session?</p>
+      </Modal>
     </>
   );
 };
