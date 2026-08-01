@@ -1,9 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
+import { useRouter } from "next/navigation";
 import { Eye, EyeOff, Lock, Mail, ShieldCheck } from "lucide-react";
+
 import { useAppDispatch, useAppSelector } from "@/redux/hooks";
 import { loginThunk } from "@/redux/slices/auth-slice";
 

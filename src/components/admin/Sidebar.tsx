@@ -1,8 +1,6 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useAppDispatch, useAppSelector } from "@/redux/hooks";
-import { logoutThunk } from "@/redux/slices/auth-slice";
 import {
   Compass,
   FileText,
@@ -10,6 +8,7 @@ import {
   History,
   Layers,
   LayoutDashboard,
+  LogOut,
   Settings,
   ShoppingBag,
   ShoppingCart,
@@ -17,10 +16,13 @@ import {
   Truck,
   Users,
   X,
-  LogOut,
 } from "lucide-react";
-import { Modal } from "./Modal";
+
+import { useAppDispatch, useAppSelector } from "@/redux/hooks";
+import { logoutThunk } from "@/redux/slices/auth-slice";
+
 import { Button } from "./Button";
+import { Modal } from "./Modal";
 
 interface SidebarProps {
   isOpen: boolean;

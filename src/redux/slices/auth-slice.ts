@@ -6,7 +6,7 @@ import {
   type PayloadAction,
 } from "@reduxjs/toolkit";
 
-import { loginApi, logoutApi, type AuthUser } from "@/services/auth";
+import { type AuthUser, loginApi, logoutApi } from "@/services/auth";
 
 // ---------------------------------------------------------------------------
 // State
