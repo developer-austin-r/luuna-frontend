@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
+
 import { useParams, useRouter } from "next/navigation";
 import {
   ArrowLeft,
@@ -21,6 +22,7 @@ import {
 } from "@/components/admin";
 import { useAppSelector } from "@/redux/hooks";
 import { apiClient } from "@/services/api-client";
+
 
 export default function ViewProductPage() {
   const params = useParams();
@@ -51,7 +53,8 @@ export default function ViewProductPage() {
             id: p.id,
             name: p.name,
             sku: p.sku,
-            category: p.productCategories?.[0]?.category?.name || "Uncategorized",
+            category:
+              p.productCategories?.[0]?.category?.name || "Uncategorized",
             price: Number(p.basePrice),
             salePrice: p.discountPrice ? Number(p.discountPrice) : undefined,
             stock: p.stock,
