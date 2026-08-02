@@ -217,10 +217,6 @@ export default function InventoryPage() {
       ),
     },
     {
-      key: "warehouse",
-      label: "Warehouse",
-    },
-    {
       key: "stock",
       label: "Current Stock",
       render: (val) => (

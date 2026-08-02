@@ -6,7 +6,6 @@ import {
   type InventoryItem,
   type Order,
   type Product,
-  type ReportItem,
   type ShippingMethod,
 } from "@/types/admin";
 
@@ -524,64 +523,5 @@ export const initialActivityLogs: ActivityLog[] = [
     module: "Orders",
     timestamp: "2026-07-19T18:45:00Z",
     status: "success",
-  },
-];
-
-export const mockReportData: ReportItem[] = [
-  {
-    id: "rep-1",
-    date: "2026-07-13",
-    sales: 450,
-    orders: 3,
-    revenue: 890,
-    expenses: 310,
-  },
-  {
-    id: "rep-2",
-    date: "2026-07-14",
-    sales: 620,
-    orders: 4,
-    revenue: 1200,
-    expenses: 400,
-  },
-  {
-    id: "rep-3",
-    date: "2026-07-15",
-    sales: 980,
-    orders: 6,
-    revenue: 1980,
-    expenses: 620,
-  },
-  {
-    id: "rep-4",
-    date: "2026-07-16",
-    sales: 510,
-    orders: 3,
-    revenue: 1050,
-    expenses: 350,
-  },
-  {
-    id: "rep-5",
-    date: "2026-07-17",
-    sales: 780,
-    orders: 5,
-    revenue: 1540,
-    expenses: 510,
-  },
-  {
-    id: "rep-6",
-    date: "2026-07-18",
-    sales: 1100,
-    orders: 7,
-    revenue: 2200,
-    expenses: 730,
-  },
-  {
-    id: "rep-7",
-    date: "2026-07-19",
-    sales: 1450,
-    orders: 9,
-    revenue: 2900,
-    expenses: 950,
   },
 ];

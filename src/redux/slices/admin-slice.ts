@@ -6,7 +6,6 @@ import {
   initialCustomers,
   initialOrders,
   initialShippingMethods,
-  mockReportData,
 } from "@/dummy-data/admin";
 import {
   type ActivityLog,
@@ -50,7 +49,7 @@ const initialState: AdminState = {
   coupons: initialCoupons,
   shippingMethods: initialShippingMethods,
   activityLogs: initialActivityLogs,
-  reportData: mockReportData,
+  reportData: [],
   settings: {
     storeName: "Luuna Luxury E-Commerce",
     storeEmail: "admin@luuna.com",
