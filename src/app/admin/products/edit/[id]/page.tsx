@@ -266,6 +266,11 @@ export default function EditProductPage() {
     const file = e.target.files[0];
     if (!file) return;
 
+    if (file.size > 10 * 1024 * 1024) {
+      setApiError("Video size must be 10MB or less.");
+      return;
+    }
+
     const videoId = "video-upload";
     const localUrl = URL.createObjectURL(file);
     const newItem: VideoUploadItem = {
