@@ -83,7 +83,6 @@ export default function DashboardPage() {
   const recentOrders = orders.slice(0, 5);
   const recentCustomers = customers.slice(0, 4);
   const lowStockProducts = products.filter((p) => p.stock <= 10).slice(0, 4);
-  const recentActivities = activityLogs.slice(0, 5);
 
   const orderColumns: Column<Order>[] = [
     {
@@ -246,8 +245,8 @@ export default function DashboardPage() {
         </Card>
       </div>
 
-      {/* Stock warnings and activity log grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      {/* Stock warnings */}
+      <div className="w-full">
         {/* Low Stock Warn panel */}
         <Card
           title="Low Stock Items Warning"
@@ -298,54 +297,6 @@ export default function DashboardPage() {
                 All items are sufficiently stocked.
               </div>
             )}
-          </div>
-        </Card>
-
-        {/* Recent Activities Audit Feed */}
-        <Card
-          title="Recent Store Audits"
-          extra={
-            <Link
-              href="/admin/activity-logs"
-              className="text-xs font-semibold text-primary hover:text-primary-hover transition-colors"
-            >
-              Full Logs
-            </Link>
-          }
-        >
-          <div className="space-y-4 mt-2 font-medium">
-            {recentActivities.map((log) => (
-              <div
-                key={log.id}
-                className="flex gap-3 text-xs items-start border-b border-border-custom/30 last:border-0 pb-3.5 last:pb-0"
-              >
-                <div className="mt-1 shrink-0">
-                  <span
-                    className={`block w-2.5 h-2.5 rounded-full ${
-                      log.status === "success"
-                        ? "bg-emerald-500"
-                        : log.status === "failed"
-                          ? "bg-red-500"
-                          : "bg-amber-500"
-                    }`}
-                  />
-                </div>
-                <div className="flex-1 space-y-0.5">
-                  <p className="text-xs text-text-custom/90 leading-tight">
-                    {log.action}
-                  </p>
-                  <div className="flex gap-2 text-3xs text-text-custom/40 font-semibold uppercase tracking-wider">
-                    <span>{log.user}</span>
-                    <span>•</span>
-                    <span>
-                      {mounted
-                        ? new Date(log.timestamp).toLocaleTimeString()
-                        : ""}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            ))}
           </div>
         </Card>
       </div>
