@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useParams, useRouter } from "next/navigation";
 import {
@@ -23,13 +23,9 @@ import {
   Select,
   StatusBadge,
 } from "@/components/admin";
-import { useAppDispatch, useAppSelector } from "@/redux/hooks";
-import {
-  addActivityLog,
-  updateOrderPaymentStatus,
-  updateOrderStatus,
-  updateOrderTracking,
-} from "@/redux/slices/admin-slice";
+import { useAppDispatch } from "@/redux/hooks";
+import { addActivityLog } from "@/redux/slices/admin-slice";
+import { apiClient } from "@/services/api-client";
 import type { Order } from "@/types/admin";
 
 interface RefundFormValues {
@@ -43,9 +39,9 @@ export default function OrderDetailsPage() {
   const dispatch = useAppDispatch();
   const id = params.id as string;
 
-  // State selectors
-  const orders = useAppSelector((state) => state.admin.orders);
-  const order = orders.find((o) => o.id === id);
+  const [order, setOrder] = useState<Order | null>(null);
+  const [orderItems, setOrderItems] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
   // Modal Toggles
   const [refundModalOpen, setRefundModalOpen] = useState(false);
@@ -55,14 +51,74 @@ export default function OrderDetailsPage() {
   const {
     register,
     handleSubmit,
-    reset,
+    setValue,
     formState: { errors },
   } = useForm<RefundFormValues>({
     defaultValues: {
-      refundAmount: order?.total || 0,
+      refundAmount: 0,
       reason: "Customer Return",
     },
   });
+
+  const fetchOrderDetails = async () => {
+    try {
+      setLoading(true);
+      const res = await apiClient<{ data: any }>(`/orders/${id}`);
+      const o = res?.data;
+      if (o) {
+        const mappedOrder: Order = {
+          id: o.id,
+          customerName: o.user?.name || "Anonymous",
+          email: o.user?.email || "",
+          itemsCount:
+            o.orderItems?.reduce(
+              (acc: number, item: any) => acc + item.quantity,
+              0,
+            ) || 0,
+          total: Number(o.totalAmount),
+          status: o.orderStatus.toLowerCase(),
+          paymentStatus: o.paymentStatus.toLowerCase(),
+          date: o.orderedAt,
+          shippingMethod: o.shipment?.[0]
+            ? "Express Shipping"
+            : "Standard Shipping",
+          trackingId: o.shipment?.[0]?.trackingNumber || "",
+          carrier: o.shipment?.[0]?.courierName || "",
+          deliveryStatus:
+            o.shipment?.[0]?.shipmentStatus?.toLowerCase() || "pending",
+        };
+
+        const mappedItems = (o.orderItems || []).map((item: any) => ({
+          id: item.id,
+          name: item.product?.name || "Product Listing",
+          sku: item.product?.sku || "N/A",
+          price: Number(item.price),
+          quantity: item.quantity,
+          total: Number(item.total),
+        }));
+
+        setOrder(mappedOrder);
+        setOrderItems(mappedItems);
+        setValue("refundAmount", Number(o.totalAmount));
+      }
+    } catch (err) {
+      console.error("Error loading order details:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchOrderDetails();
+  }, [id, setValue]);
+
+  if (loading) {
+    return (
+      <div className="py-12 text-center text-sm font-semibold text-text-custom/50">
+        Loading order details...
+      </div>
+    );
+  }
 
   if (!order) {
     return (
@@ -75,7 +131,7 @@ export default function OrderDetailsPage() {
         />
         <Card className="text-center py-12">
           <p className="text-sm font-semibold text-text-custom/60">
-            Order file not found.
+            Order not found.
           </p>
           <Button onClick={() => router.push("/admin/orders")} className="mt-4">
             Back to Orders
@@ -85,23 +141,10 @@ export default function OrderDetailsPage() {
     );
   }
 
-  // Mock order items list
-  const orderItems = [
-    {
-      id: "item-1",
-      name: "Classic Leather Tote Bag",
-      sku: "BG-LTH-01",
-      price: 159.0,
-      quantity: 2,
-      total: 318.0,
-    },
-  ];
-
   // Pricing calculations
   const subtotal = orderItems.reduce((sum, item) => sum + item.total, 0);
   const tax = subtotal * 0.08;
-  const shippingCost =
-    order.shippingMethod === "Express Shipping" ? 14.99 : 5.99;
+  const shippingCost = 14.99; // Standard seeded flat shipping
   const total = subtotal + tax + shippingCost;
 
   // Workflow Progress Timeline
@@ -124,98 +167,143 @@ export default function OrderDetailsPage() {
     },
   ];
 
-  const handleStatusChange = (status: typeof order.status) => {
-    dispatch(updateOrderStatus({ id: order.id, status }));
-    dispatch(
-      addActivityLog({
-        user: "Admin Sarah",
-        action: `Set shipment progress of order ${order.id} to "${status}"`,
-        module: "Orders",
-        status: "success",
-      }),
-    );
+  const handlePaymentChange = async (paymentStatus: Order["paymentStatus"]) => {
+    try {
+      const dbStatusMap: Record<string, string> = {
+        unpaid: "PENDING",
+        paid: "PAID",
+        refunded: "REFUNDED",
+      };
+      await apiClient(`/orders/${order.id}`, {
+        method: "PATCH",
+        body: JSON.stringify({
+          paymentStatus: dbStatusMap[paymentStatus] || "PENDING",
+        }),
+      });
+      await fetchOrderDetails();
+      dispatch(
+        addActivityLog({
+          user: "Admin Sarah",
+          action: `Changed settlement status of order ${order.id} to "${paymentStatus}"`,
+          module: "Orders",
+          status: "success",
+        }),
+      );
+    } catch (err) {
+      console.error(err);
+      alert("Failed to update payment status.");
+    }
   };
 
-  const handlePaymentChange = (paymentStatus: Order["paymentStatus"]) => {
-    dispatch(updateOrderPaymentStatus({ id: order.id, paymentStatus }));
-    dispatch(
-      addActivityLog({
-        user: "Admin Sarah",
-        action: `Changed settlement status of order ${order.id} to "${paymentStatus}"`,
-        module: "Orders",
-        status: "success",
-      }),
-    );
+  const handleOrderStatusChange = async (status: Order["status"]) => {
+    try {
+      const dbStatusMap: Record<string, string> = {
+        pending: "PENDING",
+        processing: "PROCESSING",
+        shipped: "SHIPPED",
+        delivered: "DELIVERED",
+        cancelled: "CANCELLED",
+      };
+      await apiClient(`/orders/${order.id}`, {
+        method: "PATCH",
+        body: JSON.stringify({
+          orderStatus: dbStatusMap[status] || "PENDING",
+        }),
+      });
+      await fetchOrderDetails();
+      dispatch(
+        addActivityLog({
+          user: "Admin Sarah",
+          action: `Changed shipment state of order ${order.id} to "${status}"`,
+          module: "Orders",
+          status: "success",
+        }),
+      );
+    } catch (err) {
+      console.error(err);
+      alert("Failed to update order status.");
+    }
   };
 
-  const handleOrderStatusChange = (status: Order["status"]) => {
-    dispatch(updateOrderStatus({ id: order.id, status }));
-    // Automatically adjust deliveryStatus to stay reasonably in sync
-    let deliveryStatus = order.deliveryStatus;
-    if (status === "delivered") deliveryStatus = "delivered";
-    else if (status === "shipped") deliveryStatus = "in_transit";
-    else if (status === "cancelled") deliveryStatus = "cancelled";
-    else if (status === "pending") deliveryStatus = "pending";
-
-    dispatch(updateOrderTracking({ id: order.id, deliveryStatus }));
-
-    dispatch(
-      addActivityLog({
-        user: "Admin Sarah",
-        action: `Changed shipment state of order ${order.id} to "${status}"`,
-        module: "Orders",
-        status: "success",
-      }),
-    );
-  };
-
-  const handleDeliveryStatusChange = (
+  const handleDeliveryStatusChange = async (
     deliveryStatus: Order["deliveryStatus"],
   ) => {
-    dispatch(updateOrderTracking({ id: order.id, deliveryStatus }));
-    // Also align order.status if appropriate
-    let orderStatus = order.status;
-    if (deliveryStatus === "delivered") orderStatus = "delivered";
-    else if (
-      deliveryStatus === "in_transit" ||
-      deliveryStatus === "out_for_delivery"
-    )
-      orderStatus = "shipped";
-    else if (deliveryStatus === "pending") orderStatus = "pending";
-    else if (deliveryStatus === "cancelled" || deliveryStatus === "returned")
-      orderStatus = "cancelled";
-
-    if (orderStatus !== order.status) {
-      dispatch(updateOrderStatus({ id: order.id, status: orderStatus }));
+    try {
+      const dbStatusMap: Record<string, string> = {
+        pending: "PENDING",
+        in_transit: "IN_TRANSIT",
+        out_for_delivery: "SHIPPED",
+        delivered: "DELIVERED",
+        returned: "RETURNED",
+        cancelled: "RETURNED",
+      };
+      await apiClient(`/orders/${order.id}`, {
+        method: "PATCH",
+        body: JSON.stringify({
+          shipmentStatus: dbStatusMap[deliveryStatus || "pending"] || "PENDING",
+        }),
+      });
+      await fetchOrderDetails();
+      dispatch(
+        addActivityLog({
+          user: "Admin Sarah",
+          action: `Changed delivery status of order ${order.id} to "${deliveryStatus}"`,
+          module: "Orders",
+          status: "success",
+        }),
+      );
+    } catch (err) {
+      console.error(err);
+      alert("Failed to update delivery status.");
     }
-
-    dispatch(
-      addActivityLog({
-        user: "Admin Sarah",
-        action: `Changed delivery status of order ${order.id} to "${deliveryStatus}"`,
-        module: "Orders",
-        status: "success",
-      }),
-    );
   };
 
-  const handleRefundSubmit = (data: RefundFormValues) => {
-    dispatch(
-      updateOrderPaymentStatus({ id: order.id, paymentStatus: "refunded" }),
-    );
-    dispatch(updateOrderStatus({ id: order.id, status: "cancelled" }));
-    dispatch(
-      addActivityLog({
-        user: "Admin Sarah",
-        action: `Issued refund of $${data.refundAmount} on order ${order.id}. Reason: "${data.reason}"`,
-        module: "Orders",
-        status: "success",
-      }),
-    );
-    setRefundModalOpen(false);
-    alert(
-      `Refund of $${data.refundAmount} has been processed for ${order.customerName}.`,
-    );
+  const handleCarrierOrTrackingUpdate = async (fields: {
+    carrier?: string;
+    trackingId?: string;
+  }) => {
+    try {
+      await apiClient(`/orders/${order.id}`, {
+        method: "PATCH",
+        body: JSON.stringify({
+          ...(fields.carrier !== undefined && { courierName: fields.carrier }),
+          ...(fields.trackingId !== undefined && {
+            trackingNumber: fields.trackingId,
+          }),
+        }),
+      });
+      // Do not refetch immediately to prevent input focus loss, let client hold state or handle debounce
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleRefundSubmit = async (data: RefundFormValues) => {
+    try {
+      await apiClient(`/orders/${order.id}`, {
+        method: "PATCH",
+        body: JSON.stringify({
+          paymentStatus: "REFUNDED",
+          orderStatus: "CANCELLED",
+        }),
+      });
+      await fetchOrderDetails();
+      dispatch(
+        addActivityLog({
+          user: "Admin Sarah",
+          action: `Issued refund of $${data.refundAmount} on order ${order.id}. Reason: "${data.reason}"`,
+          module: "Orders",
+          status: "success",
+        }),
+      );
+      setRefundModalOpen(false);
+      alert(
+        `Refund of $${data.refundAmount} has been processed for ${order.customerName}.`,
+      );
+    } catch (err) {
+      console.error(err);
+      alert("Failed to process refund.");
+    }
   };
 
   const handlePrint = () => {
@@ -239,7 +327,7 @@ export default function OrderDetailsPage() {
             <Breadcrumb
               items={[
                 { label: "Orders", href: "/admin/orders" },
-                { label: order.id },
+                { label: `ORD-${order.id.substring(0, 4).toUpperCase()}` },
               ]}
             />
             <h1 className="text-2xl font-bold text-text-custom mt-1">
@@ -497,14 +585,9 @@ export default function OrderDetailsPage() {
                   </label>
                   <input
                     type="text"
-                    value={order.carrier || ""}
-                    onChange={(e) =>
-                      dispatch(
-                        updateOrderTracking({
-                          id: order.id,
-                          carrier: e.target.value,
-                        }),
-                      )
+                    defaultValue={order.carrier || ""}
+                    onBlur={(e) =>
+                      handleCarrierOrTrackingUpdate({ carrier: e.target.value })
                     }
                     placeholder="e.g. FedEx"
                     className="text-xs bg-bg-secondary border border-border-custom rounded px-2 py-1 text-text-custom outline-none focus:border-primary w-full"
@@ -516,14 +599,11 @@ export default function OrderDetailsPage() {
                   </label>
                   <input
                     type="text"
-                    value={order.trackingId || ""}
-                    onChange={(e) =>
-                      dispatch(
-                        updateOrderTracking({
-                          id: order.id,
-                          trackingId: e.target.value,
-                        }),
-                      )
+                    defaultValue={order.trackingId || ""}
+                    onBlur={(e) =>
+                      handleCarrierOrTrackingUpdate({
+                        trackingId: e.target.value,
+                      })
                     }
                     placeholder="e.g. TRK-12345"
                     className="text-xs bg-bg-secondary border border-border-custom rounded px-2 py-1 text-text-custom outline-none focus:border-primary w-full"
@@ -576,7 +656,7 @@ export default function OrderDetailsPage() {
                 INVOICE
               </span>
               <p className="text-3xs font-mono text-text-custom/50">
-                #INV-{order.id}
+                #INV-{order.id.substring(0, 8)}
               </p>
             </div>
           </div>
