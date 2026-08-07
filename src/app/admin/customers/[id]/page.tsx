@@ -107,24 +107,6 @@ export default function CustomerDetailsPage() {
     },
   ];
 
-  // Mock Reviews
-  const reviews = [
-    {
-      id: "r-1",
-      product: "Classic Leather Tote Bag",
-      rating: 5,
-      comment: "Outstanding quality, exactly what I wanted!",
-      date: "2026-06-12",
-    },
-    {
-      id: "r-2",
-      product: "Minimalist Gold Ring",
-      rating: 4,
-      comment: "Very beautiful ring, but fits slightly loose.",
-      date: "2026-05-30",
-    },
-  ];
-
   // Mock Activities
   const timeline = [
     {
@@ -346,7 +328,6 @@ export default function CustomerDetailsPage() {
                     count: customerOrders.length,
                   },
                   { id: "wishlist", label: "Wishlist", count: wishlist.length },
-                  { id: "reviews", label: "Reviews", count: reviews.length },
                   { id: "timeline", label: "Activity Feed" },
                 ]}
                 activeTab={activeTab}
@@ -365,43 +346,6 @@ export default function CustomerDetailsPage() {
             {activeTab === "wishlist" && (
               <div className="mt-4">
                 <DataTable columns={wishlistColumns as any} data={wishlist} />
-              </div>
-            )}
-
-            {/* Reviews Tab */}
-            {activeTab === "reviews" && (
-              <div className="mt-4 space-y-4">
-                {reviews.map((rev) => (
-                  <div
-                    key={rev.id}
-                    className="p-4 bg-bg-secondary rounded-lg border border-border-custom space-y-1.5"
-                  >
-                    <div className="flex items-center justify-between">
-                      <p className="font-bold text-xs text-text-custom">
-                        {rev.product}
-                      </p>
-                      <div className="flex items-center gap-0.5 text-amber-500">
-                        {Array.from({ length: 5 }).map((_, idx) => (
-                          <Star
-                            key={idx}
-                            className={`w-3.5 h-3.5 fill-current ${
-                              idx < rev.rating ? "opacity-100" : "opacity-20"
-                            }`}
-                          />
-                        ))}
-                      </div>
-                    </div>
-                    <p className="text-xs text-text-custom/85 italic">
-                      "{rev.comment}"
-                    </p>
-                    <span
-                      className="text-3xs text-text-custom/40 font-bold block mt-1"
-                      suppressHydrationWarning
-                    >
-                      Submitted on {new Date(rev.date).toLocaleDateString()}
-                    </span>
-                  </div>
-                ))}
               </div>
             )}
 
