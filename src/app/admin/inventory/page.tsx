@@ -48,7 +48,11 @@ interface StockHistoryLog {
 
 export default function InventoryPage() {
   const dispatch = useAppDispatch();
-  const { success: toastSuccess, info: toastInfo } = useToast();
+  const {
+    success: toastSuccess,
+    info: toastInfo,
+    error: toastError,
+  } = useToast();
   const inventory = useAppSelector((state) => state.admin.inventory);
   const [loading, setLoading] = useState(true);
 
@@ -130,9 +134,50 @@ export default function InventoryPage() {
     toastInfo(
       "Exporting warehouse stock levels as CSV. The download will start shortly.",
     );
+
+    if (!inventory || inventory.length === 0) {
+      toastError("No inventory data available to export.");
+      return;
+    }
+
+    const headers = [
+      "SKU Code",
+      "Product Details",
+      "Current Stock",
+      "Reserved Units",
+      "Available to Sell",
+      "Status",
+    ];
+
+    const rows = inventory.map((item) => [
+      `"${item.sku.replace(/"/g, '""')}"`,
+      `"${item.productName.replace(/"/g, '""')}"`,
+      item.stock,
+      item.reserved,
+      item.available,
+      `"${item.status.replace(/"/g, '""')}"`,
+    ]);
+
+    const csvString = [
+      headers.join(","),
+      ...rows.map((row) => row.join(",")),
+    ].join("\n");
+    const blob = new Blob([csvString], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute(
+      "download",
+      `inventory_stock_sheet_${new Date().toISOString().split("T")[0]}.csv`,
+    );
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
   };
 
-  const onSubmitAdjustment = (data: AdjustmentFormValues) => {
+  const onSubmitAdjustment = async (data: AdjustmentFormValues) => {
     if (!selectedItem) return;
 
     let finalStock = selectedItem.stock;
@@ -149,42 +194,60 @@ export default function InventoryPage() {
       changeLabel = `Set to ${data.quantity}`;
     }
 
-    // Dispatch update
-    dispatch(
-      updateInventoryStock({
-        id: selectedItem.id,
-        stock: finalStock,
-        reserved: data.reserved,
+    try {
+      const productId = selectedItem.id.startsWith("inv-")
+        ? selectedItem.id.replace("inv-", "")
+        : selectedItem.id;
+
+      await apiClient(`/products/${productId}/inventory`, {
+        method: "PUT",
+        body: JSON.stringify({
+          totalStock: finalStock,
+          reservedStock: data.reserved,
+          availableStock: finalStock - data.reserved,
+        }),
+      });
+
+      // Dispatch update
+      dispatch(
+        updateInventoryStock({
+          id: selectedItem.id,
+          stock: finalStock,
+          reserved: data.reserved,
+          warehouse: data.warehouse,
+        }),
+      );
+
+      dispatch(
+        addActivityLog({
+          user: "Admin Sarah",
+          action: `Adjusted inventory of ${selectedItem.productName} (${changeLabel})`,
+          module: "Inventory",
+          status: "success",
+        }),
+      );
+
+      // Add to local history list
+      const newLog: StockHistoryLog = {
+        id: `h-${Date.now()}`,
+        date: new Date().toISOString(),
+        productName: selectedItem.productName,
+        sku: selectedItem.sku,
+        change: changeLabel,
         warehouse: data.warehouse,
-      }),
-    );
-
-    dispatch(
-      addActivityLog({
+        reason: data.reason || "Manual inventory adjustment",
         user: "Admin Sarah",
-        action: `Adjusted inventory of ${selectedItem.productName} (${changeLabel})`,
-        module: "Inventory",
-        status: "success",
-      }),
-    );
+      };
+      setHistoryLogs((prev) => [newLog, ...prev]);
 
-    // Add to local history list
-    const newLog: StockHistoryLog = {
-      id: `h-${Date.now()}`,
-      date: new Date().toISOString(),
-      productName: selectedItem.productName,
-      sku: selectedItem.sku,
-      change: changeLabel,
-      warehouse: data.warehouse,
-      reason: data.reason || "Manual inventory adjustment",
-      user: "Admin Sarah",
-    };
-    setHistoryLogs((prev) => [newLog, ...prev]);
-
-    setAdjustmentModalOpen(false);
-    toastSuccess(
-      `Stock levels adjusted successfully for ${selectedItem.productName}.`,
-    );
+      setAdjustmentModalOpen(false);
+      toastSuccess(
+        `Stock levels adjusted successfully for ${selectedItem.productName}.`,
+      );
+    } catch (err: any) {
+      console.error(err);
+      toastError(err.message || "Failed to adjust stock levels.");
+    }
   };
 
   // Filter

@@ -2,15 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import {
-  Clock,
-  Compass,
-  Download,
-  Eye,
-  MapPin,
-  Trash,
-  Truck,
-} from "lucide-react";
+import { Clock, Compass, Eye, MapPin, Trash, Truck } from "lucide-react";
 
 import {
   ActionMenu,
@@ -168,12 +160,6 @@ export default function OrdersPage() {
   const handleViewTrackingTimeline = (order: Order) => {
     setSelectedOrder(order);
     setTrackerModalOpen(true);
-  };
-
-  const handleExport = () => {
-    alert(
-      "Exporting order transactions ledger as CSV. The download will start shortly.",
-    );
   };
 
   // Filter & Paginate
@@ -338,14 +324,6 @@ export default function OrdersPage() {
             Orders Registry
           </h1>
         </div>
-        <Button
-          onClick={handleExport}
-          variant="outline"
-          className="flex items-center gap-1.5 shrink-0 self-start sm:self-auto"
-        >
-          <Download className="w-4 h-4" />
-          Export ledger
-        </Button>
       </div>
 
       {/* Main card list */}
