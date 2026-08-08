@@ -3,12 +3,14 @@ export interface Product {
   name: string;
   sku: string;
   category: string;
+  categoryId?: string;
   price: number;
   salePrice?: number | undefined;
   stock: number;
   reservedStock?: number;
   availableStock?: number;
   status: "active" | "draft" | "out_of_stock";
+  statusId?: string;
   image: string;
   description?: string | undefined;
 }

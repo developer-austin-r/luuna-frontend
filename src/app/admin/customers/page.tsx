@@ -3,14 +3,7 @@
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useRouter } from "next/navigation";
-import {
-  Download,
-  Edit,
-  Eye,
-  ShieldAlert,
-  Trash,
-  UserCheck,
-} from "lucide-react";
+import { Edit, Eye, ShieldAlert, Trash, UserCheck } from "lucide-react";
 
 import {
   ActionMenu,
@@ -89,12 +82,6 @@ export default function CustomersPage() {
     setDeleteDialogOpen(false);
   };
 
-  const handleExport = () => {
-    alert(
-      "Exporting customer registry as CSV document. The download will start shortly.",
-    );
-  };
-
   // Filter, Sort & Paginate
   const filteredCustomers = customers
     .filter((c) => {
@@ -134,7 +121,6 @@ export default function CustomersPage() {
     {
       key: "name",
       label: "Customer Info",
-      sortable: true,
       render: (_, cust) => (
         <div className="flex items-center gap-3">
           <Avatar name={cust.name} src={cust.avatar} size="sm" />
@@ -157,19 +143,16 @@ export default function CustomersPage() {
     {
       key: "status",
       label: "Account Status",
-      sortable: true,
       render: (val) => <StatusBadge status={val} />,
     },
     {
       key: "ordersCount",
       label: "Orders Count",
-      sortable: true,
       render: (val) => <span className="font-semibold">{val} orders</span>,
     },
     {
       key: "totalSpent",
       label: "Total Spent",
-      sortable: true,
       render: (val) => (
         <span className="font-bold text-text-custom">
           ${Number(val).toFixed(2)}
@@ -179,7 +162,6 @@ export default function CustomersPage() {
     {
       key: "dateJoined",
       label: "Joined Date",
-      sortable: true,
       render: (val) => (
         <span suppressHydrationWarning>
           {new Date(val).toLocaleDateString()}
@@ -237,14 +219,6 @@ export default function CustomersPage() {
             Customer Accounts
           </h1>
         </div>
-        <Button
-          onClick={handleExport}
-          variant="outline"
-          className="flex items-center gap-1.5 shrink-0 self-start sm:self-auto"
-        >
-          <Download className="w-4 h-4" />
-          Export registry
-        </Button>
       </div>
 
       {/* Control Area */}
