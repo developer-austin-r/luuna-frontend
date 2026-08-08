@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { AlertCircle, Download, History } from "lucide-react";
+import { AlertCircle, Download } from "lucide-react";
 
 import {
   Breadcrumb,
@@ -33,17 +33,6 @@ interface AdjustmentFormValues {
   reserved: number;
   warehouse: string;
   reason: string;
-}
-
-interface StockHistoryLog {
-  id: string;
-  date: string;
-  productName: string;
-  sku: string;
-  change: string;
-  warehouse: string;
-  reason: string;
-  user: string;
 }
 
 export default function InventoryPage() {
@@ -98,9 +87,6 @@ export default function InventoryPage() {
   // Adjustment Modal State
   const [adjustmentModalOpen, setAdjustmentModalOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState<InventoryItem | null>(null);
-
-  // Dynamic stock history logs
-  const [historyLogs, setHistoryLogs] = useState<StockHistoryLog[]>([]);
 
   // React Hook Form
   const {
@@ -226,19 +212,6 @@ export default function InventoryPage() {
           status: "success",
         }),
       );
-
-      // Add to local history list
-      const newLog: StockHistoryLog = {
-        id: `h-${Date.now()}`,
-        date: new Date().toISOString(),
-        productName: selectedItem.productName,
-        sku: selectedItem.sku,
-        change: changeLabel,
-        warehouse: data.warehouse,
-        reason: data.reason || "Manual inventory adjustment",
-        user: "Admin Sarah",
-      };
-      setHistoryLogs((prev) => [newLog, ...prev]);
 
       setAdjustmentModalOpen(false);
       toastSuccess(
@@ -420,48 +393,6 @@ export default function InventoryPage() {
           ) : (
             <DataTable columns={columns} data={filteredInventory} />
           )}
-        </div>
-      </Card>
-
-      {/* Stock History Audit Feed */}
-      <Card title="Stock Adjustment History Log">
-        <div className="space-y-4 mt-2">
-          {historyLogs.map((log) => (
-            <div
-              key={log.id}
-              className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-border-custom/30 last:border-b-0 pb-3 last:pb-0"
-            >
-              <div className="flex items-start gap-3 text-xs">
-                <div className="p-2 bg-primary/10 rounded-lg text-primary shrink-0 mt-0.5">
-                  <History className="w-4 h-4" />
-                </div>
-                <div>
-                  <p className="font-bold text-text-custom">
-                    {log.productName}
-                  </p>
-                  <p className="text-3xs text-text-custom/50 font-bold uppercase tracking-wider">
-                    SKU: {log.sku} • Warehouse: {log.warehouse}
-                  </p>
-                  <p className="text-3xs text-text-custom/60 italic mt-0.5">
-                    Reason: "{log.reason}"
-                  </p>
-                </div>
-              </div>
-
-              <div className="text-left sm:text-right shrink-0">
-                <span className="inline-block px-2.5 py-0.5 rounded text-xs font-semibold bg-bg-secondary text-text-custom font-mono">
-                  {log.change}
-                </span>
-                <p
-                  className="text-3xs text-text-custom/40 font-semibold uppercase tracking-wider mt-1"
-                  suppressHydrationWarning
-                >
-                  Adjusted by {log.user} •{" "}
-                  {new Date(log.date).toLocaleDateString()}
-                </p>
-              </div>
-            </div>
-          ))}
         </div>
       </Card>
 
