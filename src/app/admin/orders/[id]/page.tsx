@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useParams, useRouter } from "next/navigation";
 import {
@@ -23,12 +23,10 @@ import {
   Select,
   StatusBadge,
 } from "@/components/admin";
-import { useAppDispatch, useAppSelector } from "@/redux/hooks";
-import {
-  addActivityLog,
-  updateOrderPaymentStatus,
-  updateOrderStatus,
-} from "@/redux/slices/admin-slice";
+import { useAppDispatch } from "@/redux/hooks";
+import { addActivityLog } from "@/redux/slices/admin-slice";
+import { apiClient } from "@/services/api-client";
+import type { Order } from "@/types/admin";
 
 interface RefundFormValues {
   refundAmount: number;
@@ -41,9 +39,9 @@ export default function OrderDetailsPage() {
   const dispatch = useAppDispatch();
   const id = params.id as string;
 
-  // State selectors
-  const orders = useAppSelector((state) => state.admin.orders);
-  const order = orders.find((o) => o.id === id);
+  const [order, setOrder] = useState<Order | null>(null);
+  const [orderItems, setOrderItems] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
   // Modal Toggles
   const [refundModalOpen, setRefundModalOpen] = useState(false);
@@ -53,14 +51,74 @@ export default function OrderDetailsPage() {
   const {
     register,
     handleSubmit,
-    reset,
+    setValue,
     formState: { errors },
   } = useForm<RefundFormValues>({
     defaultValues: {
-      refundAmount: order?.total || 0,
+      refundAmount: 0,
       reason: "Customer Return",
     },
   });
+
+  const fetchOrderDetails = async () => {
+    try {
+      setLoading(true);
+      const res = await apiClient<{ data: any }>(`/orders/${id}`);
+      const o = res?.data;
+      if (o) {
+        const mappedOrder: Order = {
+          id: o.id,
+          customerName: o.user?.name || "Anonymous",
+          email: o.user?.email || "",
+          itemsCount:
+            o.orderItems?.reduce(
+              (acc: number, item: any) => acc + item.quantity,
+              0,
+            ) || 0,
+          total: Number(o.totalAmount),
+          status: o.orderStatus.toLowerCase(),
+          paymentStatus: o.paymentStatus.toLowerCase(),
+          date: o.orderedAt,
+          shippingMethod: o.shipment?.[0]
+            ? "Express Shipping"
+            : "Standard Shipping",
+          trackingId: o.shipment?.[0]?.trackingNumber || "",
+          carrier: o.shipment?.[0]?.courierName || "",
+          deliveryStatus:
+            o.shipment?.[0]?.shipmentStatus?.toLowerCase() || "pending",
+        };
+
+        const mappedItems = (o.orderItems || []).map((item: any) => ({
+          id: item.id,
+          name: item.product?.name || "Product Listing",
+          sku: item.product?.sku || "N/A",
+          price: Number(item.price),
+          quantity: item.quantity,
+          total: Number(item.total),
+        }));
+
+        setOrder(mappedOrder);
+        setOrderItems(mappedItems);
+        setValue("refundAmount", Number(o.totalAmount));
+      }
+    } catch (err) {
+      console.error("Error loading order details:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchOrderDetails();
+  }, [id, setValue]);
+
+  if (loading) {
+    return (
+      <div className="py-12 text-center text-sm font-semibold text-text-custom/50">
+        Loading order details...
+      </div>
+    );
+  }
 
   if (!order) {
     return (
@@ -73,7 +131,7 @@ export default function OrderDetailsPage() {
         />
         <Card className="text-center py-12">
           <p className="text-sm font-semibold text-text-custom/60">
-            Order file not found.
+            Order not found.
           </p>
           <Button onClick={() => router.push("/admin/orders")} className="mt-4">
             Back to Orders
@@ -83,23 +141,10 @@ export default function OrderDetailsPage() {
     );
   }
 
-  // Mock order items list
-  const orderItems = [
-    {
-      id: "item-1",
-      name: "Classic Leather Tote Bag",
-      sku: "BG-LTH-01",
-      price: 159.0,
-      quantity: 2,
-      total: 318.0,
-    },
-  ];
-
   // Pricing calculations
   const subtotal = orderItems.reduce((sum, item) => sum + item.total, 0);
   const tax = subtotal * 0.08;
-  const shippingCost =
-    order.shippingMethod === "Express Shipping" ? 14.99 : 5.99;
+  const shippingCost = 14.99; // Standard seeded flat shipping
   const total = subtotal + tax + shippingCost;
 
   // Workflow Progress Timeline
@@ -122,35 +167,143 @@ export default function OrderDetailsPage() {
     },
   ];
 
-  const handleStatusChange = (status: typeof order.status) => {
-    dispatch(updateOrderStatus({ id: order.id, status }));
-    dispatch(
-      addActivityLog({
-        user: "Admin Sarah",
-        action: `Set shipment progress of order ${order.id} to "${status}"`,
-        module: "Orders",
-        status: "success",
-      }),
-    );
+  const handlePaymentChange = async (paymentStatus: Order["paymentStatus"]) => {
+    try {
+      const dbStatusMap: Record<string, string> = {
+        unpaid: "PENDING",
+        paid: "PAID",
+        refunded: "REFUNDED",
+      };
+      await apiClient(`/orders/${order.id}`, {
+        method: "PATCH",
+        body: JSON.stringify({
+          paymentStatus: dbStatusMap[paymentStatus] || "PENDING",
+        }),
+      });
+      await fetchOrderDetails();
+      dispatch(
+        addActivityLog({
+          user: "Admin Sarah",
+          action: `Changed settlement status of order ${order.id} to "${paymentStatus}"`,
+          module: "Orders",
+          status: "success",
+        }),
+      );
+    } catch (err) {
+      console.error(err);
+      alert("Failed to update payment status.");
+    }
   };
 
-  const handleRefundSubmit = (data: RefundFormValues) => {
-    dispatch(
-      updateOrderPaymentStatus({ id: order.id, paymentStatus: "refunded" }),
-    );
-    dispatch(updateOrderStatus({ id: order.id, status: "cancelled" }));
-    dispatch(
-      addActivityLog({
-        user: "Admin Sarah",
-        action: `Issued refund of $${data.refundAmount} on order ${order.id}. Reason: "${data.reason}"`,
-        module: "Orders",
-        status: "success",
-      }),
-    );
-    setRefundModalOpen(false);
-    alert(
-      `Refund of $${data.refundAmount} has been processed for ${order.customerName}.`,
-    );
+  const handleOrderStatusChange = async (status: Order["status"]) => {
+    try {
+      const dbStatusMap: Record<string, string> = {
+        pending: "PENDING",
+        processing: "PROCESSING",
+        shipped: "SHIPPED",
+        delivered: "DELIVERED",
+        cancelled: "CANCELLED",
+      };
+      await apiClient(`/orders/${order.id}`, {
+        method: "PATCH",
+        body: JSON.stringify({
+          orderStatus: dbStatusMap[status] || "PENDING",
+        }),
+      });
+      await fetchOrderDetails();
+      dispatch(
+        addActivityLog({
+          user: "Admin Sarah",
+          action: `Changed shipment state of order ${order.id} to "${status}"`,
+          module: "Orders",
+          status: "success",
+        }),
+      );
+    } catch (err) {
+      console.error(err);
+      alert("Failed to update order status.");
+    }
+  };
+
+  const handleDeliveryStatusChange = async (
+    deliveryStatus: Order["deliveryStatus"],
+  ) => {
+    try {
+      const dbStatusMap: Record<string, string> = {
+        pending: "PENDING",
+        in_transit: "IN_TRANSIT",
+        out_for_delivery: "SHIPPED",
+        delivered: "DELIVERED",
+        returned: "RETURNED",
+        cancelled: "RETURNED",
+      };
+      await apiClient(`/orders/${order.id}`, {
+        method: "PATCH",
+        body: JSON.stringify({
+          shipmentStatus: dbStatusMap[deliveryStatus || "pending"] || "PENDING",
+        }),
+      });
+      await fetchOrderDetails();
+      dispatch(
+        addActivityLog({
+          user: "Admin Sarah",
+          action: `Changed delivery status of order ${order.id} to "${deliveryStatus}"`,
+          module: "Orders",
+          status: "success",
+        }),
+      );
+    } catch (err) {
+      console.error(err);
+      alert("Failed to update delivery status.");
+    }
+  };
+
+  const handleCarrierOrTrackingUpdate = async (fields: {
+    carrier?: string;
+    trackingId?: string;
+  }) => {
+    try {
+      await apiClient(`/orders/${order.id}`, {
+        method: "PATCH",
+        body: JSON.stringify({
+          ...(fields.carrier !== undefined && { courierName: fields.carrier }),
+          ...(fields.trackingId !== undefined && {
+            trackingNumber: fields.trackingId,
+          }),
+        }),
+      });
+      // Do not refetch immediately to prevent input focus loss, let client hold state or handle debounce
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleRefundSubmit = async (data: RefundFormValues) => {
+    try {
+      await apiClient(`/orders/${order.id}`, {
+        method: "PATCH",
+        body: JSON.stringify({
+          paymentStatus: "REFUNDED",
+          orderStatus: "CANCELLED",
+        }),
+      });
+      await fetchOrderDetails();
+      dispatch(
+        addActivityLog({
+          user: "Admin Sarah",
+          action: `Issued refund of $${data.refundAmount} on order ${order.id}. Reason: "${data.reason}"`,
+          module: "Orders",
+          status: "success",
+        }),
+      );
+      setRefundModalOpen(false);
+      alert(
+        `Refund of $${data.refundAmount} has been processed for ${order.customerName}.`,
+      );
+    } catch (err) {
+      console.error(err);
+      alert("Failed to process refund.");
+    }
   };
 
   const handlePrint = () => {
@@ -174,7 +327,7 @@ export default function OrderDetailsPage() {
             <Breadcrumb
               items={[
                 { label: "Orders", href: "/admin/orders" },
-                { label: order.id },
+                { label: `ORD-${order.id.substring(0, 4).toUpperCase()}` },
               ]}
             />
             <h1 className="text-2xl font-bold text-text-custom mt-1">
@@ -354,19 +507,29 @@ export default function OrderDetailsPage() {
                 </div>
                 <div className="flex items-start gap-2 border-t border-border-custom/50 pt-3">
                   <CreditCard className="w-4 h-4 text-text-custom/40 shrink-0 mt-0.5" />
-                  <div>
+                  <div className="w-full">
                     <p className="font-bold text-text-custom">
                       Settlement Details
                     </p>
                     <p className="text-text-custom/75 mt-0.5">
                       Payment Method: Visa Ending *2834
                     </p>
-                    <p className="text-3xs text-text-custom/40 font-bold uppercase tracking-wider mt-1">
-                      Payment Status:{" "}
-                      <span className="font-bold text-text-custom uppercase">
-                        {order.paymentStatus}
-                      </span>
-                    </p>
+                    <div className="mt-2">
+                      <label className="text-3xs text-text-custom/50 font-bold uppercase block mb-1">
+                        Update Payment Status
+                      </label>
+                      <select
+                        value={order.paymentStatus}
+                        onChange={(e) =>
+                          handlePaymentChange(e.target.value as any)
+                        }
+                        className="text-xs bg-bg-secondary border border-border-custom rounded px-2 py-1 text-text-custom font-semibold outline-none focus:border-primary w-full"
+                      >
+                        <option value="unpaid">Unpaid</option>
+                        <option value="paid">Paid</option>
+                        <option value="refunded">Refunded</option>
+                      </select>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -375,28 +538,78 @@ export default function OrderDetailsPage() {
 
           {/* Workflow Status Actions */}
           <Card title="Workflow Adjustments">
-            <div className="flex flex-col gap-2 mt-2">
-              <Button
-                onClick={() => handleStatusChange("processing")}
-                variant={order.status === "processing" ? "primary" : "outline"}
-                className="w-full text-xs"
-              >
-                Mark Processing
-              </Button>
-              <Button
-                onClick={() => handleStatusChange("shipped")}
-                variant={order.status === "shipped" ? "primary" : "outline"}
-                className="w-full text-xs"
-              >
-                Mark Shipped
-              </Button>
-              <Button
-                onClick={() => handleStatusChange("delivered")}
-                variant={order.status === "delivered" ? "primary" : "outline"}
-                className="w-full text-xs"
-              >
-                Mark Delivered
-              </Button>
+            <div className="space-y-4 mt-2 text-xs">
+              <div>
+                <label className="text-3xs text-text-custom/50 font-bold uppercase block mb-1">
+                  Order Shipment Status
+                </label>
+                <select
+                  value={order.status}
+                  onChange={(e) =>
+                    handleOrderStatusChange(e.target.value as any)
+                  }
+                  className="text-xs bg-bg-secondary border border-border-custom rounded px-2 py-1 text-text-custom font-semibold outline-none focus:border-primary w-full"
+                >
+                  <option value="pending">Pending</option>
+                  <option value="processing">Processing</option>
+                  <option value="shipped">Shipped</option>
+                  <option value="delivered">Delivered</option>
+                  <option value="cancelled">Cancelled</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="text-3xs text-text-custom/50 font-bold uppercase block mb-1">
+                  Delivery Status
+                </label>
+                <select
+                  value={order.deliveryStatus || "pending"}
+                  onChange={(e) =>
+                    handleDeliveryStatusChange(e.target.value as any)
+                  }
+                  className="text-xs bg-bg-secondary border border-border-custom rounded px-2 py-1 text-text-custom font-semibold outline-none focus:border-primary w-full"
+                >
+                  <option value="pending">Pending</option>
+                  <option value="in_transit">In Transit</option>
+                  <option value="out_for_delivery">Out for Delivery</option>
+                  <option value="delivered">Delivered</option>
+                  <option value="returned">Returned</option>
+                  <option value="cancelled">Cancelled</option>
+                </select>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2 pt-2 border-t border-border-custom/50">
+                <div>
+                  <label className="text-3xs text-text-custom/50 font-bold uppercase block mb-1">
+                    Carrier
+                  </label>
+                  <input
+                    type="text"
+                    defaultValue={order.carrier || ""}
+                    onBlur={(e) =>
+                      handleCarrierOrTrackingUpdate({ carrier: e.target.value })
+                    }
+                    placeholder="e.g. FedEx"
+                    className="text-xs bg-bg-secondary border border-border-custom rounded px-2 py-1 text-text-custom outline-none focus:border-primary w-full"
+                  />
+                </div>
+                <div>
+                  <label className="text-3xs text-text-custom/50 font-bold uppercase block mb-1">
+                    Tracking ID
+                  </label>
+                  <input
+                    type="text"
+                    defaultValue={order.trackingId || ""}
+                    onBlur={(e) =>
+                      handleCarrierOrTrackingUpdate({
+                        trackingId: e.target.value,
+                      })
+                    }
+                    placeholder="e.g. TRK-12345"
+                    className="text-xs bg-bg-secondary border border-border-custom rounded px-2 py-1 text-text-custom outline-none focus:border-primary w-full"
+                  />
+                </div>
+              </div>
             </div>
           </Card>
         </div>
@@ -443,7 +656,7 @@ export default function OrderDetailsPage() {
                 INVOICE
               </span>
               <p className="text-3xs font-mono text-text-custom/50">
-                #INV-{order.id}
+                #INV-{order.id.substring(0, 8)}
               </p>
             </div>
           </div>

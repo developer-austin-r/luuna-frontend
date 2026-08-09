@@ -6,7 +6,6 @@ import {
   type InventoryItem,
   type Order,
   type Product,
-  type ReportItem,
   type ShippingMethod,
 } from "@/types/admin";
 
@@ -278,75 +277,7 @@ export const initialCustomers: Customer[] = [
     dateJoined: "2026-06-25",
   },
 ];
-
-export const initialOrders: Order[] = [
-  {
-    id: "ORD-9832",
-    customerName: "Emma Watson",
-    email: "emma.watson@gmail.com",
-    itemsCount: 2,
-    total: 318.0,
-    status: "delivered",
-    paymentStatus: "paid",
-    date: "2026-07-15T14:32:00Z",
-    shippingMethod: "Express Shipping",
-  },
-  {
-    id: "ORD-9833",
-    customerName: "Liam Neeson",
-    email: "liam.neeson@outlook.com",
-    itemsCount: 1,
-    total: 189.0,
-    status: "processing",
-    paymentStatus: "paid",
-    date: "2026-07-18T09:15:00Z",
-    shippingMethod: "Standard Shipping",
-  },
-  {
-    id: "ORD-9834",
-    customerName: "Bruce Wayne",
-    email: "bruce@waynecorp.com",
-    itemsCount: 1,
-    total: 250.0,
-    status: "pending",
-    paymentStatus: "unpaid",
-    date: "2026-07-19T18:45:00Z",
-    shippingMethod: "Standard Shipping",
-  },
-  {
-    id: "ORD-9835",
-    customerName: "Diana Prince",
-    email: "diana@themyscira.gov",
-    itemsCount: 4,
-    total: 580.0,
-    status: "shipped",
-    paymentStatus: "paid",
-    date: "2026-07-17T11:24:00Z",
-    shippingMethod: "Next-Day Courier",
-  },
-  {
-    id: "ORD-9836",
-    customerName: "Sarah Connor",
-    email: "sconnor@cyberdyne.org",
-    itemsCount: 3,
-    total: 440.0,
-    status: "cancelled",
-    paymentStatus: "refunded",
-    date: "2026-07-10T16:00:00Z",
-    shippingMethod: "Standard Shipping",
-  },
-  {
-    id: "ORD-9837",
-    customerName: "Diana Prince",
-    email: "diana@themyscira.gov",
-    itemsCount: 2,
-    total: 270.0,
-    status: "delivered",
-    paymentStatus: "paid",
-    date: "2026-07-12T10:10:00Z",
-    shippingMethod: "Express Shipping",
-  },
-];
+export const initialOrders: Order[] = [];
 
 export const initialInventory: InventoryItem[] = [
   {
@@ -506,64 +437,5 @@ export const initialActivityLogs: ActivityLog[] = [
     module: "Orders",
     timestamp: "2026-07-19T18:45:00Z",
     status: "success",
-  },
-];
-
-export const mockReportData: ReportItem[] = [
-  {
-    id: "rep-1",
-    date: "2026-07-13",
-    sales: 450,
-    orders: 3,
-    revenue: 890,
-    expenses: 310,
-  },
-  {
-    id: "rep-2",
-    date: "2026-07-14",
-    sales: 620,
-    orders: 4,
-    revenue: 1200,
-    expenses: 400,
-  },
-  {
-    id: "rep-3",
-    date: "2026-07-15",
-    sales: 980,
-    orders: 6,
-    revenue: 1980,
-    expenses: 620,
-  },
-  {
-    id: "rep-4",
-    date: "2026-07-16",
-    sales: 510,
-    orders: 3,
-    revenue: 1050,
-    expenses: 350,
-  },
-  {
-    id: "rep-5",
-    date: "2026-07-17",
-    sales: 780,
-    orders: 5,
-    revenue: 1540,
-    expenses: 510,
-  },
-  {
-    id: "rep-6",
-    date: "2026-07-18",
-    sales: 1100,
-    orders: 7,
-    revenue: 2200,
-    expenses: 730,
-  },
-  {
-    id: "rep-7",
-    date: "2026-07-19",
-    sales: 1450,
-    orders: 9,
-    revenue: 2900,
-    expenses: 950,
   },
 ];

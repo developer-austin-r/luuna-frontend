@@ -6,7 +6,6 @@ import {
   initialCustomers,
   initialOrders,
   initialShippingMethods,
-  mockReportData,
 } from "@/dummy-data/admin";
 import {
   type ActivityLog,
@@ -50,7 +49,7 @@ const initialState: AdminState = {
   coupons: initialCoupons,
   shippingMethods: initialShippingMethods,
   activityLogs: initialActivityLogs,
-  reportData: mockReportData,
+  reportData: [],
   settings: {
     storeName: "Luuna Luxury E-Commerce",
     storeEmail: "admin@luuna.com",
@@ -175,6 +174,12 @@ const adminSlice = createSlice({
     },
 
     // Orders
+    setOrders: (state, action: PayloadAction<Order[]>) => {
+      state.orders = action.payload;
+    },
+    deleteOrder: (state, action: PayloadAction<string>) => {
+      state.orders = state.orders.filter((o) => o.id !== action.payload);
+    },
     updateOrderStatus: (
       state,
       action: PayloadAction<{ id: string; status: Order["status"] }>,
@@ -194,6 +199,28 @@ const adminSlice = createSlice({
       const index = state.orders.findIndex((o) => o.id === action.payload.id);
       if (index !== -1 && state.orders[index]) {
         state.orders[index].paymentStatus = action.payload.paymentStatus;
+      }
+    },
+    updateOrderTracking: (
+      state,
+      action: PayloadAction<{
+        id: string;
+        trackingId?: string;
+        carrier?: string;
+        deliveryStatus?: Order["deliveryStatus"];
+      }>,
+    ) => {
+      const index = state.orders.findIndex((o) => o.id === action.payload.id);
+      if (index !== -1 && state.orders[index]) {
+        if (action.payload.trackingId !== undefined) {
+          state.orders[index].trackingId = action.payload.trackingId;
+        }
+        if (action.payload.carrier !== undefined) {
+          state.orders[index].carrier = action.payload.carrier;
+        }
+        if (action.payload.deliveryStatus !== undefined) {
+          state.orders[index].deliveryStatus = action.payload.deliveryStatus;
+        }
       }
     },
 
@@ -315,8 +342,11 @@ export const {
   addCategory,
   updateCategory,
   deleteCategory,
+  setOrders,
+  deleteOrder,
   updateOrderStatus,
   updateOrderPaymentStatus,
+  updateOrderTracking,
   updateInventoryStock,
   setCoupons,
   addCoupon,

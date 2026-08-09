@@ -3,12 +3,14 @@ export interface Product {
   name: string;
   sku: string;
   category: string;
+  categoryId?: string;
   price: number;
   salePrice?: number | undefined;
   stock: number;
   reservedStock?: number;
   availableStock?: number;
   status: "active" | "draft" | "out_of_stock";
+  statusId?: string;
   image: string;
   description?: string | undefined;
 }
@@ -34,6 +36,15 @@ export interface Order {
   paymentStatus: "paid" | "unpaid" | "refunded";
   date: string;
   shippingMethod: string;
+  trackingId?: string;
+  carrier?: string;
+  deliveryStatus?:
+    | "pending"
+    | "in_transit"
+    | "out_for_delivery"
+    | "delivered"
+    | "returned"
+    | "cancelled";
 }
 
 export interface Customer {

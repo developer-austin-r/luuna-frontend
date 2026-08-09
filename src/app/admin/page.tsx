@@ -5,25 +5,22 @@ import Link from "next/link";
 import {
   AlertTriangle,
   ArrowUpRight,
-  DollarSign,
+  IndianRupee,
   Package,
-  RefreshCw,
   ShoppingCart,
   Users,
 } from "lucide-react";
 
 import {
   Breadcrumb,
-  Button,
   Card,
   type Column,
   DataTable,
   StatsCard,
   StatusBadge,
-  Tabs,
 } from "@/components/admin";
 import { useAppDispatch, useAppSelector } from "@/redux/hooks";
-import { addActivityLog, setProducts } from "@/redux/slices/admin-slice";
+import { setProducts } from "@/redux/slices/admin-slice";
 import { apiClient } from "@/services/api-client";
 import { type Order, type Product } from "@/types/admin";
 
@@ -72,12 +69,6 @@ export default function DashboardPage() {
     loadProducts();
   }, [dispatch]);
 
-  // Chart Tab State
-  const [activeChartTab, setActiveChartTab] = useState("sales");
-
-  // Quick Action Modal States
-  const [isRefreshing, setIsRefreshing] = useState(false);
-
   // Compute stats
   const totalSales = orders
     .filter((o) => o.status !== "cancelled")
@@ -92,22 +83,6 @@ export default function DashboardPage() {
   const recentOrders = orders.slice(0, 5);
   const recentCustomers = customers.slice(0, 4);
   const lowStockProducts = products.filter((p) => p.stock <= 10).slice(0, 4);
-  const recentActivities = activityLogs.slice(0, 5);
-
-  const handleRefreshFeed = () => {
-    setIsRefreshing(true);
-    setTimeout(() => {
-      setIsRefreshing(false);
-      dispatch(
-        addActivityLog({
-          user: "System Cron",
-          action: "Refreshed dashboard metrics feeds successfully",
-          module: "Dashboard",
-          status: "success",
-        }),
-      );
-    }, 600);
-  };
 
   const orderColumns: Column<Order>[] = [
     {
@@ -147,26 +122,6 @@ export default function DashboardPage() {
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
         <div>
           <Breadcrumb items={[]} />
-          <h1 className="text-2xl font-bold text-text-custom mt-1">
-            Welcome back, Alex
-          </h1>
-          <p className="text-xs text-text-custom/50 font-medium">
-            Here is what is happening with your store today.
-          </p>
-        </div>
-
-        {/* Quick Action Buttons */}
-        <div className="flex flex-wrap items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleRefreshFeed}
-            isLoading={isRefreshing}
-            className="flex items-center gap-1.5"
-          >
-            <RefreshCw className="w-3.5 h-3.5" />
-            Sync Feeds
-          </Button>
         </div>
       </div>
 
@@ -174,9 +129,9 @@ export default function DashboardPage() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6">
         <StatsCard
           title="Revenue"
-          value={`$${totalSales.toLocaleString("en-US", { maximumFractionDigits: 0 })}`}
+          value="₹0"
           change={12.4}
-          icon={<DollarSign className="w-4 h-4" />}
+          icon={<IndianRupee className="w-4 h-4" />}
         />
         <StatsCard
           title="Total Orders"
@@ -213,133 +168,60 @@ export default function DashboardPage() {
       </div>
 
       {/* Interactive Charts Area */}
-      <Card
-        title="Performance Analytics"
-        extra={
-          <Tabs
-            tabs={[
-              { id: "sales", label: "Sales Overview" },
-              { id: "revenue", label: "Revenue Chart" },
-              { id: "orders", label: "Orders Chart" },
-            ]}
-            activeTab={activeChartTab}
-            onChange={setActiveChartTab}
-          />
-        }
-      >
+      <Card title="Sales Overview">
         <div className="h-72 mt-4 relative flex items-end">
-          {/* Sales Overview (Bar Chart) */}
-          {activeChartTab === "sales" && (
-            <div className="w-full h-full flex flex-col justify-between pt-4">
-              <div className="flex-1 flex items-end gap-4 border-b border-border-custom pb-2 px-4">
-                {reportData.map((day, idx) => {
-                  const maxVal = Math.max(...reportData.map((d) => d.sales));
-                  const percentHeight = (day.sales / maxVal) * 85;
-                  return (
-                    <div
-                      key={idx}
-                      className="flex-1 flex flex-col items-center group relative cursor-pointer"
-                    >
-                      <div className="absolute bottom-full mb-2 bg-text-custom text-white text-2xs py-1 px-2 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap shadow-md z-10">
-                        {day.sales} sales (${day.revenue} revenue)
-                      </div>
-                      <div
-                        style={{ height: `${percentHeight}%` }}
-                        className="w-full bg-primary/20 hover:bg-primary rounded-t-sm transition-all duration-300 min-h-[12px]"
-                      />
-                      <span className="text-3xs text-text-custom/50 font-bold mt-2 uppercase tracking-wide">
-                        {day.date.split("-")[2]}
-                      </span>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-
           {/* Revenue Chart (Curved Area Chart Mockup via SVG) */}
-          {activeChartTab === "revenue" && (
-            <div className="w-full h-full flex flex-col justify-end pt-4">
-              <div className="relative flex-1 w-full border-b border-border-custom px-2">
-                {/* SVG Curve */}
-                <svg
-                  viewBox="0 0 700 200"
-                  className="w-full h-full text-primary"
-                  preserveAspectRatio="none"
-                >
-                  <defs>
-                    <linearGradient id="gradient" x1="0" y1="0" x2="0" y2="1">
-                      <stop
-                        offset="0%"
-                        stopColor="currentColor"
-                        stopOpacity="0.25"
-                      />
-                      <stop
-                        offset="100%"
-                        stopColor="currentColor"
-                        stopOpacity="0.0"
-                      />
-                    </linearGradient>
-                  </defs>
-                  {/* Fill Area */}
-                  <path
-                    d="M 0 200 C 100 120, 200 180, 300 80 C 400 40, 500 130, 600 60 C 650 30, 700 20, 700 20 L 700 200 Z"
-                    fill="url(#gradient)"
-                  />
-                  {/* Curve Stroke */}
-                  <path
-                    d="M 0 200 C 100 120, 200 180, 300 80 C 400 40, 500 130, 600 60 C 650 30, 700 20, 700 20"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="3.5"
-                    strokeLinecap="round"
-                  />
-                </svg>
+          <div className="w-full h-full flex flex-col justify-end pt-4">
+            <div className="relative flex-1 w-full border-b border-border-custom px-2">
+              {/* SVG Curve */}
+              <svg
+                viewBox="0 0 700 200"
+                className="w-full h-full text-primary"
+                preserveAspectRatio="none"
+              >
+                <defs>
+                  <linearGradient id="gradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop
+                      offset="0%"
+                      stopColor="currentColor"
+                      stopOpacity="0.25"
+                    />
+                    <stop
+                      offset="100%"
+                      stopColor="currentColor"
+                      stopOpacity="0.0"
+                    />
+                  </linearGradient>
+                </defs>
+                {/* Fill Area */}
+                <path
+                  d="M 0 200 C 100 120, 200 180, 300 80 C 400 40, 500 130, 600 60 C 650 30, 700 20, 700 20 L 700 200 Z"
+                  fill="url(#gradient)"
+                />
+                {/* Curve Stroke */}
+                <path
+                  d="M 0 200 C 100 120, 200 180, 300 80 C 400 40, 500 130, 600 60 C 650 30, 700 20, 700 20"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="3.5"
+                  strokeLinecap="round"
+                />
+              </svg>
 
-                {/* Hover dots mock */}
-                <div className="absolute left-[43%] top-[35%] w-3 h-3 rounded-full bg-white border-3 border-primary shadow-md cursor-pointer group">
-                  <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 bg-text-custom text-white text-2xs py-1 px-2 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap shadow-md">
-                    Peak Revenue: $2,200 (18th)
-                  </div>
+              {/* Hover dots mock */}
+              <div className="absolute left-[43%] top-[35%] w-3 h-3 rounded-full bg-white border-3 border-primary shadow-md cursor-pointer group">
+                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 bg-text-custom text-white text-2xs py-1 px-2 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap shadow-md">
+                  Peak Revenue: $2,200 (18th)
                 </div>
               </div>
-              <div className="flex justify-between px-4 text-3xs text-text-custom/50 font-bold uppercase tracking-wider mt-2">
-                <span>July 13</span>
-                <span>July 15</span>
-                <span>July 17</span>
-                <span>July 19</span>
-              </div>
             </div>
-          )}
-
-          {/* Orders Chart */}
-          {activeChartTab === "orders" && (
-            <div className="w-full h-full flex flex-col justify-between pt-4">
-              <div className="flex-1 flex items-end gap-4 border-b border-border-custom pb-2 px-4">
-                {reportData.map((day, idx) => {
-                  const maxVal = Math.max(...reportData.map((d) => d.orders));
-                  const percentHeight = (day.orders / maxVal) * 85;
-                  return (
-                    <div
-                      key={idx}
-                      className="flex-1 flex flex-col items-center group relative cursor-pointer"
-                    >
-                      <div className="absolute bottom-full mb-2 bg-text-custom text-white text-2xs py-1 px-2 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap shadow-md z-10">
-                        {day.orders} Completed Orders
-                      </div>
-                      <div
-                        style={{ height: `${percentHeight}%` }}
-                        className="w-full bg-sky-400/30 hover:bg-sky-500 rounded-t-sm transition-all duration-300 min-h-[12px]"
-                      />
-                      <span className="text-3xs text-text-custom/50 font-bold mt-2 uppercase tracking-wide">
-                        {day.date.split("-")[2]}
-                      </span>
-                    </div>
-                  );
-                })}
-              </div>
+            <div className="flex justify-between px-4 text-3xs text-text-custom/50 font-bold uppercase tracking-wider mt-2">
+              <span>July 13</span>
+              <span>July 15</span>
+              <span>July 17</span>
+              <span>July 19</span>
             </div>
-          )}
+          </div>
         </div>
       </Card>
 
@@ -363,8 +245,8 @@ export default function DashboardPage() {
         </Card>
       </div>
 
-      {/* Stock warnings and activity log grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      {/* Stock warnings */}
+      <div className="w-full">
         {/* Low Stock Warn panel */}
         <Card
           title="Low Stock Items Warning"
@@ -415,54 +297,6 @@ export default function DashboardPage() {
                 All items are sufficiently stocked.
               </div>
             )}
-          </div>
-        </Card>
-
-        {/* Recent Activities Audit Feed */}
-        <Card
-          title="Recent Store Audits"
-          extra={
-            <Link
-              href="/admin/activity-logs"
-              className="text-xs font-semibold text-primary hover:text-primary-hover transition-colors"
-            >
-              Full Logs
-            </Link>
-          }
-        >
-          <div className="space-y-4 mt-2 font-medium">
-            {recentActivities.map((log) => (
-              <div
-                key={log.id}
-                className="flex gap-3 text-xs items-start border-b border-border-custom/30 last:border-0 pb-3.5 last:pb-0"
-              >
-                <div className="mt-1 shrink-0">
-                  <span
-                    className={`block w-2.5 h-2.5 rounded-full ${
-                      log.status === "success"
-                        ? "bg-emerald-500"
-                        : log.status === "failed"
-                          ? "bg-red-500"
-                          : "bg-amber-500"
-                    }`}
-                  />
-                </div>
-                <div className="flex-1 space-y-0.5">
-                  <p className="text-xs text-text-custom/90 leading-tight">
-                    {log.action}
-                  </p>
-                  <div className="flex gap-2 text-3xs text-text-custom/40 font-semibold uppercase tracking-wider">
-                    <span>{log.user}</span>
-                    <span>•</span>
-                    <span>
-                      {mounted
-                        ? new Date(log.timestamp).toLocaleTimeString()
-                        : ""}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            ))}
           </div>
         </Card>
       </div>
