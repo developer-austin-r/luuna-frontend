@@ -1,20 +1,11 @@
 "use client";
 
 import React, { useState } from "react";
-import { BarChart2, FileDown, RefreshCw, Tag, TrendingUp } from "lucide-react";
+import { FileDown, RefreshCw } from "lucide-react";
 
-import {
-  Breadcrumb,
-  Button,
-  Card,
-  DatePicker,
-  StatsCard,
-} from "@/components/admin";
-import { useAppSelector } from "@/redux/hooks";
+import { Breadcrumb, Button, Card, DatePicker } from "@/components/admin";
 
 export default function ReportsPage() {
-  const { reportData } = useAppSelector((state) => state.admin);
-
   // States
   const [startDate, setStartDate] = useState("2026-07-01");
   const [endDate, setEndDate] = useState("2026-07-31");
@@ -33,16 +24,6 @@ export default function ReportsPage() {
       `Exporting SALES report as ${format}. The download will start shortly.`,
     );
   };
-
-  // Sales Report calculations & structure
-  const totalSalesVolume = reportData.reduce(
-    (sum, item) => sum + item.sales,
-    0,
-  );
-  const totalSalesRevenue = reportData.reduce(
-    (sum, item) => sum + item.revenue,
-    0,
-  );
 
   return (
     <div className="space-y-6">
@@ -99,25 +80,6 @@ export default function ReportsPage() {
           </Button>
         </div>
       </Card>
-
-      {/* Dynamic Summaries */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-        <StatsCard
-          title="Gross Sales"
-          value={`$${totalSalesRevenue.toLocaleString()}`}
-          icon={<BarChart2 className="w-5 h-5" />}
-        />
-        <StatsCard
-          title="Total Units Sold"
-          value={totalSalesVolume}
-          icon={<Tag className="w-5 h-5 text-primary" />}
-        />
-        <StatsCard
-          title="Net profit"
-          value={`$${(totalSalesRevenue - 3240).toLocaleString()}`}
-          icon={<TrendingUp className="w-5 h-5 text-emerald-500" />}
-        />
-      </div>
     </div>
   );
 }

@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { AlertCircle, Download, History } from "lucide-react";
+import { AlertCircle, Download } from "lucide-react";
 
 import {
   Breadcrumb,
@@ -35,20 +35,13 @@ interface AdjustmentFormValues {
   reason: string;
 }
 
-interface StockHistoryLog {
-  id: string;
-  date: string;
-  productName: string;
-  sku: string;
-  change: string;
-  warehouse: string;
-  reason: string;
-  user: string;
-}
-
 export default function InventoryPage() {
   const dispatch = useAppDispatch();
-  const { success: toastSuccess, info: toastInfo } = useToast();
+  const {
+    success: toastSuccess,
+    info: toastInfo,
+    error: toastError,
+  } = useToast();
   const inventory = useAppSelector((state) => state.admin.inventory);
   const [loading, setLoading] = useState(true);
 
@@ -95,9 +88,6 @@ export default function InventoryPage() {
   const [adjustmentModalOpen, setAdjustmentModalOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState<InventoryItem | null>(null);
 
-  // Dynamic stock history logs
-  const [historyLogs, setHistoryLogs] = useState<StockHistoryLog[]>([]);
-
   // React Hook Form
   const {
     register,
@@ -130,9 +120,50 @@ export default function InventoryPage() {
     toastInfo(
       "Exporting warehouse stock levels as CSV. The download will start shortly.",
     );
+
+    if (!inventory || inventory.length === 0) {
+      toastError("No inventory data available to export.");
+      return;
+    }
+
+    const headers = [
+      "SKU Code",
+      "Product Details",
+      "Current Stock",
+      "Reserved Units",
+      "Available to Sell",
+      "Status",
+    ];
+
+    const rows = inventory.map((item) => [
+      `"${item.sku.replace(/"/g, '""')}"`,
+      `"${item.productName.replace(/"/g, '""')}"`,
+      item.stock,
+      item.reserved,
+      item.available,
+      `"${item.status.replace(/"/g, '""')}"`,
+    ]);
+
+    const csvString = [
+      headers.join(","),
+      ...rows.map((row) => row.join(",")),
+    ].join("\n");
+    const blob = new Blob([csvString], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute(
+      "download",
+      `inventory_stock_sheet_${new Date().toISOString().split("T")[0]}.csv`,
+    );
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
   };
 
-  const onSubmitAdjustment = (data: AdjustmentFormValues) => {
+  const onSubmitAdjustment = async (data: AdjustmentFormValues) => {
     if (!selectedItem) return;
 
     let finalStock = selectedItem.stock;
@@ -149,42 +180,47 @@ export default function InventoryPage() {
       changeLabel = `Set to ${data.quantity}`;
     }
 
-    // Dispatch update
-    dispatch(
-      updateInventoryStock({
-        id: selectedItem.id,
-        stock: finalStock,
-        reserved: data.reserved,
-        warehouse: data.warehouse,
-      }),
-    );
+    try {
+      const productId = selectedItem.id.startsWith("inv-")
+        ? selectedItem.id.replace("inv-", "")
+        : selectedItem.id;
 
-    dispatch(
-      addActivityLog({
-        user: "Admin Sarah",
-        action: `Adjusted inventory of ${selectedItem.productName} (${changeLabel})`,
-        module: "Inventory",
-        status: "success",
-      }),
-    );
+      await apiClient(`/products/${productId}/inventory`, {
+        method: "PUT",
+        body: JSON.stringify({
+          totalStock: finalStock,
+          reservedStock: data.reserved,
+          availableStock: finalStock - data.reserved,
+        }),
+      });
 
-    // Add to local history list
-    const newLog: StockHistoryLog = {
-      id: `h-${Date.now()}`,
-      date: new Date().toISOString(),
-      productName: selectedItem.productName,
-      sku: selectedItem.sku,
-      change: changeLabel,
-      warehouse: data.warehouse,
-      reason: data.reason || "Manual inventory adjustment",
-      user: "Admin Sarah",
-    };
-    setHistoryLogs((prev) => [newLog, ...prev]);
+      // Dispatch update
+      dispatch(
+        updateInventoryStock({
+          id: selectedItem.id,
+          stock: finalStock,
+          reserved: data.reserved,
+          warehouse: data.warehouse,
+        }),
+      );
 
-    setAdjustmentModalOpen(false);
-    toastSuccess(
-      `Stock levels adjusted successfully for ${selectedItem.productName}.`,
-    );
+      dispatch(
+        addActivityLog({
+          user: "Admin Sarah",
+          action: `Adjusted inventory of ${selectedItem.productName} (${changeLabel})`,
+          module: "Inventory",
+          status: "success",
+        }),
+      );
+
+      setAdjustmentModalOpen(false);
+      toastSuccess(
+        `Stock levels adjusted successfully for ${selectedItem.productName}.`,
+      );
+    } catch (err: any) {
+      console.error(err);
+      toastError(err.message || "Failed to adjust stock levels.");
+    }
   };
 
   // Filter
@@ -357,48 +393,6 @@ export default function InventoryPage() {
           ) : (
             <DataTable columns={columns} data={filteredInventory} />
           )}
-        </div>
-      </Card>
-
-      {/* Stock History Audit Feed */}
-      <Card title="Stock Adjustment History Log">
-        <div className="space-y-4 mt-2">
-          {historyLogs.map((log) => (
-            <div
-              key={log.id}
-              className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-border-custom/30 last:border-b-0 pb-3 last:pb-0"
-            >
-              <div className="flex items-start gap-3 text-xs">
-                <div className="p-2 bg-primary/10 rounded-lg text-primary shrink-0 mt-0.5">
-                  <History className="w-4 h-4" />
-                </div>
-                <div>
-                  <p className="font-bold text-text-custom">
-                    {log.productName}
-                  </p>
-                  <p className="text-3xs text-text-custom/50 font-bold uppercase tracking-wider">
-                    SKU: {log.sku} • Warehouse: {log.warehouse}
-                  </p>
-                  <p className="text-3xs text-text-custom/60 italic mt-0.5">
-                    Reason: "{log.reason}"
-                  </p>
-                </div>
-              </div>
-
-              <div className="text-left sm:text-right shrink-0">
-                <span className="inline-block px-2.5 py-0.5 rounded text-xs font-semibold bg-bg-secondary text-text-custom font-mono">
-                  {log.change}
-                </span>
-                <p
-                  className="text-3xs text-text-custom/40 font-semibold uppercase tracking-wider mt-1"
-                  suppressHydrationWarning
-                >
-                  Adjusted by {log.user} •{" "}
-                  {new Date(log.date).toLocaleDateString()}
-                </p>
-              </div>
-            </div>
-          ))}
         </div>
       </Card>
 
