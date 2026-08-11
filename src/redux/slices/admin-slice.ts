@@ -174,6 +174,12 @@ const adminSlice = createSlice({
     },
 
     // Orders
+    setOrders: (state, action: PayloadAction<Order[]>) => {
+      state.orders = action.payload;
+    },
+    deleteOrder: (state, action: PayloadAction<string>) => {
+      state.orders = state.orders.filter((o) => o.id !== action.payload);
+    },
     updateOrderStatus: (
       state,
       action: PayloadAction<{ id: string; status: Order["status"] }>,
@@ -336,6 +342,8 @@ export const {
   addCategory,
   updateCategory,
   deleteCategory,
+  setOrders,
+  deleteOrder,
   updateOrderStatus,
   updateOrderPaymentStatus,
   updateOrderTracking,

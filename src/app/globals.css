@@ -10,12 +10,12 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
-  
-  --color-primary: #7C6EF6;
+
+  --color-primary: #7c6ef6;
   --color-primary-hover: #6a5ce5;
-  --color-bg-secondary: #F8F8FC;
-  --color-border-custom: #E7E8F0;
-  --color-text-custom: #1E293B;
+  --color-bg-secondary: #f8f8fc;
+  --color-border-custom: #e7e8f0;
+  --color-text-custom: #1e293b;
 }
 
 body {

@@ -19,9 +19,13 @@ import {
   StatusBadge,
 } from "@/components/admin";
 import { useAppDispatch, useAppSelector } from "@/redux/hooks";
-import { addActivityLog, setProducts } from "@/redux/slices/admin-slice";
+import {
+  addActivityLog,
+  setCategories,
+  setProducts,
+} from "@/redux/slices/admin-slice";
 import { apiClient } from "@/services/api-client";
-import { type Product } from "@/types/admin";
+import { type Category, type Product } from "@/types/admin";
 
 export default function ProductsPage() {
   const router = useRouter();
@@ -33,6 +37,9 @@ export default function ProductsPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
+  const [statuses, setStatuses] = useState<
+    { id: string; status: string; slug: string }[]
+  >([]);
   const [loading, setLoading] = useState(true);
 
   // Toast Notification state
@@ -48,20 +55,66 @@ export default function ProductsPage() {
     }, 4500);
   };
 
-  const fetchProducts = async () => {
+  const fetchCategories = async () => {
+    try {
+      const res = await apiClient<{ data: any[] }>("/products/categories/all");
+      if (res && res.data) {
+        const mapped: Category[] = res.data.map((c) => ({
+          id: c.id,
+          name: c.name,
+          slug: c.slug,
+          description: c.description || "",
+          parentId: c.parentId || undefined,
+          image: c.image || undefined,
+          productCount: 0,
+          status: c.status ? "active" : "inactive",
+        }));
+        dispatch(setCategories(mapped));
+      }
+    } catch (err) {
+      console.error("Error fetching categories:", err);
+    }
+  };
+
+  const fetchStatuses = async () => {
+    try {
+      const res = await apiClient<{ data: any[] }>("/products/statuses/all");
+      if (res && res.data) {
+        setStatuses(res.data);
+      }
+    } catch (err) {
+      console.error("Error fetching statuses:", err);
+    }
+  };
+
+  const fetchProducts = async (
+    search = searchTerm,
+    category = categoryFilter,
+    status = statusFilter,
+  ) => {
     try {
       setLoading(true);
-      const res = await apiClient<{ data: { data: any[] } }>("/products");
+      const params = new URLSearchParams();
+      if (search) params.append("search", search);
+      if (category !== "all") params.append("categoryId", category);
+      if (status !== "all") params.append("statusId", status);
+      params.append("limit", "100"); // Use large limit to retrieve products for catalog list
+
+      const queryString = params.toString();
+      const url = queryString ? `/products?${queryString}` : "/products";
+      const res = await apiClient<{ data: { data: any[] } }>(url);
       if (res && res.data && Array.isArray(res.data.data)) {
         const mapped: Product[] = res.data.data.map((p: any) => ({
           id: p.id,
           name: p.name,
           sku: p.sku,
           category: p.productCategories?.[0]?.category?.name || "Uncategorized",
+          categoryId: p.productCategories?.[0]?.category?.id,
           price: Number(p.basePrice),
           salePrice: p.discountPrice ? Number(p.discountPrice) : undefined,
           stock: p.stock,
           status: p.status?.slug || "active",
+          statusId: p.statusId,
           image:
             p.images?.[0]?.imageUrl ||
             "https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=300&q=80",
@@ -77,8 +130,13 @@ export default function ProductsPage() {
   };
 
   useEffect(() => {
-    fetchProducts();
+    fetchCategories();
+    fetchStatuses();
   }, [dispatch]);
+
+  useEffect(() => {
+    fetchProducts(searchTerm, categoryFilter, statusFilter);
+  }, [searchTerm, categoryFilter, statusFilter]);
 
   // Pagination State
   const [currentPage, setCurrentPage] = useState(1);
@@ -168,8 +226,8 @@ export default function ProductsPage() {
       p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       p.sku.toLowerCase().includes(searchTerm.toLowerCase());
     const matchCategory =
-      categoryFilter === "all" || p.category === categoryFilter;
-    const matchStatus = statusFilter === "all" || p.status === statusFilter;
+      categoryFilter === "all" || p.categoryId === categoryFilter;
+    const matchStatus = statusFilter === "all" || p.statusId === statusFilter;
     return matchSearch && matchCategory && matchStatus;
   });
 
@@ -351,7 +409,7 @@ export default function ProductsPage() {
                   options={[
                     { value: "all", label: "All Categories" },
                     ...categories.map((c) => ({
-                      value: c.name,
+                      value: c.id,
                       label: c.name,
                     })),
                   ]}
@@ -365,9 +423,10 @@ export default function ProductsPage() {
                   }}
                   options={[
                     { value: "all", label: "All Statuses" },
-                    { value: "active", label: "Active" },
-                    { value: "draft", label: "Draft" },
-                    { value: "out_of_stock", label: "Out of Stock" },
+                    ...statuses.map((s) => ({
+                      value: s.id,
+                      label: s.status,
+                    })),
                   ]}
                 />
               </Filters>

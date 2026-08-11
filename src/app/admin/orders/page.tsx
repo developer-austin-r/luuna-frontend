@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Clock, Compass, Download, Eye, MapPin, Truck } from "lucide-react";
+import { Clock, Compass, Eye, MapPin, Trash, Truck } from "lucide-react";
 
 import {
   ActionMenu,
@@ -21,8 +21,11 @@ import {
 import { useAppDispatch, useAppSelector } from "@/redux/hooks";
 import {
   addActivityLog,
+  deleteOrder,
+  setOrders,
   updateOrderTracking,
 } from "@/redux/slices/admin-slice";
+import { apiClient } from "@/services/api-client";
 import { type Order } from "@/types/admin";
 
 export default function OrdersPage() {
@@ -34,6 +37,7 @@ export default function OrdersPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [paymentFilter, setPaymentFilter] = useState("all");
+  const [loading, setLoading] = useState(true);
 
   // Tracker Modal States
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
@@ -43,42 +47,119 @@ export default function OrdersPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
 
-  const handleDeliveryStatusChange = (
+  const fetchOrders = async () => {
+    try {
+      setLoading(true);
+      const res = await apiClient<{ data: any[] }>("/orders");
+      if (res && Array.isArray(res.data)) {
+        const mapped: Order[] = res.data.map((o: any) => ({
+          id: o.id,
+          customerName: o.user?.name || "Anonymous",
+          email: o.user?.email || "",
+          itemsCount:
+            o.orderItems?.reduce(
+              (acc: number, item: any) => acc + item.quantity,
+              0,
+            ) || 0,
+          total: Number(o.totalAmount),
+          status: o.orderStatus.toLowerCase(),
+          paymentStatus: o.paymentStatus.toLowerCase(),
+          date: o.orderedAt,
+          shippingMethod: o.shipment?.[0]
+            ? "Express Shipping"
+            : "Standard Shipping",
+          trackingId: o.shipment?.[0]?.trackingNumber || "",
+          carrier: o.shipment?.[0]?.courierName || "",
+          deliveryStatus:
+            o.shipment?.[0]?.shipmentStatus?.toLowerCase() || "pending",
+        }));
+        dispatch(setOrders(mapped));
+      }
+    } catch (err) {
+      console.error("Error fetching live orders:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchOrders();
+  }, [dispatch]);
+
+  const handleDeleteOrder = async (orderId: string) => {
+    if (confirm("Are you sure you want to permanently delete this order?")) {
+      try {
+        await apiClient(`/orders/${orderId}`, {
+          method: "DELETE",
+        });
+        dispatch(deleteOrder(orderId));
+        dispatch(
+          addActivityLog({
+            user: "Admin Sarah",
+            action: `Permanently deleted order ${orderId}`,
+            module: "Orders",
+            status: "success",
+          }),
+        );
+      } catch (err) {
+        console.error("Failed to delete order:", err);
+        alert("Failed to delete order.");
+      }
+    }
+  };
+
+  const handleDeliveryStatusChange = async (
     orderId: string,
     deliveryStatus: Order["deliveryStatus"],
   ) => {
-    dispatch(updateOrderTracking({ id: orderId, deliveryStatus }));
-    if (selectedOrder && selectedOrder.id === orderId) {
-      setSelectedOrder((prev) => {
-        if (!prev) return null;
-        const updated = { ...prev };
-        if (deliveryStatus === undefined) {
-          delete updated.deliveryStatus;
-        } else {
-          updated.deliveryStatus = deliveryStatus;
-        }
-        return updated;
+    try {
+      const dbStatusMap: Record<string, string> = {
+        pending: "PENDING",
+        in_transit: "IN_TRANSIT",
+        out_for_delivery: "SHIPPED", // mapped standard
+        delivered: "DELIVERED",
+        returned: "RETURNED",
+        cancelled: "RETURNED",
+      };
+      const apiStatus = dbStatusMap[deliveryStatus || "pending"] || "PENDING";
+
+      await apiClient(`/orders/${orderId}`, {
+        method: "PATCH",
+        body: JSON.stringify({
+          shipmentStatus: apiStatus,
+        }),
       });
+
+      dispatch(updateOrderTracking({ id: orderId, deliveryStatus }));
+      if (selectedOrder && selectedOrder.id === orderId) {
+        setSelectedOrder((prev) => {
+          if (!prev) return null;
+          const updated = { ...prev };
+          if (deliveryStatus === undefined) {
+            delete updated.deliveryStatus;
+          } else {
+            updated.deliveryStatus = deliveryStatus;
+          }
+          return updated;
+        });
+      }
+      dispatch(
+        addActivityLog({
+          user: "Admin Sarah",
+          action: `Set delivery status of order ${orderId} to "${deliveryStatus}"`,
+          module: "Orders",
+          status: "success",
+        }),
+      );
+    } catch (err) {
+      console.error(err);
+      alert("Failed to update delivery status.");
     }
-    dispatch(
-      addActivityLog({
-        user: "Admin Sarah",
-        action: `Set delivery status of order ${orderId} to "${deliveryStatus}"`,
-        module: "Orders",
-        status: "success",
-      }),
-    );
   };
 
   const handleViewTrackingTimeline = (order: Order) => {
     setSelectedOrder(order);
     setTrackerModalOpen(true);
-  };
-
-  const handleExport = () => {
-    alert(
-      "Exporting order transactions ledger as CSV. The download will start shortly.",
-    );
   };
 
   // Filter & Paginate
@@ -139,7 +220,9 @@ export default function OrdersPage() {
       key: "id",
       label: "Order ID",
       render: (val) => (
-        <span className="font-bold text-text-custom font-mono">{val}</span>
+        <span className="font-bold text-text-custom font-mono">
+          ORD-{val.substring(0, 4).toUpperCase()}
+        </span>
       ),
     },
     {
@@ -220,6 +303,11 @@ export default function OrdersPage() {
               icon: <Compass className="w-3.5 h-3.5" />,
               onClick: () => handleViewTrackingTimeline(o),
             },
+            {
+              label: "Delete Order",
+              icon: <Trash className="w-3.5 h-3.5 text-red-500" />,
+              onClick: () => handleDeleteOrder(o.id),
+            },
           ]}
         />
       ),
@@ -236,14 +324,6 @@ export default function OrdersPage() {
             Orders Registry
           </h1>
         </div>
-        <Button
-          onClick={handleExport}
-          variant="outline"
-          className="flex items-center gap-1.5 shrink-0 self-start sm:self-auto"
-        >
-          <Download className="w-4 h-4" />
-          Export ledger
-        </Button>
       </div>
 
       {/* Main card list */}
@@ -302,7 +382,13 @@ export default function OrdersPage() {
             </div>
           </div>
 
-          <DataTable columns={columns} data={paginatedOrders} />
+          {loading ? (
+            <div className="py-12 text-center text-sm font-semibold text-text-custom/50">
+              Loading orders...
+            </div>
+          ) : (
+            <DataTable columns={columns} data={paginatedOrders} />
+          )}
 
           <Pagination
             currentPage={currentPage}

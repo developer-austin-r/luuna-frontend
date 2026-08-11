@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Filter, RotateCcw } from "lucide-react";
+import { Filter } from "lucide-react";
 
 import { Button } from "./Button";
 
@@ -29,18 +29,6 @@ export const Filters: React.FC<FiltersProps> = ({
             <Filter className="w-3.5 h-3.5" />
             {isOpen ? "Hide Filters" : "Show Filters"}
           </Button>
-
-          {onClearFilters && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={onClearFilters}
-              className="flex items-center gap-1 text-xs text-text-custom/50 hover:text-text-custom"
-            >
-              <RotateCcw className="w-3 h-3" />
-              Reset
-            </Button>
-          )}
         </div>
       </div>
 
