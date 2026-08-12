@@ -1,7 +1,5 @@
 "use client";
 
-import React from "react";
-
 export type AuthTabType = "login" | "register";
 
 interface TabSwitcherProps {
@@ -9,10 +7,7 @@ interface TabSwitcherProps {
   onTabSelect: (tab: AuthTabType) => void;
 }
 
-export const TabSwitcher: React.FC<TabSwitcherProps> = ({
-  activeTab,
-  onTabSelect,
-}) => {
+export function TabSwitcher({ activeTab, onTabSelect }: TabSwitcherProps) {
   return (
     <div className="tab-container">
       <button
@@ -31,4 +26,4 @@ export const TabSwitcher: React.FC<TabSwitcherProps> = ({
       </button>
     </div>
   );
-};
+}

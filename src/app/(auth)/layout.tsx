@@ -1,5 +1,3 @@
-import React from "react";
-
 import "./login/login.css";
 
 export default function AuthLayout({

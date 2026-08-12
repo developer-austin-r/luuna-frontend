@@ -1,8 +1,6 @@
 "use client";
 
-import React from "react";
-
-export const SocialButtons: React.FC = () => {
+export function SocialButtons() {
   const handleGoogleLogin = (): void => {
     window.location.href = "https://accounts.google.com";
   };
@@ -57,4 +55,4 @@ export const SocialButtons: React.FC = () => {
       </div>
     </>
   );
-};
+}

@@ -1,87 +1,62 @@
 "use client";
 
-import React, { useState } from "react";
-import { type SubmitHandler, useForm } from "react-hook-form";
+import { useActionState, useState } from "react";
 import toast, { Toaster } from "react-hot-toast";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { Eye, EyeOff, Lock } from "lucide-react";
 
-interface ResetPasswordInputs {
-  password: string;
-  confirmPassword: string;
-}
+import { type FormState, resetPasswordAction } from "@/app/actions/auth";
 
-export function ResetPasswordForm(): React.JSX.Element {
-  const router = useRouter();
+export function ResetPasswordForm() {
   const searchParams = useSearchParams();
-  const token = searchParams.get("token");
+  const token = searchParams.get("token") || "";
 
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [showConfirmPassword, setShowConfirmPassword] =
     useState<boolean>(false);
-  const [isSuccess, setIsSuccess] = useState<boolean>(false);
 
-  const {
-    register,
-    handleSubmit,
-    watch,
-    formState: { errors },
-  } = useForm<ResetPasswordInputs>({
-    defaultValues: {
-      password: "",
-      confirmPassword: "",
+  const [state, formAction, isPending] = useActionState<FormState, FormData>(
+    async (prevState, payload) => {
+      const result = await resetPasswordAction(prevState, payload);
+
+      if (result?.error) {
+        toast.error(result.error);
+      } else if (result?.success) {
+        toast.success(result.success);
+      }
+      return result;
     },
-  });
-
-  const password = watch("password");
-
-  const onSubmit: SubmitHandler<ResetPasswordInputs> = async (data) => {
-    console.log("Updating password with token:", token, data.password);
-
-    // 🔔 Toast Message சேர்க்கப்பட்டுள்ளது
-    toast.success("Password reset successful! Redirecting to login...");
-    setIsSuccess(true);
-
-    setTimeout(() => {
-      router.push("/login");
-    }, 2500);
-  };
-
-  const onError = () => {
-    toast.error("Please fix the errors in the form.");
-  };
+    {},
+  );
 
   return (
     <div className="glass-card">
-      {/* 🔔 Toast Notification Container */}
       <Toaster position="top-right" reverseOrder={false} />
 
       <h1 className="login-title">Set New Password</h1>
       <p className="subtitle">Please enter your new password below.</p>
 
-      {isSuccess ? (
+      {state?.success ? (
         <div style={{ textAlign: "center", padding: "1rem 0" }}>
           <p style={{ fontSize: "0.85rem", color: "#4ade80", fontWeight: 600 }}>
-            Password reset successful! Redirecting to login...
+            {state.success}
           </p>
         </div>
       ) : (
-        <form onSubmit={handleSubmit(onSubmit, onError)} className="form-body">
+        <form action={formAction} className="form-body">
+          <input type="hidden" name="token" value={token} />
+
           <div className="form-group">
             <label>New Password</label>
             <div className="input-wrapper">
               <Lock className="input-icon" size={14} />
               <input
                 type={showPassword ? "text" : "password"}
+                name="password"
                 placeholder="Enter new password"
                 className="form-input"
-                {...register("password", {
-                  required: "Please enter your new password",
-                  minLength: {
-                    value: 6,
-                    message: "Password must be at least 6 characters",
-                  },
-                })}
+                required
+                minLength={6}
               />
               <button
                 type="button"
@@ -91,11 +66,6 @@ export function ResetPasswordForm(): React.JSX.Element {
                 {showPassword ? <EyeOff size={14} /> : <Eye size={14} />}
               </button>
             </div>
-            {errors.password && (
-              <span className="error-banner" style={{ textAlign: "left" }}>
-                {errors.password.message}
-              </span>
-            )}
           </div>
 
           <div className="form-group">
@@ -104,13 +74,10 @@ export function ResetPasswordForm(): React.JSX.Element {
               <Lock className="input-icon" size={14} />
               <input
                 type={showConfirmPassword ? "text" : "password"}
+                name="confirmPassword"
                 placeholder="Confirm new password"
                 className="form-input"
-                {...register("confirmPassword", {
-                  required: "Please confirm your password",
-                  validate: (val) =>
-                    val === password || "Passwords do not match",
-                })}
+                required
               />
               <button
                 type="button"
@@ -120,19 +87,15 @@ export function ResetPasswordForm(): React.JSX.Element {
                 {showConfirmPassword ? <EyeOff size={14} /> : <Eye size={14} />}
               </button>
             </div>
-            {errors.confirmPassword && (
-              <span className="error-banner" style={{ textAlign: "left" }}>
-                {errors.confirmPassword.message}
-              </span>
-            )}
           </div>
 
           <button
             type="submit"
             className="btn-primary"
             style={{ marginTop: "0.5rem" }}
+            disabled={isPending}
           >
-            Update Password
+            {isPending ? "Updating..." : "Update Password"}
           </button>
         </form>
       )}

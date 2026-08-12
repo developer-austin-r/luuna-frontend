@@ -1,94 +1,40 @@
 "use client";
 
-import React, { useState } from "react";
-import { type SubmitHandler, useForm } from "react-hook-form";
+import { useActionState, useState } from "react";
 import toast, { Toaster } from "react-hot-toast";
-import { useRouter } from "next/navigation";
 import { ArrowLeft, Eye, EyeOff, Lock, Mail, User } from "lucide-react";
 
-import { useAppDispatch, useAppSelector } from "@/redux/hooks";
-import { loginThunk } from "@/redux/slices/auth-slice";
+import { authenticate, type FormState } from "@/app/actions/auth";
 
 import { SocialButtons } from "./SocialButtons";
 import { type AuthTabType, TabSwitcher } from "./TabSwitcher";
 
-interface LoginFormInputs {
-  firstName?: string;
-  lastName?: string;
-  email: string;
-  password?: string;
-  confirmPassword?: string;
-  rememberMe?: boolean;
-}
-
-export function LoginForm(): React.JSX.Element {
-  const dispatch = useAppDispatch();
-  const router = useRouter();
-  const { isLoading, error } = useAppSelector((state) => state.auth);
-
+export function LoginForm() {
   const [activeTab, setActiveTab] = useState<AuthTabType>("login");
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [showConfirmPassword, setShowConfirmPassword] =
     useState<boolean>(false);
   const [isForgotPassword, setIsForgotPassword] = useState<boolean>(false);
-  const [resetSent, setResetSent] = useState<boolean>(false);
 
-  const {
-    register,
-    handleSubmit,
-    reset,
-    watch,
-    formState: { errors },
-  } = useForm<LoginFormInputs>({
-    defaultValues: {
-      firstName: "",
-      lastName: "",
-      email: "",
-      password: "",
-      confirmPassword: "",
-      rememberMe: false,
+  const [state, formAction, isPending] = useActionState<FormState, FormData>(
+    async (prevState, payload) => {
+      const result = await authenticate(prevState, payload);
+
+      if (result?.error) {
+        toast.error(result.error);
+      } else if (result?.success) {
+        toast.success(result.success);
+        if (activeTab === "register") {
+          setActiveTab("login");
+        }
+      }
+      return result;
     },
-  });
-
-  // Watch password to compare with confirmPassword
-  const passwordValue = watch("password");
+    {},
+  );
 
   const handleTabChange = (tab: AuthTabType): void => {
     setActiveTab(tab);
-    reset();
-  };
-
-  const onSubmit: SubmitHandler<LoginFormInputs> = async (data) => {
-    if (isForgotPassword) {
-      toast.success("Password reset instructions sent to your email!");
-      setResetSent(true);
-      return;
-    }
-
-    if (activeTab === "login") {
-      const result = await dispatch(
-        loginThunk({
-          email: data.email,
-          password: data.password || "",
-          rememberMe: !!data.rememberMe,
-        }),
-      );
-
-      if (loginThunk.fulfilled.match(result)) {
-        toast.success("Login successful!");
-        router.push("/admin/dashboard");
-      } else {
-        toast.error((result.payload as string) || "Invalid email or password");
-      }
-    } else {
-      toast.success("Account created successfully! Please sign in.");
-      reset();
-      setActiveTab("login");
-    }
-  };
-
-  const onError = () => {
-    toast.error("Please fill in all required fields correctly.");
   };
 
   return (
@@ -117,11 +63,11 @@ export function LoginForm(): React.JSX.Element {
             : "Fill in your details to create a new account"}
       </p>
 
-      {error && activeTab === "login" && !isForgotPassword && (
-        <div className="error-banner">{error}</div>
+      {state?.error && activeTab === "login" && !isForgotPassword && (
+        <div className="error-banner">{state.error}</div>
       )}
 
-      {isForgotPassword && resetSent ? (
+      {isForgotPassword && state?.success ? (
         <div style={{ textAlign: "center", padding: "1rem 0" }}>
           <p
             style={{
@@ -130,26 +76,24 @@ export function LoginForm(): React.JSX.Element {
               marginBottom: "1rem",
             }}
           >
-            Password reset link has been sent to your email address!
+            {state.success}
           </p>
           <button
             type="button"
             className="btn-primary"
-            onClick={() => {
-              setIsForgotPassword(false);
-              setResetSent(false);
-              reset();
-            }}
+            onClick={() => setIsForgotPassword(false)}
           >
             Back to Login
           </button>
         </div>
       ) : (
-        <form
-          onSubmit={handleSubmit(onSubmit, onError)}
-          noValidate
-          className="form-body"
-        >
+        <form action={formAction} className="form-body">
+          <input
+            type="hidden"
+            name="mode"
+            value={isForgotPassword ? "forgot" : activeTab}
+          />
+
           {!isForgotPassword && activeTab === "register" && (
             <div className="name-row">
               <div className="form-group">
@@ -158,18 +102,12 @@ export function LoginForm(): React.JSX.Element {
                   <User className="input-icon" size={14} />
                   <input
                     type="text"
+                    name="firstName"
                     placeholder="First Name"
                     className="form-input"
-                    {...register("firstName", {
-                      required: "Please enter your first name",
-                    })}
+                    required
                   />
                 </div>
-                {errors.firstName && (
-                  <span className="error-banner" style={{ textAlign: "left" }}>
-                    {errors.firstName.message}
-                  </span>
-                )}
               </div>
 
               <div className="form-group">
@@ -178,18 +116,12 @@ export function LoginForm(): React.JSX.Element {
                   <User className="input-icon" size={14} />
                   <input
                     type="text"
+                    name="lastName"
                     placeholder="Last Name"
                     className="form-input"
-                    {...register("lastName", {
-                      required: "Please enter your last name",
-                    })}
+                    required
                   />
                 </div>
-                {errors.lastName && (
-                  <span className="error-banner" style={{ textAlign: "left" }}>
-                    {errors.lastName.message}
-                  </span>
-                )}
               </div>
             </div>
           )}
@@ -200,22 +132,12 @@ export function LoginForm(): React.JSX.Element {
               <Mail className="input-icon" size={14} />
               <input
                 type="email"
+                name="email"
                 placeholder="Enter your email"
                 className="form-input"
-                {...register("email", {
-                  required: "Please enter your email",
-                  pattern: {
-                    value: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
-                    message: "Please enter a valid email address",
-                  },
-                })}
+                required
               />
             </div>
-            {errors.email && (
-              <span className="error-banner" style={{ textAlign: "left" }}>
-                {errors.email.message}
-              </span>
-            )}
           </div>
 
           {!isForgotPassword && (
@@ -225,15 +147,11 @@ export function LoginForm(): React.JSX.Element {
                 <Lock className="input-icon" size={14} />
                 <input
                   type={showPassword ? "text" : "password"}
+                  name="password"
                   placeholder="Enter your Password"
                   className="form-input"
-                  {...register("password", {
-                    required: "Please enter your password",
-                    minLength: {
-                      value: 6,
-                      message: "Password must be at least 6 characters",
-                    },
-                  })}
+                  required
+                  minLength={6}
                 />
                 <button
                   type="button"
@@ -243,11 +161,6 @@ export function LoginForm(): React.JSX.Element {
                   {showPassword ? <EyeOff size={14} /> : <Eye size={14} />}
                 </button>
               </div>
-              {errors.password && (
-                <span className="error-banner" style={{ textAlign: "left" }}>
-                  {errors.password.message}
-                </span>
-              )}
             </div>
           )}
 
@@ -258,13 +171,10 @@ export function LoginForm(): React.JSX.Element {
                 <Lock className="input-icon" size={14} />
                 <input
                   type={showConfirmPassword ? "text" : "password"}
+                  name="confirmPassword"
                   placeholder="Confirm your Password"
                   className="form-input"
-                  {...register("confirmPassword", {
-                    required: "Please confirm your password",
-                    validate: (value) =>
-                      value === passwordValue || "Passwords do not match",
-                  })}
+                  required
                 />
                 <button
                   type="button"
@@ -278,18 +188,13 @@ export function LoginForm(): React.JSX.Element {
                   )}
                 </button>
               </div>
-              {errors.confirmPassword && (
-                <span className="error-banner" style={{ textAlign: "left" }}>
-                  {errors.confirmPassword.message}
-                </span>
-              )}
             </div>
           )}
 
           {!isForgotPassword && activeTab === "login" && (
             <div className="options-row">
               <label className="remember-label">
-                <input type="checkbox" {...register("rememberMe")} />
+                <input type="checkbox" name="rememberMe" />
                 Remember me
               </label>
               <button
@@ -308,8 +213,8 @@ export function LoginForm(): React.JSX.Element {
             </div>
           )}
 
-          <button type="submit" className="btn-primary" disabled={isLoading}>
-            {isLoading
+          <button type="submit" className="btn-primary" disabled={isPending}>
+            {isPending
               ? "Please wait..."
               : isForgotPassword
                 ? "Send Reset Link"
