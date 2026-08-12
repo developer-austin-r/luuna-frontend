@@ -252,20 +252,6 @@ export default function UsersPage() {
 
       const updatedUser: User = result.data;
 
-      setCustomers((current) =>
-        current.map((user) =>
-          user.id === updatedUser.id
-            ? {
-              ...updatedUser,
-
-              // Keep client-only fields
-              phone: data.phone,
-              status: data.status,
-            }
-            : user,
-        ),
-      );
-
       setEditModalOpen(false);
       setSelectedCustomer(null);
 
