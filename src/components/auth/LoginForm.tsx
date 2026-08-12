@@ -2,6 +2,7 @@
 
 import { useActionState, useState } from "react";
 import toast, { Toaster } from "react-hot-toast";
+import { usePathname, useRouter } from "next/navigation";
 import { ArrowLeft, Eye, EyeOff, Lock, Mail, User } from "lucide-react";
 
 import { authenticate, type FormState } from "@/app/actions/auth";
@@ -10,7 +11,11 @@ import { SocialButtons } from "./SocialButtons";
 import { type AuthTabType, TabSwitcher } from "./TabSwitcher";
 
 export function LoginForm() {
-  const [activeTab, setActiveTab] = useState<AuthTabType>("login");
+  const pathname = usePathname();
+  const router = useRouter();
+  const activeTab: AuthTabType =
+    pathname === "/register" ? "register" : "login";
+
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [showConfirmPassword, setShowConfirmPassword] =
     useState<boolean>(false);
@@ -25,7 +30,7 @@ export function LoginForm() {
       } else if (result?.success) {
         toast.success(result.success);
         if (activeTab === "register") {
-          setActiveTab("login");
+          router.push("/login");
         }
       }
       return result;
@@ -34,7 +39,11 @@ export function LoginForm() {
   );
 
   const handleTabChange = (tab: AuthTabType): void => {
-    setActiveTab(tab);
+    if (tab === "register") {
+      router.push("/register");
+    } else {
+      router.push("/login");
+    }
   };
 
   return (
@@ -63,7 +72,7 @@ export function LoginForm() {
             : "Fill in your details to create a new account"}
       </p>
 
-      {state?.error && activeTab === "login" && !isForgotPassword && (
+      {state?.error && !isForgotPassword && (
         <div className="error-banner">{state.error}</div>
       )}
 
@@ -151,7 +160,7 @@ export function LoginForm() {
                   placeholder="Enter your Password"
                   className="form-input"
                   required
-                  minLength={6}
+                  minLength={8}
                 />
                 <button
                   type="button"
