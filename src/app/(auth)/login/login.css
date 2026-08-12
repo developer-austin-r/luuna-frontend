@@ -19,7 +19,6 @@ html, body {
   box-sizing: border-box;
 }
 
-
 .glass-card {
   width: 100%;
   max-width: 380px;
@@ -242,7 +241,6 @@ html, body {
   margin-left: 2px;
   font-size: 0.72rem;
 }
-
 
 .glass-card.register-card {
   padding: 0.85rem 1.25rem; 
