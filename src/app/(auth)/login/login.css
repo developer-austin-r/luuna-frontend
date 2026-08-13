@@ -1,4 +1,5 @@
-html, body {
+html,
+body {
   height: 100%;
   margin: 0;
   padding: 0;
@@ -11,7 +12,7 @@ html, body {
   display: flex;
   justify-content: center;
   align-items: center;
-  background-image: url('/Login (1).png');
+  background-image: url("/Login (1).png");
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
@@ -196,7 +197,7 @@ html, body {
 
 .divider::before,
 .divider::after {
-  content: '';
+  content: "";
   flex: 1;
   border-bottom: 1px solid rgba(255, 255, 255, 0.2);
 }
@@ -243,7 +244,7 @@ html, body {
 }
 
 .glass-card.register-card {
-  padding: 0.85rem 1.25rem; 
+  padding: 0.85rem 1.25rem;
 }
 
 .glass-card.register-card .login-title {
@@ -261,7 +262,7 @@ html, body {
 }
 
 .glass-card.register-card .form-group {
-  margin-bottom: 0.3rem; 
+  margin-bottom: 0.3rem;
 }
 
 .glass-card.register-card .form-group label {
@@ -269,7 +270,7 @@ html, body {
 }
 
 .glass-card.register-card .form-input {
-  padding: 0.38rem 0.6rem 0.38rem 1.9rem; 
+  padding: 0.38rem 0.6rem 0.38rem 1.9rem;
   font-size: 0.75rem;
 }
 

@@ -38,9 +38,28 @@ export function ResetPasswordForm() {
 
       {state?.success ? (
         <div style={{ textAlign: "center", padding: "1rem 0" }}>
-          <p style={{ fontSize: "0.85rem", color: "#4ade80", fontWeight: 600 }}>
+          <p
+            style={{
+              fontSize: "0.85rem",
+              color: "#4ade80",
+              fontWeight: 600,
+              marginBottom: "1rem",
+            }}
+          >
             {state.success}
           </p>
+          <a
+            href="/login"
+            className="btn-primary"
+            style={{
+              display: "inline-block",
+              textDecoration: "none",
+              width: "auto",
+              padding: "0.5rem 1rem",
+            }}
+          >
+            Go to Sign In
+          </a>
         </div>
       ) : (
         <form action={formAction} className="form-body">
