@@ -1,8 +1,8 @@
 import { LoginForm } from "@/components/auth";
 
-import "./login.css";
+import "../login/login.css";
 
-export default function LoginPage() {
+export default function RegisterPage() {
   return (
     <main className="login-wrapper">
       <LoginForm />
