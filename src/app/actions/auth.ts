@@ -202,7 +202,7 @@ export async function resetPasswordAction(
       const errorData = await response.json().catch(() => ({}));
       return { error: errorData.message || "Failed to reset password." };
     }
-    
+
     return { success: "Password reset successful! You can now log in." };
   } catch (err: any) {
     return { error: err.message || "An unexpected error occurred." };

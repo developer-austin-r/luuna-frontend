@@ -1,16 +1,20 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
-import { useSearchParams } from "next/navigation";
-import { CheckCircle2, XCircle, Loader2, ArrowRight } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import toast, { Toaster } from "react-hot-toast";
+import { useSearchParams } from "next/navigation";
+import { ArrowRight, CheckCircle2, Loader2, XCircle } from "lucide-react";
 
 export function VerifyEmailForm() {
   const searchParams = useSearchParams();
   const token = searchParams.get("token") || "";
 
-  const [status, setStatus] = useState<"loading" | "success" | "error">("loading");
-  const [message, setMessage] = useState<string>("Verifying your email address...");
+  const [status, setStatus] = useState<"loading" | "success" | "error">(
+    "loading",
+  );
+  const [message, setMessage] = useState<string>(
+    "Verifying your email address...",
+  );
   const verificationAttempted = useRef(false);
 
   useEffect(() => {
@@ -41,16 +45,23 @@ export function VerifyEmailForm() {
 
         if (response.ok) {
           setStatus("success");
-          setMessage(data.message || "Your email has been verified successfully!");
+          setMessage(
+            data.message || "Your email has been verified successfully!",
+          );
           toast.success("Email verified successfully!");
         } else {
           setStatus("error");
-          setMessage(data.message || "Email verification failed. The token may be invalid or expired.");
+          setMessage(
+            data.message ||
+              "Email verification failed. The token may be invalid or expired.",
+          );
           toast.error(data.message || "Verification failed.");
         }
       } catch (err: any) {
         setStatus("error");
-        setMessage(err.message || "An unexpected error occurred during verification.");
+        setMessage(
+          err.message || "An unexpected error occurred during verification.",
+        );
         toast.error("Network or server error.");
       }
     };
@@ -59,22 +70,60 @@ export function VerifyEmailForm() {
   }, [token]);
 
   return (
-    <div className="glass-card" style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", minHeight: "300px", textAlign: "center", padding: "2.5rem" }}>
+    <div
+      className="glass-card"
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        minHeight: "300px",
+        textAlign: "center",
+        padding: "2.5rem",
+      }}
+    >
       <Toaster position="top-right" reverseOrder={false} />
 
       {status === "loading" && (
-        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "1.5rem" }}>
-          <Loader2 className="animate-spin" style={{ color: "#3b82f6", width: "4rem", height: "4rem" }} />
-          <h1 className="login-title" style={{ margin: 0 }}>Verifying Your Account</h1>
-          <p className="subtitle" style={{ margin: 0 }}>Please wait while we confirm your email address...</p>
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            gap: "1.5rem",
+          }}
+        >
+          <Loader2
+            className="animate-spin"
+            style={{ color: "#3b82f6", width: "4rem", height: "4rem" }}
+          />
+          <h1 className="login-title" style={{ margin: 0 }}>
+            Verifying Your Account
+          </h1>
+          <p className="subtitle" style={{ margin: 0 }}>
+            Please wait while we confirm your email address...
+          </p>
         </div>
       )}
 
       {status === "success" && (
-        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "1.5rem" }}>
-          <CheckCircle2 style={{ color: "#10b981", width: "4rem", height: "4rem" }} />
-          <h1 className="login-title" style={{ margin: 0 }}>Email Verified!</h1>
-          <p className="subtitle" style={{ color: "#e2e8f0", margin: 0 }}>{message}</p>
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            gap: "1.5rem",
+          }}
+        >
+          <CheckCircle2
+            style={{ color: "#10b981", width: "4rem", height: "4rem" }}
+          />
+          <h1 className="login-title" style={{ margin: 0 }}>
+            Email Verified!
+          </h1>
+          <p className="subtitle" style={{ color: "#e2e8f0", margin: 0 }}>
+            {message}
+          </p>
           <a
             href="/login"
             className="btn-primary"
@@ -86,7 +135,7 @@ export function VerifyEmailForm() {
               marginTop: "1rem",
               padding: "0.75rem 1.5rem",
               fontSize: "0.9rem",
-              fontWeight: 600
+              fontWeight: 600,
             }}
           >
             Continue to Sign In <ArrowRight size={16} />
@@ -95,10 +144,23 @@ export function VerifyEmailForm() {
       )}
 
       {status === "error" && (
-        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "1.5rem" }}>
-          <XCircle style={{ color: "#ef4444", width: "4rem", height: "4rem" }} />
-          <h1 className="login-title" style={{ margin: 0 }}>Verification Failed</h1>
-          <p className="subtitle" style={{ color: "#fca5a5", margin: 0 }}>{message}</p>
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            gap: "1.5rem",
+          }}
+        >
+          <XCircle
+            style={{ color: "#ef4444", width: "4rem", height: "4rem" }}
+          />
+          <h1 className="login-title" style={{ margin: 0 }}>
+            Verification Failed
+          </h1>
+          <p className="subtitle" style={{ color: "#fca5a5", margin: 0 }}>
+            {message}
+          </p>
           <div style={{ display: "flex", gap: "1rem", marginTop: "1rem" }}>
             <a
               href="/register"
@@ -108,7 +170,7 @@ export function VerifyEmailForm() {
                 textDecoration: "none",
                 padding: "0.75rem 1.5rem",
                 fontSize: "0.9rem",
-                fontWeight: 600
+                fontWeight: 600,
               }}
             >
               Back to Register
