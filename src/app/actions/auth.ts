@@ -16,13 +16,31 @@ export async function authenticate(
   const email = formData.get("email") as string;
   const password = formData.get("password") as string;
 
-  if (mode === "forgot") {
-    if (!email) return { error: "Please enter your email." };
-    return { success: "Password reset link sent to your email!" };
-  }
-
   const apiBaseUrl =
     process.env.NEXT_PUBLIC_API_BASE_URL || "http://127.0.0.1:3001";
+
+  if (mode === "forgot") {
+    if (!email) return { error: "Please enter your email." };
+    try {
+      const forgotResponse = await fetch(`${apiBaseUrl}/auth/forgot-password`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email }),
+      });
+
+      if (!forgotResponse.ok) {
+        const errorData = await forgotResponse.json().catch(() => ({}));
+        return { error: errorData.message || "Failed to send reset email." };
+      }
+      return { success: "If the account exists, a reset link has been sent." };
+    } catch (err: any) {
+      return {
+        error: err.message || "An unexpected error occurred.",
+      };
+    }
+  }
 
   if (mode === "register") {
     const firstName = formData.get("firstName") as string;
@@ -164,9 +182,29 @@ export async function resetPasswordAction(
     return { error: "Passwords do not match." };
   }
 
-  if (!password || password.length < 6) {
-    return { error: "Password must be at least 6 characters long." };
+  if (!password || password.length < 8) {
+    return { error: "Password must be at least 8 characters long." };
   }
 
-  redirect("/login");
+  const apiBaseUrl =
+    process.env.NEXT_PUBLIC_API_BASE_URL || "http://127.0.0.1:3001";
+
+  try {
+    const response = await fetch(`${apiBaseUrl}/auth/reset-password`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ token, password, confirmPassword }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      return { error: errorData.message || "Failed to reset password." };
+    }
+    
+    return { success: "Password reset successful! You can now log in." };
+  } catch (err: any) {
+    return { error: err.message || "An unexpected error occurred." };
+  }
 }
