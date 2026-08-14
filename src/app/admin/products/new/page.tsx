@@ -98,6 +98,7 @@ export default function AddProductPage() {
     handleSubmit,
     control,
     setValue,
+    watch,
     formState: { errors, isSubmitting },
   } = useForm<ProductFormValues>({
     defaultValues: {
@@ -176,6 +177,7 @@ export default function AddProductPage() {
     name: "keywords",
     defaultValue: "",
   });
+  const watchCategoryIds = watch("categoryIds") || [];
 
   // Generate SEO slug helper
   const handleAutoGenerateSlug = () => {
@@ -481,15 +483,49 @@ export default function AddProductPage() {
                 />
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <Select
-                  label="Category Taxonomy"
-                  {...register("categoryIds")}
-                  multiple
-                  options={categories.map((c) => ({
-                    value: c.id,
-                    label: c.name,
-                  }))}
-                />
+                <div>
+                  <label className="text-xs font-semibold text-text-custom/80 uppercase tracking-wider block mb-1.5">
+                    Category Taxonomy
+                  </label>
+                  <div className="border border-border-custom rounded-lg p-3 max-h-[160px] overflow-y-auto bg-white space-y-1.5 shadow-sm">
+                    {categories.length === 0 ? (
+                      <span className="text-xs text-text-custom/50 italic">
+                        No categories found
+                      </span>
+                    ) : (
+                      categories.map((c) => (
+                        <label
+                          key={c.id}
+                          className="flex items-center gap-2.5 text-sm text-text-custom cursor-pointer hover:bg-neutral-50 p-1.5 rounded transition-colors select-none"
+                        >
+                          <input
+                            type="checkbox"
+                            value={c.id}
+                            checked={watchCategoryIds.includes(c.id)}
+                            onChange={(e) => {
+                              const checked = e.target.checked;
+                              if (checked) {
+                                setValue("categoryIds", [
+                                  ...watchCategoryIds,
+                                  c.id,
+                                ]);
+                              } else {
+                                setValue(
+                                  "categoryIds",
+                                  watchCategoryIds.filter((id) => id !== c.id),
+                                );
+                              }
+                            }}
+                            className="rounded border-border-custom text-primary focus:ring-primary h-4 w-4 cursor-pointer accent-primary"
+                          />
+                          <span className="font-medium text-xs uppercase tracking-wider text-text-custom/90">
+                            {c.name}
+                          </span>
+                        </label>
+                      ))
+                    )}
+                  </div>
+                </div>
                 <Input
                   label="Product Brand"
                   {...register("brandName")}

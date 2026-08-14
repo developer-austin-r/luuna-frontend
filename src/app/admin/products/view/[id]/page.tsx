@@ -2,21 +2,13 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import {
-  ArrowLeft,
-  BarChart3,
-  DollarSign,
-  Edit,
-  Package,
-  Tag,
-} from "lucide-react";
+import { ArrowLeft, Edit, Tag } from "lucide-react";
 
 import {
   Badge,
   Breadcrumb,
   Button,
   Card,
-  StatsCard,
   StatusBadge,
 } from "@/components/admin";
 import { useAppSelector } from "@/redux/hooks";
@@ -168,25 +160,6 @@ export default function ViewProductPage() {
             <StatusBadge status={product.status} />
           </span>
         </div>
-      </div>
-
-      {/* Metrics Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-        <StatsCard
-          title="Units Sold"
-          value={simulatedStats.unitsSold}
-          icon={<Package className="w-5 h-5" />}
-        />
-        <StatsCard
-          title="Revenue Generated"
-          value={`$${simulatedStats.revenue.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
-          icon={<DollarSign className="w-5 h-5 text-emerald-500" />}
-        />
-        <StatsCard
-          title="Page Visitors"
-          value={simulatedStats.pageViews}
-          icon={<BarChart3 className="w-5 h-5 text-sky-500" />}
-        />
       </div>
 
       {/* Product Information Breakdown */}
