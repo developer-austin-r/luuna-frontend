@@ -4,7 +4,6 @@ import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { Edit, Trash, UserPlus } from "lucide-react";
 
-
 import {
   ActionMenu,
   Avatar,
@@ -59,8 +58,7 @@ export default function UsersPage() {
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
-  const [selectedCustomer, setSelectedCustomer] =
-    useState<User | null>(null);
+  const [selectedCustomer, setSelectedCustomer] = useState<User | null>(null);
 
   const {
     register: registerCreate,
@@ -182,19 +180,16 @@ export default function UsersPage() {
     try {
       setLoading(true);
 
-      const response = await fetch(
-        `${API_BASE}/users/${selectedCustomer.id}`,
-        {
-          method: "PATCH",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            name: data.name,
-            email: data.email,
-          }),
-        }
-      );
+      const response = await fetch(`${API_BASE}/users/${selectedCustomer.id}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name: data.name,
+          email: data.email,
+        }),
+      });
 
       if (!response.ok) {
         const errorText = await response.text();
@@ -208,8 +203,8 @@ export default function UsersPage() {
       // Update the table immediately
       setCustomers((current) =>
         current.map((user) =>
-          user.id === updatedUser.id ? updatedUser : user
-        )
+          user.id === updatedUser.id ? updatedUser : user,
+        ),
       );
 
       setEditModalOpen(false);
@@ -241,12 +236,9 @@ export default function UsersPage() {
     try {
       setLoading(true);
 
-      const response = await fetch(
-        `${API_BASE}/users/${selectedCustomer.id}`,
-        {
-          method: "DELETE",
-        }
-      );
+      const response = await fetch(`${API_BASE}/users/${selectedCustomer.id}`, {
+        method: "DELETE",
+      });
 
       if (!response.ok) {
         const errorText = await response.text();
@@ -254,19 +246,16 @@ export default function UsersPage() {
         throw new Error("Failed to delete user");
       }
 
-      const deletedUserName =
-        selectedCustomer.name ?? selectedCustomer.email;
+      const deletedUserName = selectedCustomer.name ?? selectedCustomer.email;
 
       setCustomers((current) =>
-        current.filter((user) => user.id !== selectedCustomer.id)
+        current.filter((user) => user.id !== selectedCustomer.id),
       );
 
       setDeleteDialogOpen(false);
       setSelectedCustomer(null);
 
-      toastSuccess(
-        `User "${deletedUserName}" deleted successfully.`
-      );
+      toastSuccess(`User "${deletedUserName}" deleted successfully.`);
     } catch (error) {
       const message =
         error instanceof Error ? error.message : "Failed to delete user";
@@ -307,18 +296,14 @@ export default function UsersPage() {
   // ==============================
   // PAGINATION
   // ==============================
-  const totalPages =
-    Math.ceil(filteredCustomers.length / itemsPerPage) || 1;
+  const totalPages = Math.ceil(filteredCustomers.length / itemsPerPage) || 1;
 
   const paginatedCustomers = filteredCustomers.slice(
     (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
+    currentPage * itemsPerPage,
   );
 
-  const handleSort = (
-    key: keyof User,
-    direction: "asc" | "desc"
-  ) => {
+  const handleSort = (key: keyof User, direction: "asc" | "desc") => {
     setSortBy(key);
     setSortDir(direction);
   };
@@ -333,10 +318,7 @@ export default function UsersPage() {
       sortable: true,
       render: (_, customer) => (
         <div className="flex items-center gap-3">
-          <Avatar
-            name={customer.name ?? customer.email}
-            size="sm"
-          />
+          <Avatar name={customer.name ?? customer.email} size="sm" />
 
           <div>
             <p className="font-bold text-text-custom">
@@ -351,9 +333,7 @@ export default function UsersPage() {
       label: "Email",
       sortable: true,
       render: (value) => (
-        <span className="text-text-custom/80">
-          {value || "—"}
-        </span>
+        <span className="text-text-custom/80">{value || "—"}</span>
       ),
     },
     {
@@ -372,9 +352,7 @@ export default function UsersPage() {
       sortable: true,
       render: (value) => (
         <span suppressHydrationWarning>
-          {value
-            ? new Date(value).toLocaleDateString()
-            : "—"}
+          {value ? new Date(value).toLocaleDateString() : "—"}
         </span>
       ),
     },
@@ -418,9 +396,7 @@ export default function UsersPage() {
             ]}
           />
 
-          <h1 className="text-2xl font-bold text-text-custom mt-2">
-            Users
-          </h1>
+          <h1 className="text-2xl font-bold text-text-custom mt-2">Users</h1>
         </div>
 
         <Button
@@ -436,9 +412,7 @@ export default function UsersPage() {
 
       <Card>
         {loading && (
-          <div className="text-sm text-text-custom/50 mb-4">
-            Loading...
-          </div>
+          <div className="text-sm text-text-custom/50 mb-4">Loading...</div>
         )}
 
         <DataTable
@@ -461,10 +435,7 @@ export default function UsersPage() {
         title="Create User"
         footer={
           <>
-            <Button
-              variant="outline"
-              onClick={() => setCreateModalOpen(false)}
-            >
+            <Button variant="outline" onClick={() => setCreateModalOpen(false)}>
               Cancel
             </Button>
 
@@ -575,9 +546,7 @@ export default function UsersPage() {
           setSelectedCustomer(null);
         }}
         onConfirm={() => void confirmDelete()}
-        itemName={
-          selectedCustomer?.name ?? selectedCustomer?.email
-        }
+        itemName={selectedCustomer?.name ?? selectedCustomer?.email}
         title="Delete User Account"
       />
     </div>
