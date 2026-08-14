@@ -45,6 +45,7 @@ export const menuItems: MenuItem[] = [
   { name: "Reports", href: "/admin/reports", icon: FileText },
   { name: "Activity Logs", href: "/admin/activity-logs", icon: History },
   { name: "Settings", href: "/admin/settings", icon: Settings },
+  { name: "Users", href: "/admin/users", icon: Users },
 ];
 
 export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
