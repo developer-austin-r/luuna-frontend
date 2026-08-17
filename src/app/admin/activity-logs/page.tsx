@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import { Download, Filter, X } from "lucide-react";
 
 import {
   Breadcrumb,
@@ -8,13 +9,25 @@ import {
   type Column,
   DataTable,
   DatePicker,
-  Filters,
   Modal,
   Pagination,
   Search,
   Select,
 } from "@/components/admin";
 import { apiClient } from "@/services/api-client";
+
+// Max range for date filters
+const MAX_DAYS = 30;
+
+function get30DaysAgo(): string {
+  const d = new Date();
+  d.setDate(d.getDate() - MAX_DAYS);
+  return d.toISOString().split("T")[0]!;
+}
+
+function getTodayStr(): string {
+  return new Date().toISOString().split("T")[0]!;
+}
 
 export default function ActivityLogsPage() {
   // Data States
@@ -46,8 +59,13 @@ export default function ActivityLogsPage() {
 
   // UI States
   const [loading, setLoading] = useState(false);
+  const [showFilters, setShowFilters] = useState(false);
   const [selectedLog, setSelectedLog] = useState<any>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
+
+  const minDate = get30DaysAgo();
+  const maxDate = getTodayStr();
 
   // Fetch log filters config
   const fetchFilters = async () => {
@@ -63,25 +81,32 @@ export default function ActivityLogsPage() {
     }
   };
 
+  // Build query params shared between fetch and export
+  const buildParams = () => {
+    const params = new URLSearchParams();
+    if (searchTerm) params.append("search", searchTerm);
+    if (selectedModule !== "all") params.append("moduleId", selectedModule);
+    if (selectedAction !== "all") params.append("actionId", selectedAction);
+    if (selectedDevice !== "all") params.append("deviceType", selectedDevice);
+
+    // Clamp dates to 30-day window
+    const effectiveStart = startDate || minDate;
+    const effectiveEnd = endDate || maxDate;
+    params.append("startDate", new Date(effectiveStart).toISOString());
+    const end = new Date(effectiveEnd);
+    end.setHours(23, 59, 59, 999);
+    params.append("endDate", end.toISOString());
+
+    return params;
+  };
+
   // Fetch paginated logs
   const fetchLogs = async () => {
     setLoading(true);
     try {
-      const params = new URLSearchParams();
-      params.append("page", String(page));
-      params.append("limit", "10"); // Set size to 10 for dashboard table sizing
-
-      if (searchTerm) params.append("search", searchTerm);
-      if (selectedModule !== "all") params.append("moduleId", selectedModule);
-      if (selectedAction !== "all") params.append("actionId", selectedAction);
-      if (selectedDevice !== "all") params.append("deviceType", selectedDevice);
-      if (startDate)
-        params.append("startDate", new Date(startDate).toISOString());
-      if (endDate) {
-        const end = new Date(endDate);
-        end.setHours(23, 59, 59, 999);
-        params.append("endDate", end.toISOString());
-      }
+      const params = buildParams();
+      params.set("page", String(page));
+      params.set("limit", "10");
 
       const res = await apiClient<{
         data: {
@@ -106,6 +131,85 @@ export default function ActivityLogsPage() {
     }
   };
 
+  // CSV Export — fetches ALL matching logs (up to 30d) and triggers download
+  const handleExportCSV = async () => {
+    setIsExporting(true);
+    try {
+      const params = buildParams();
+      params.set("page", "1");
+      params.set("limit", "10000");
+
+      const res = await apiClient<{
+        data: {
+          data: any[];
+        };
+      }>(`/admin/activity-logs?${params.toString()}`);
+
+      if (!res?.data?.data?.length) {
+        alert("No data to export for the selected filters.");
+        return;
+      }
+
+      const rows = res.data.data;
+
+      const headers = [
+        "Date & Time",
+        "User Name",
+        "User Email",
+        "Session ID",
+        "Module",
+        "Action",
+        "Description",
+        "Device Type",
+        "Browser",
+        "OS",
+        "IP Address",
+      ];
+
+      const csvRows = [
+        headers.join(","),
+        ...rows.map((row: any) =>
+          [
+            `"${new Date(row.createdAt).toLocaleString()}"`,
+            `"${row.user?.name || "Guest"}"`,
+            `"${row.user?.email || ""}"`,
+            `"${row.sessionId || ""}"`,
+            `"${row.module?.name || ""}"`,
+            `"${row.action?.name || ""}"`,
+            `"${(row.description || "").replace(/"/g, '""')}"`,
+            `"${row.deviceType || ""}"`,
+            `"${row.browser || ""}"`,
+            `"${row.os || ""}"`,
+            `"${row.ipAddress || ""}"`,
+          ].join(","),
+        ),
+      ].join("\n");
+
+      const blob = new Blob([csvRows], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      const dateLabel = `${startDate || minDate}_to_${endDate || maxDate}`;
+      link.download = `activity-logs_${dateLabel}.csv`;
+      link.click();
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error("Error exporting CSV:", err);
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
+  const handleClearFilters = () => {
+    setSearchTerm("");
+    setSelectedModule("all");
+    setSelectedAction("all");
+    setSelectedDevice("all");
+    setStartDate("");
+    setEndDate("");
+    setPage(1);
+  };
+
   // Trigger loads
   useEffect(() => {
     fetchFilters();
@@ -123,16 +227,6 @@ export default function ActivityLogsPage() {
     endDate,
   ]);
 
-  const handleClearFilters = () => {
-    setSearchTerm("");
-    setSelectedModule("all");
-    setSelectedAction("all");
-    setSelectedDevice("all");
-    setStartDate("");
-    setEndDate("");
-    setPage(1);
-  };
-
   // Derived filtered actions list for the sub-select dropdown
   const filteredActions =
     selectedModule === "all"
@@ -140,6 +234,13 @@ export default function ActivityLogsPage() {
       : filtersList.actions.filter(
           (act) => String(act.moduleId) === String(selectedModule),
         );
+
+  const activeFilterCount = [
+    selectedModule !== "all",
+    selectedAction !== "all",
+    !!startDate,
+    !!endDate,
+  ].filter(Boolean).length;
 
   const columns: Column<any>[] = [
     {
@@ -255,15 +356,18 @@ export default function ActivityLogsPage() {
           items={[{ label: "Activity Logs", href: "/admin/activity-logs" }]}
         />
         <h1 className="text-2xl font-bold text-text-custom mt-1">
-          Audit Trail & Activity Logs
+          Activity Logs
         </h1>
       </div>
 
       {/* Table Card */}
       <Card>
         <div className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
-            <div className="md:col-span-2">
+
+          {/* ── Toolbar Row ── */}
+          <div className="flex flex-wrap items-end gap-3">
+            {/* Search */}
+            <div className="flex-1 min-w-[220px]">
               <Search
                 placeholder="Search actions, users, sessions, or IPs..."
                 onSearchChange={(val) => {
@@ -272,7 +376,9 @@ export default function ActivityLogsPage() {
                 }}
               />
             </div>
-            <div>
+
+            {/* Device Type */}
+            <div className="w-44">
               <Select
                 label="Device Type"
                 value={selectedDevice}
@@ -288,61 +394,128 @@ export default function ActivityLogsPage() {
                 ]}
               />
             </div>
-            <div className="flex gap-2 justify-end">
-              <Filters onClearFilters={handleClearFilters}>
-                <div className="grid grid-cols-1 gap-4 p-2 min-w-[280px]">
-                  <Select
-                    label="System Module"
-                    value={selectedModule}
-                    onChange={(e) => {
-                      setSelectedModule(e.target.value);
-                      setSelectedAction("all");
-                      setPage(1);
-                    }}
-                    options={[
-                      { value: "all", label: "All Modules" },
-                      ...filtersList.modules.map((mod) => ({
-                        value: String(mod.id),
-                        label: mod.name,
-                      })),
-                    ]}
-                  />
-                  <Select
-                    label="Operation Action"
-                    value={selectedAction}
-                    onChange={(e) => {
-                      setSelectedAction(e.target.value);
-                      setPage(1);
-                    }}
-                    disabled={selectedModule === "all"}
-                    options={[
-                      { value: "all", label: "All Actions" },
-                      ...filteredActions.map((act) => ({
-                        value: String(act.id),
-                        label: act.name.replace(/_/g, " "),
-                      })),
-                    ]}
-                  />
-                  <DatePicker
-                    label="Start Date"
-                    value={startDate}
-                    onChange={(e) => {
-                      setStartDate(e.target.value);
-                      setPage(1);
-                    }}
-                  />
-                  <DatePicker
-                    label="End Date"
-                    value={endDate}
-                    onChange={(e) => {
-                      setEndDate(e.target.value);
-                      setPage(1);
-                    }}
-                  />
-                </div>
-              </Filters>
-            </div>
+
+            {/* Show Filters toggle */}
+            <button
+              id="toggle-filters-btn"
+              onClick={() => setShowFilters((v) => !v)}
+              className={`flex items-center gap-1.5 px-3 py-2 rounded-lg border text-sm font-semibold transition-all cursor-pointer ${
+                showFilters
+                  ? "bg-indigo-600 border-indigo-600 text-white"
+                  : "bg-white border-border-custom text-text-custom hover:border-indigo-400 hover:text-indigo-600"
+              }`}
+            >
+              <Filter className="w-3.5 h-3.5" />
+              {showFilters ? "Hide Filters" : "Show Filters"}
+              {activeFilterCount > 0 && !showFilters && (
+                <span className="ml-1 bg-indigo-600 text-white text-[10px] font-bold rounded-full w-4 h-4 flex items-center justify-center">
+                  {activeFilterCount}
+                </span>
+              )}
+            </button>
+
+            {/* CSV Export */}
+            <button
+              id="export-csv-btn"
+              onClick={handleExportCSV}
+              disabled={isExporting}
+              className="flex items-center gap-1.5 px-3 py-2 rounded-lg border border-emerald-300 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 text-sm font-semibold transition-all cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
+            >
+              <Download className="w-3.5 h-3.5" />
+              {isExporting ? "Exporting..." : "Export CSV"}
+            </button>
           </div>
+
+          {/* ── Expanded Filters Panel ── */}
+          {showFilters && (
+            <div className="bg-bg-secondary border border-border-custom rounded-xl p-4 space-y-4 animate-fadeIn">
+              {/* Panel header */}
+              <div className="flex items-center justify-between">
+                <p className="text-xs font-bold text-text-custom/60 uppercase tracking-widest">
+                  Filters
+                </p>
+                <div className="flex items-center gap-2">
+                  {activeFilterCount > 0 && (
+                    <button
+                      onClick={handleClearFilters}
+                      className="flex items-center gap-1 text-xs text-red-500 hover:text-red-700 font-semibold cursor-pointer transition-colors"
+                    >
+                      <X className="w-3 h-3" />
+                      Clear all
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {/* Filter fields grid */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                {/* Module */}
+                <Select
+                  label="System Module"
+                  value={selectedModule}
+                  onChange={(e) => {
+                    setSelectedModule(e.target.value);
+                    setSelectedAction("all");
+                    setPage(1);
+                  }}
+                  options={[
+                    { value: "all", label: "All Modules" },
+                    ...filtersList.modules.map((mod) => ({
+                      value: String(mod.id),
+                      label: mod.name,
+                    })),
+                  ]}
+                />
+
+                {/* Action */}
+                <Select
+                  label="Operation Action"
+                  value={selectedAction}
+                  onChange={(e) => {
+                    setSelectedAction(e.target.value);
+                    setPage(1);
+                  }}
+                  disabled={selectedModule === "all"}
+                  options={[
+                    { value: "all", label: selectedModule === "all" ? "Select a module first" : "All Actions" },
+                    ...filteredActions.map((act) => ({
+                      value: String(act.id),
+                      label: act.name.replace(/_/g, " "),
+                    })),
+                  ]}
+                />
+
+                {/* From Date */}
+                <DatePicker
+                  label="From Date"
+                  value={startDate}
+                  min={minDate}
+                  max={endDate || maxDate}
+                  onChange={(e) => {
+                    setStartDate(e.target.value);
+                    setPage(1);
+                  }}
+                />
+
+                {/* To Date */}
+                <DatePicker
+                  label="To Date"
+                  value={endDate}
+                  min={startDate || minDate}
+                  max={maxDate}
+                  onChange={(e) => {
+                    setEndDate(e.target.value);
+                    setPage(1);
+                  }}
+                />
+              </div>
+
+              {/* Helper note */}
+              <p className="text-[10px] text-text-custom/40 italic">
+                Date range is limited to the past {MAX_DAYS} days. Export CSV will include all matching records within this range.
+              </p>
+            </div>
+          )}
 
           <DataTable columns={columns} data={logs} isLoading={loading} />
 
