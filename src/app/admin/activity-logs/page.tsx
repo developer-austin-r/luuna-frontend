@@ -363,7 +363,6 @@ export default function ActivityLogsPage() {
       {/* Table Card */}
       <Card>
         <div className="space-y-4">
-
           {/* ── Toolbar Row ── */}
           <div className="flex flex-wrap items-end gap-3">
             {/* Search */}
@@ -477,7 +476,13 @@ export default function ActivityLogsPage() {
                   }}
                   disabled={selectedModule === "all"}
                   options={[
-                    { value: "all", label: selectedModule === "all" ? "Select a module first" : "All Actions" },
+                    {
+                      value: "all",
+                      label:
+                        selectedModule === "all"
+                          ? "Select a module first"
+                          : "All Actions",
+                    },
                     ...filteredActions.map((act) => ({
                       value: String(act.id),
                       label: act.name.replace(/_/g, " "),
@@ -512,7 +517,8 @@ export default function ActivityLogsPage() {
 
               {/* Helper note */}
               <p className="text-[10px] text-text-custom/40 italic">
-                Date range is limited to the past {MAX_DAYS} days. Export CSV will include all matching records within this range.
+                Date range is limited to the past {MAX_DAYS} days. Export CSV
+                will include all matching records within this range.
               </p>
             </div>
           )}
