@@ -334,7 +334,8 @@ export default function CategoriesPage() {
       return;
     }
     try {
-      setValue("image", await uploadImage(file));
+      const res = await uploadImage(file);
+      setValue("image", res.displayUrl);
     } catch (err) {
       console.error(err);
       showNotification("Failed to upload category image.", "error");
