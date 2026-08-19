@@ -200,7 +200,7 @@ export default function InventoryPage() {
           id: selectedItem.id,
           stock: finalStock,
           reserved: data.reserved,
-          warehouse: data.warehouse,
+          warehouse: selectedItem.warehouse,
         }),
       );
 
@@ -461,15 +461,6 @@ export default function InventoryPage() {
               label="Adjust Reserved Units"
               type="number"
               {...register("reserved", { valueAsNumber: true })}
-            />
-            <Select
-              label="Warehouse Destination"
-              {...register("warehouse")}
-              options={[
-                { value: "Warehouse East", label: "Warehouse East" },
-                { value: "Warehouse West", label: "Warehouse West" },
-                { value: "Warehouse Central", label: "Warehouse Central" },
-              ]}
             />
           </div>
 

@@ -17,13 +17,18 @@ export async function apiClient<TResponse>(
 
   if (!response.ok) {
     let errorMessage = `Request failed with status ${response.status}`;
-    try {
-      const errorData = await response.json();
-      if (errorData) {
-        errorMessage = errorData.error || errorData.message || errorMessage;
+    if (response.status === 413) {
+      errorMessage =
+        "File size is too large. Please upload files smaller than 10MB.";
+    } else {
+      try {
+        const errorData = await response.json();
+        if (errorData) {
+          errorMessage = errorData.error || errorData.message || errorMessage;
+        }
+      } catch {
+        // Ignore parse errors
       }
-    } catch {
-      // Ignore parse errors
     }
     throw new Error(errorMessage);
   }
