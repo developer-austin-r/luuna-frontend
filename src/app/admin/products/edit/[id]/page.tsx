@@ -55,6 +55,8 @@ interface StatusOption {
 interface ImageUploadItem {
   id: string;
   imageUrl: string;
+  originalUrl?: string;
+  displayUrl?: string;
   displayOrder: number;
   file?: File;
   uploading: boolean;
@@ -158,7 +160,9 @@ export default function EditProductPage() {
             setImages(
               prod.images.map((img: any) => ({
                 id: img.id,
-                imageUrl: img.imageUrl,
+                imageUrl: img.displayUrl || img.imageUrl,
+                originalUrl: img.originalUrl || img.imageUrl,
+                displayUrl: img.displayUrl || img.imageUrl,
                 displayOrder: img.displayOrder,
                 uploading: false,
                 progress: 100,
@@ -231,11 +235,21 @@ export default function EditProductPage() {
       return;
     }
 
+    // Enforce 10MB limit per image
+    const oversizedFile = filesArray.find(
+      (file) => file.size > 10 * 1024 * 1024,
+    );
+    if (oversizedFile) {
+      setApiError("Each image must be 10MB or less.");
+      return;
+    }
+
     filesArray.forEach((file, index) => {
       const imgId = Math.random().toString(36).substr(2, 9);
+      const localUrl = URL.createObjectURL(file);
       const newItem: ImageUploadItem = {
         id: imgId,
-        imageUrl: "",
+        imageUrl: localUrl,
         displayOrder: images.length + index,
         file,
         uploading: true,
@@ -245,11 +259,18 @@ export default function EditProductPage() {
       setImages((prev) => [...prev, newItem]);
 
       void uploadImage(file)
-        .then((imageUrl) => {
+        .then(({ originalUrl, displayUrl }) => {
           setImages((prev) =>
             prev.map((item) =>
               item.id === imgId
-                ? { ...item, imageUrl, uploading: false, progress: 100 }
+                ? {
+                    ...item,
+                    imageUrl: displayUrl,
+                    originalUrl,
+                    displayUrl,
+                    uploading: false,
+                    progress: 100,
+                  }
                 : item,
             ),
           );
@@ -403,6 +424,8 @@ export default function EditProductPage() {
               .filter(Boolean)
           : [],
         images: images.map((img) => ({
+          originalUrl: img.originalUrl || img.imageUrl,
+          displayUrl: img.displayUrl || img.imageUrl,
           imageUrl: img.imageUrl,
           displayOrder: img.displayOrder,
         })),
@@ -499,6 +522,135 @@ export default function EditProductPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left Column: Edit Form */}
         <div className="lg:col-span-2 space-y-6">
+          {/* Product Media (Images & Video) */}
+          <Card title="Product Media Assets">
+            <div className="space-y-6 mt-2">
+              {/* Image Upload Area */}
+              <div>
+                <label className="text-xs font-semibold text-text-custom/80 uppercase tracking-wider block mb-2">
+                  Images (Upload up to 7, {images.length}/7 uploaded)
+                </label>
+
+                <div className="border-2 border-dashed border-border-custom hover:border-primary/50 transition-all rounded-xl p-6 flex flex-col items-center justify-center bg-bg-secondary/50 cursor-pointer relative group">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    disabled={images.length >= 7}
+                    onChange={handleImageUpload}
+                    className="absolute inset-0 opacity-0 cursor-pointer disabled:cursor-not-allowed"
+                  />
+                  <UploadCloud className="w-10 h-10 text-text-custom/30 group-hover:text-primary transition-all mb-2" />
+                  <p className="text-sm font-semibold text-text-custom">
+                    Click or drag images to upload
+                  </p>
+                  <p className="text-xs text-text-custom/40 mt-1">
+                    Supports PNG, JPG, WEBP formats (Max 7)
+                  </p>
+                </div>
+
+                {images.length > 0 && (
+                  <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-7 gap-3 mt-4">
+                    {images.map((img) => (
+                      <div
+                        key={img.id}
+                        className="relative aspect-square rounded-lg border border-border-custom bg-bg-secondary overflow-hidden group"
+                      >
+                        {img.uploading ? (
+                          <div className="absolute inset-0 bg-white/80 flex flex-col items-center justify-center p-2 text-center">
+                            <div className="w-8 h-8 rounded-full border-4 border-primary/20 border-t-primary animate-spin" />
+                            <span className="text-3xs font-semibold mt-1.5">
+                              {img.progress}%
+                            </span>
+                          </div>
+                        ) : (
+                          <>
+                            <img
+                              src={img.imageUrl}
+                              alt="preview"
+                              className="w-full h-full object-cover"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => removeImage(img.id)}
+                              className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 shadow hover:bg-red-600 transition-all"
+                            >
+                              <X className="w-3.5 h-3.5" />
+                            </button>
+                            <div className="absolute bottom-1 left-1 bg-black/60 text-white text-3xs px-1 rounded font-mono">
+                              #{img.displayOrder + 1}
+                            </div>
+                          </>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Video Upload Area */}
+              <div>
+                <label className="text-xs font-semibold text-text-custom/80 uppercase tracking-wider block mb-2">
+                  Product Video (Exactly 1 Video)
+                </label>
+
+                {!video ? (
+                  <div className="border-2 border-dashed border-border-custom hover:border-primary/50 transition-all rounded-xl p-6 flex flex-col items-center justify-center bg-bg-secondary/50 cursor-pointer relative group">
+                    <input
+                      type="file"
+                      accept="video/*"
+                      onChange={handleVideoUpload}
+                      className="absolute inset-0 opacity-0 cursor-pointer"
+                    />
+                    <UploadCloud className="w-10 h-10 text-text-custom/30 group-hover:text-primary transition-all mb-2" />
+                    <p className="text-sm font-semibold text-text-custom">
+                      Click or drag video to upload
+                    </p>
+                    <p className="text-xs text-text-custom/40 mt-1">
+                      Supports MP4, MOV formats (Max 1)
+                    </p>
+                  </div>
+                ) : (
+                  <div className="border border-border-custom rounded-lg p-4 bg-bg-secondary/30 flex items-center justify-between gap-4">
+                    <div className="flex items-center gap-3">
+                      <Film className="w-8 h-8 text-primary shrink-0" />
+                      <div>
+                        <p className="text-sm font-bold text-text-custom">
+                          Product Video Asset
+                        </p>
+                        <p className="text-xs text-text-custom/40 font-mono">
+                          Size: {(video.fileSize / 1024 / 1024).toFixed(2)} MB
+                        </p>
+                      </div>
+                    </div>
+
+                    {video.uploading ? (
+                      <div className="flex items-center gap-2">
+                        <div className="w-24 bg-border-custom h-2 rounded-full overflow-hidden">
+                          <div
+                            className="bg-primary h-full transition-all duration-300"
+                            style={{ width: `${video.progress}%` }}
+                          />
+                        </div>
+                        <span className="text-xs font-bold font-mono">
+                          {video.progress}%
+                        </span>
+                      </div>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={removeVideo}
+                        className="bg-red-50 hover:bg-red-100 text-red-600 rounded-lg p-2 transition-all border border-red-200"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+          </Card>
+
           {/* Basic Info */}
           <Card title="Basic Information">
             <div className="space-y-4 mt-2">
@@ -630,135 +782,6 @@ export default function EditProductPage() {
                 type="number"
                 {...register("alertLevel", { valueAsNumber: true })}
               />
-            </div>
-          </Card>
-
-          {/* Product Media (Images & Video) */}
-          <Card title="Product Media Assets">
-            <div className="space-y-6 mt-2">
-              {/* Image Upload Area */}
-              <div>
-                <label className="text-xs font-semibold text-text-custom/80 uppercase tracking-wider block mb-2">
-                  Images (Upload up to 7, {images.length}/7 uploaded)
-                </label>
-
-                <div className="border-2 border-dashed border-border-custom hover:border-primary/50 transition-all rounded-xl p-6 flex flex-col items-center justify-center bg-bg-secondary/50 cursor-pointer relative group">
-                  <input
-                    type="file"
-                    accept="image/*"
-                    multiple
-                    disabled={images.length >= 7}
-                    onChange={handleImageUpload}
-                    className="absolute inset-0 opacity-0 cursor-pointer disabled:cursor-not-allowed"
-                  />
-                  <UploadCloud className="w-10 h-10 text-text-custom/30 group-hover:text-primary transition-all mb-2" />
-                  <p className="text-sm font-semibold text-text-custom">
-                    Click or drag images to upload
-                  </p>
-                  <p className="text-xs text-text-custom/40 mt-1">
-                    Supports PNG, JPG, WEBP formats (Max 7)
-                  </p>
-                </div>
-
-                {images.length > 0 && (
-                  <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-7 gap-3 mt-4">
-                    {images.map((img) => (
-                      <div
-                        key={img.id}
-                        className="relative aspect-square rounded-lg border border-border-custom bg-bg-secondary overflow-hidden group"
-                      >
-                        {img.uploading ? (
-                          <div className="absolute inset-0 bg-white/80 flex flex-col items-center justify-center p-2 text-center">
-                            <div className="w-8 h-8 rounded-full border-4 border-primary/20 border-t-primary animate-spin" />
-                            <span className="text-3xs font-semibold mt-1.5">
-                              {img.progress}%
-                            </span>
-                          </div>
-                        ) : (
-                          <>
-                            <img
-                              src={img.imageUrl}
-                              alt="preview"
-                              className="w-full h-full object-cover"
-                            />
-                            <button
-                              type="button"
-                              onClick={() => removeImage(img.id)}
-                              className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 shadow hover:bg-red-600 transition-all"
-                            >
-                              <X className="w-3.5 h-3.5" />
-                            </button>
-                            <div className="absolute bottom-1 left-1 bg-black/60 text-white text-3xs px-1 rounded font-mono">
-                              #{img.displayOrder + 1}
-                            </div>
-                          </>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              {/* Video Upload Area */}
-              <div>
-                <label className="text-xs font-semibold text-text-custom/80 uppercase tracking-wider block mb-2">
-                  Product Video (Exactly 1 Video)
-                </label>
-
-                {!video ? (
-                  <div className="border-2 border-dashed border-border-custom hover:border-primary/50 transition-all rounded-xl p-6 flex flex-col items-center justify-center bg-bg-secondary/50 cursor-pointer relative group">
-                    <input
-                      type="file"
-                      accept="video/*"
-                      onChange={handleVideoUpload}
-                      className="absolute inset-0 opacity-0 cursor-pointer"
-                    />
-                    <UploadCloud className="w-10 h-10 text-text-custom/30 group-hover:text-primary transition-all mb-2" />
-                    <p className="text-sm font-semibold text-text-custom">
-                      Click or drag video to upload
-                    </p>
-                    <p className="text-xs text-text-custom/40 mt-1">
-                      Supports MP4, MOV formats (Max 1)
-                    </p>
-                  </div>
-                ) : (
-                  <div className="border border-border-custom rounded-lg p-4 bg-bg-secondary/30 flex items-center justify-between gap-4">
-                    <div className="flex items-center gap-3">
-                      <Film className="w-8 h-8 text-primary shrink-0" />
-                      <div>
-                        <p className="text-sm font-bold text-text-custom">
-                          Product Video Asset
-                        </p>
-                        <p className="text-xs text-text-custom/40 font-mono">
-                          Size: {(video.fileSize / 1024 / 1024).toFixed(2)} MB
-                        </p>
-                      </div>
-                    </div>
-
-                    {video.uploading ? (
-                      <div className="flex items-center gap-2">
-                        <div className="w-24 bg-border-custom h-2 rounded-full overflow-hidden">
-                          <div
-                            className="bg-primary h-full transition-all duration-300"
-                            style={{ width: `${video.progress}%` }}
-                          />
-                        </div>
-                        <span className="text-xs font-bold font-mono">
-                          {video.progress}%
-                        </span>
-                      </div>
-                    ) : (
-                      <button
-                        type="button"
-                        onClick={removeVideo}
-                        className="bg-red-50 hover:bg-red-100 text-red-600 rounded-lg p-2 transition-all border border-red-200"
-                      >
-                        <X className="w-4 h-4" />
-                      </button>
-                    )}
-                  </div>
-                )}
-              </div>
             </div>
           </Card>
         </div>

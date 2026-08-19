@@ -1,6 +1,6 @@
 import React from "react";
 import Link from "next/link";
-import { Bell, Menu, Settings } from "lucide-react";
+import { Menu, Settings } from "lucide-react";
 
 interface HeaderProps {
   onMenuToggle: () => void;
@@ -20,12 +20,6 @@ export const Header: React.FC<HeaderProps> = ({ onMenuToggle }) => {
       </div>
 
       <div className="flex items-center gap-4">
-        {/* Notifications Icon with indicator badge */}
-        <button className="p-2 rounded-lg hover:bg-bg-secondary text-text-custom/70 hover:text-text-custom relative cursor-pointer">
-          <Bell className="w-4 h-4" />
-          <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-red-500 ring-2 ring-white animate-pulse" />
-        </button>
-
         {/* Quick settings link */}
         <Link
           href="/admin/settings"

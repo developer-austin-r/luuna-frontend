@@ -329,8 +329,13 @@ export default function CategoriesPage() {
   };
 
   const uploadCategoryImage = async (file: File) => {
+    if (file.size > 10 * 1024 * 1024) {
+      showNotification("Image size must be 10MB or less.", "error");
+      return;
+    }
     try {
-      setValue("image", await uploadImage(file));
+      const res = await uploadImage(file);
+      setValue("image", res.displayUrl);
     } catch (err) {
       console.error(err);
       showNotification("Failed to upload category image.", "error");
