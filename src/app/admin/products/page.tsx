@@ -271,15 +271,15 @@ export default function ProductsPage() {
           {prod.salePrice ? (
             <div className="flex items-center gap-1.5">
               <span className="font-bold text-text-custom">
-                ${prod.salePrice.toFixed(2)}
+                ₹{prod.salePrice.toFixed(2)}
               </span>
               <span className="text-3xs text-text-custom/40 line-through">
-                ${prod.price.toFixed(2)}
+                ₹{prod.price.toFixed(2)}
               </span>
             </div>
           ) : (
             <span className="font-bold text-text-custom">
-              ${prod.price.toFixed(2)}
+              ₹{prod.price.toFixed(2)}
             </span>
           )}
         </div>
