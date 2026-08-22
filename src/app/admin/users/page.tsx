@@ -1,9 +1,19 @@
 "use client";
 
-import React, { useEffect, useMemo, useState } from "react";
-import { useForm } from "react-hook-form";
-import { Edit, Trash, UserPlus, Mail } from "lucide-react";
+import React, {
+  useCallback,
+  useEffect,
+  useState,
+} from "react"; import { useForm } from "react-hook-form";
 
+import {
+  Edit,
+  Trash,
+  UserPlus,
+  Mail,
+  Eye,
+  EyeOff,
+} from "lucide-react";
 
 import {
   ActionMenu,
@@ -18,6 +28,7 @@ import {
   Modal,
   Pagination,
 } from "@/components/admin";
+
 import { useToast } from "@/providers/toast-provider";
 
 const API_BASE =
@@ -73,6 +84,11 @@ export default function UsersPage() {
 
   // Pagination
   const [currentPage, setCurrentPage] = useState(1);
+
+  const [totalPages, setTotalPages] = useState(1);
+
+  const [totalUsers, setTotalUsers] = useState(0);
+
   const itemsPerPage = 5;
 
   // Modals
@@ -82,6 +98,12 @@ export default function UsersPage() {
 
   const [selectedCustomer, setSelectedCustomer] =
     useState<User | null>(null);
+
+  // ========================================
+  // PASSWORD VISIBILITY
+  // ========================================
+
+  const [showPassword, setShowPassword] = useState(false);
 
   // ========================================
   // CREATE FORM
@@ -114,24 +136,77 @@ export default function UsersPage() {
     ADMIN: "00000000-0000-0000-0000-000000000001",
     USER: "00000000-0000-0000-0000-000000000002",
   } as const;
+
   // ========================================
   // GET USERS
   // ========================================
 
-  const getUsers = async () => {
+  const getUsers = useCallback(async () => {
     try {
       setLoading(true);
 
-      const response = await fetch(`${API_BASE}/users`);
+      const params = new URLSearchParams();
 
-      if (!response.ok) {
-        throw new Error("Failed to fetch users");
+      params.set("page", currentPage.toString());
+      params.set("limit", itemsPerPage.toString());
+
+      if (searchTerm.trim()) {
+        params.set("search", searchTerm.trim());
       }
+
+      params.set("role", activeTab);
+      params.set("sortBy", sortBy);
+      params.set("sortDir", sortDir);
+
+      const url = `${API_BASE}/users?${params.toString()}`;
+
+      console.log("GET USERS URL:", url);
+
+      const response = await fetch(url);
 
       const result = await response.json();
 
-      setCustomers(result.data ?? []);
+      console.log(
+        "GET USERS STATUS:",
+        response.status,
+      );
+
+      console.log(
+        "GET USERS RESPONSE:",
+        result,
+      );
+
+      if (!response.ok) {
+        throw new Error(
+          result?.message ||
+          `Failed to fetch users (${response.status})`,
+        );
+      }
+
+      const users = result?.data?.data ?? [];
+
+      const pagination =
+        result?.data?.pagination ?? {};
+
+      setCustomers(
+        Array.isArray(users)
+          ? users
+          : [],
+      );
+
+      setTotalPages(
+        pagination.totalPages ?? 1,
+      );
+
+      setTotalUsers(
+        pagination.total ?? 0,
+      );
     } catch (error) {
+      console.error(
+        "GET USERS ERROR:",
+        error,
+      );
+
       const message =
         error instanceof Error
           ? error.message
@@ -141,11 +216,24 @@ export default function UsersPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [
+    currentPage,
+    searchTerm,
+    activeTab,
+    sortBy,
+    sortDir,
+    toastError,
+  ]);
 
   useEffect(() => {
-    void getUsers();
-  }, []);
+    const timer = setTimeout(() => {
+      void getUsers();
+    }, 500);
+
+    return () => {
+      clearTimeout(timer);
+    };
+  }, [getUsers]);
 
   // ========================================
   // TAB CHANGE
@@ -153,11 +241,7 @@ export default function UsersPage() {
 
   const handleTabChange = (tab: UserTab) => {
     setActiveTab(tab);
-
-    // Reset pagination when changing tabs
     setCurrentPage(1);
-
-    // Reset search when changing tabs
     setSearchTerm("");
   };
 
@@ -172,6 +256,9 @@ export default function UsersPage() {
       password: "",
       roleId: ROLE_IDS.ADMIN,
     });
+
+    // Reset password visibility
+    setShowPassword(false);
 
     setCreateModalOpen(true);
   };
@@ -210,6 +297,9 @@ export default function UsersPage() {
       setCreateModalOpen(false);
 
       resetCreate();
+
+      // Reset password visibility
+      setShowPassword(false);
 
       toastSuccess(
         `User "${data.name}" created successfully.`,
@@ -372,91 +462,42 @@ export default function UsersPage() {
   // FILTER BY ROLE/TAB
   // ========================================
 
-  const tabCustomers = useMemo(() => {
-    return customers.filter(
-      (customer) =>
-        customer.roleName?.toLowerCase() ===
-        activeTab.toLowerCase(),
-    );
-  }, [customers, activeTab]);
 
-  // ========================================
-  // SEARCH + SORT
-  // ========================================
 
-  const filteredCustomers = useMemo(() => {
-    return [...tabCustomers]
-      .filter((customer) => {
-        const search = searchTerm
-          .toLowerCase()
-          .trim();
 
-        if (!search) return true;
-        const verificationStatus = customer.emailVerified
-          ? "verified"
-          : "not verified";
-        return (
-          (customer.name ?? "")
-            .toLowerCase()
-            .includes(search) ||
-          customer.email
-            .toLowerCase()
-            .includes(search) ||
-          (customer.roleName ?? "")
-            .toLowerCase()
-            .includes(search) ||
-          (customer.status ?? "")
-            .toLowerCase()
-            .includes(search) ||
-          verificationStatus.includes(search)
-        );
-      })
-      .sort((a, b) => {
-        const valueA = a[sortBy] ?? "";
-        const valueB = b[sortBy] ?? "";
 
-        const stringA =
-          String(valueA).toLowerCase();
 
-        const stringB =
-          String(valueB).toLowerCase();
 
-        return sortDir === "asc"
-          ? stringA.localeCompare(stringB)
-          : stringB.localeCompare(stringA);
-      });
-  }, [
-    tabCustomers,
-    searchTerm,
-    sortBy,
-    sortDir,
-  ]);
+
+
+
+
+
+
+
+
+
+
+
+
 
   // ========================================
   // PAGINATION
   // ========================================
-
-  const totalPages =
-    Math.ceil(
-      filteredCustomers.length / itemsPerPage,
-    ) || 1;
-
-  const paginatedCustomers =
-    filteredCustomers.slice(
-      (currentPage - 1) * itemsPerPage,
-      currentPage * itemsPerPage,
-    );
 
   const handleSort = (
     key: keyof User,
     direction: "asc" | "desc",
   ) => {
     setSortBy(key);
-
     setSortDir(direction);
+    setCurrentPage(1);
   };
 
-  //Resend Email
+  // ========================================
+  // RESEND EMAIL
+  // ========================================
+
   const handleResendVerification = async (user: User) => {
     if (user.emailVerified) {
       toastError("This email is already verified.");
@@ -499,7 +540,6 @@ export default function UsersPage() {
       setLoading(false);
     }
   };
-
 
   // ========================================
   // TABLE COLUMNS
@@ -571,6 +611,7 @@ export default function UsersPage() {
         </span>
       ),
     },
+
     {
       key: "emailVerified",
       label: "Email Verified",
@@ -592,6 +633,7 @@ export default function UsersPage() {
         );
       },
     },
+
     {
       key: "updatedAt",
       label: "Updated Date",
@@ -600,9 +642,7 @@ export default function UsersPage() {
       render: (value) => (
         <span suppressHydrationWarning>
           {value
-            ? new Date(
-              value,
-            ).toLocaleDateString()
+            ? new Date(value).toLocaleDateString()
             : "—"}
         </span>
       ),
@@ -633,7 +673,9 @@ export default function UsersPage() {
                     <Mail className="w-3.5 h-3.5" />
                   ),
                   onClick: () =>
-                    void handleResendVerification(customer),
+                    void handleResendVerification(
+                      customer,
+                    ),
                 },
               ]
               : []),
@@ -723,15 +765,17 @@ export default function UsersPage() {
 
           <button
             type="button"
-            onClick={() => handleTabChange("User")}
+            onClick={() =>
+              handleTabChange("User")
+            }
             className={`
-    relative pb-3 text-sm font-semibold
-    transition-colors
-    ${activeTab === "User"
+              relative pb-3 text-sm font-semibold
+              transition-colors
+              ${activeTab === "User"
                 ? "text-text-custom"
                 : "text-text-custom/50 hover:text-text-custom"
               }
-  `}
+            `}
           >
             Billing User
 
@@ -752,11 +796,34 @@ export default function UsersPage() {
             Loading...
           </div>
         )}
+
+        {/* SEARCH */}
+
+        <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+
+          <div className="w-full sm:w-80">
+            <Input
+              placeholder="Search users..."
+              value={searchTerm}
+              onChange={(event) => {
+                setSearchTerm(event.target.value);
+                setCurrentPage(1);
+              }}
+            />
+          </div>
+
+          <div className="text-sm text-text-custom/60">
+            Total Users: {totalUsers}
+          </div>
+
+        </div>
+
+
         {/* TABLE */}
 
         <DataTable
           columns={columns}
-          data={paginatedCustomers}
+          data={customers}
           onSort={handleSort}
         />
 
@@ -765,7 +832,9 @@ export default function UsersPage() {
         <Pagination
           currentPage={currentPage}
           totalPages={totalPages}
-          onPageChange={setCurrentPage}
+          onPageChange={(page) => {
+            setCurrentPage(page);
+          }}
         />
 
       </Card>
@@ -774,17 +843,19 @@ export default function UsersPage() {
 
       <Modal
         isOpen={createModalOpen}
-        onClose={() =>
-          setCreateModalOpen(false)
-        }
+        onClose={() => {
+          setCreateModalOpen(false);
+          setShowPassword(false);
+        }}
         title="Create User"
         footer={
           <>
             <Button
               variant="outline"
-              onClick={() =>
-                setCreateModalOpen(false)
-              }
+              onClick={() => {
+                setCreateModalOpen(false);
+                setShowPassword(false);
+              }}
             >
               Cancel
             </Button>
@@ -805,6 +876,8 @@ export default function UsersPage() {
       >
         <form className="space-y-4">
 
+          {/* FULL NAME */}
+
           <Input
             label="Full Name"
             {...registerCreate("name", {
@@ -814,6 +887,8 @@ export default function UsersPage() {
               createErrors.name?.message
             }
           />
+
+          {/* EMAIL */}
 
           <Input
             label="Email Address"
@@ -826,24 +901,58 @@ export default function UsersPage() {
             }
           />
 
-          <Input
-            label="Password"
-            type="password"
-            {...registerCreate("password", {
-              required:
-                "Password is required",
-              minLength: {
-                value: 6,
-                message:
-                  "Password must be at least 6 characters",
-              },
-            })}
-            error={
-              createErrors.password?.message
-            }
-          />
+          {/* PASSWORD WITH EYE ICON */}
+
+          <div className="relative">
+            <Input
+              label="Password"
+              type={
+                showPassword
+                  ? "text"
+                  : "password"
+              }
+              {...registerCreate("password", {
+                required:
+                  "Password is required",
+                minLength: {
+                  value: 6,
+                  message:
+                    "Password must be at least 6 characters",
+                },
+              })}
+              error={
+                createErrors.password?.message
+              }
+              className="pr-10"
+            />
+
+            <button
+              type="button"
+              onClick={() =>
+                setShowPassword(
+                  (current) => !current,
+                )
+              }
+              className="absolute right-3 top-[30px] flex items-center justify-center text-gray-500 hover:text-gray-700"
+              aria-label={
+                showPassword
+                  ? "Hide password"
+                  : "Show password"
+              }
+            >
+              {showPassword ? (
+                <Eye className="w-5 h-5" />
+
+              ) : (
+                <EyeOff className="w-5 h-5" />
+              )}
+            </button>
+          </div>
+
+          {/* ROLE */}
 
           <div className="space-y-1.5">
+
             <label className="text-sm font-medium text-text-custom">
               Role
             </label>
@@ -854,14 +963,16 @@ export default function UsersPage() {
               })}
               className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm text-text-custom outline-none focus:border-gray-500 focus:ring-1 focus:ring-gray-500"
             >
-              <option value="">Select Role</option>
+              <option value="">
+                Select Role
+              </option>
 
               <option value={ROLE_IDS.ADMIN}>
                 Admin
               </option>
 
               <option value={ROLE_IDS.USER}>
-                User
+                Billing User
               </option>
             </select>
 
@@ -870,6 +981,7 @@ export default function UsersPage() {
                 {createErrors.roleId.message}
               </p>
             )}
+
           </div>
 
         </form>
