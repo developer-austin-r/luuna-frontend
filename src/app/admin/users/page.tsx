@@ -2,11 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import {
-  Edit,
-  Trash,
-  UserPlus,
-} from "lucide-react";
+import { Edit, Trash, UserPlus } from "lucide-react";
 
 import {
   ActionMenu,
@@ -23,10 +19,9 @@ import {
   Select,
   StatusBadge,
 } from "@/components/admin";
-import { useToast } from "@/providers/toast-provider"
+import { useToast } from "@/providers/toast-provider";
 
 const API_BASE = "http://localhost:3001";
-
 
 interface User {
   id: string;
@@ -59,9 +54,7 @@ interface EditUserFormData {
   status?: "active" | "suspended";
 }
 
-
 export default function UsersPage() {
-
   const [customers, setCustomers] = useState<User[]>([]);
   const [loading, setLoading] = useState(false);
   const { success: toastSuccess, error: toastError } = useToast();
@@ -88,8 +81,7 @@ export default function UsersPage() {
 
   const [createModalOpen, setCreateModalOpen] = useState(false);
   const [editModalOpen, setEditModalOpen] = useState(false);
-  const [selectedCustomer, setSelectedCustomer] =
-    useState<User | null>(null);
+  const [selectedCustomer, setSelectedCustomer] = useState<User | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
   // =========================================================
@@ -117,10 +109,6 @@ export default function UsersPage() {
   // =========================================================
   // GET USERS — GET /users
   // =========================================================
-
-  useEffect(() => {
-    void getUsers();
-  }, []);
 
   const getUsers = async () => {
     try {
@@ -150,6 +138,10 @@ export default function UsersPage() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    void getUsers();
+  }, []);
 
   // =========================================================
   // CREATE USER — POST /users
@@ -226,19 +218,16 @@ export default function UsersPage() {
     try {
       setLoading(true);
 
-      const response = await fetch(
-        `${API_BASE}/users/${selectedCustomer.id}`,
-        {
-          method: "PATCH",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            name: data.name,
-            email: data.email,
-          }),
+      const response = await fetch(`${API_BASE}/users/${selectedCustomer.id}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
         },
-      );
+        body: JSON.stringify({
+          name: data.name,
+          email: data.email,
+        }),
+      });
 
       if (!response.ok) {
         const errorText = await response.text();
@@ -278,12 +267,9 @@ export default function UsersPage() {
     try {
       setLoading(true);
 
-      const response = await fetch(
-        `${API_BASE}/users/${selectedCustomer.id}`,
-        {
-          method: "DELETE",
-        },
-      );
+      const response = await fetch(`${API_BASE}/users/${selectedCustomer.id}`, {
+        method: "DELETE",
+      });
 
       if (!response.ok) {
         const errorText = await response.text();
@@ -294,9 +280,7 @@ export default function UsersPage() {
       }
 
       setCustomers((current) =>
-        current.filter(
-          (user) => user.id !== selectedCustomer.id,
-        ),
+        current.filter((user) => user.id !== selectedCustomer.id),
       );
 
       setDeleteDialogOpen(false);
@@ -311,7 +295,6 @@ export default function UsersPage() {
     }
   };
 
-
   // =========================================================
   // FILTER, SORT & PAGINATE
   // =========================================================
@@ -319,19 +302,12 @@ export default function UsersPage() {
   const filteredCustomers = customers
     .filter((c) => {
       const matchSearch =
-        (c.name ?? "")
-          .toLowerCase()
-          .includes(searchTerm.toLowerCase()) ||
-        c.email
-          .toLowerCase()
-          .includes(searchTerm.toLowerCase()) ||
-        (c.roleName ?? "")
-          .toLowerCase()
-          .includes(searchTerm.toLowerCase());
+        (c.name ?? "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+        c.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (c.roleName ?? "").toLowerCase().includes(searchTerm.toLowerCase());
 
       const matchStatus =
-        statusFilter === "all" ||
-        (c.status ?? "active") === statusFilter;
+        statusFilter === "all" || (c.status ?? "active") === statusFilter;
 
       return matchSearch && matchStatus;
     })
@@ -342,33 +318,24 @@ export default function UsersPage() {
       if (typeof valA === "string") {
         return sortDir === "asc"
           ? valA.localeCompare(valB as string)
-          : (valB as string).localeCompare(
-            valA as string,
-          );
+          : (valB as string).localeCompare(valA as string);
       }
 
       return 0;
     });
 
-  const totalPages =
-    Math.ceil(
-      filteredCustomers.length / itemsPerPage,
-    ) || 1;
+  const totalPages = Math.ceil(filteredCustomers.length / itemsPerPage) || 1;
 
-  const paginatedCustomers =
-    filteredCustomers.slice(
-      (currentPage - 1) * itemsPerPage,
-      currentPage * itemsPerPage,
-    );
+  const paginatedCustomers = filteredCustomers.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage,
+  );
 
   // =========================================================
   // SORT
   // =========================================================
 
-  const handleSort = (
-    key: keyof User,
-    direction: "asc" | "desc",
-  ) => {
+  const handleSort = (key: keyof User, direction: "asc" | "desc") => {
     setSortBy(key);
     setSortDir(direction);
   };
@@ -385,11 +352,7 @@ export default function UsersPage() {
 
       render: (_, cust) => (
         <div className="flex items-center gap-3">
-          <Avatar
-            name={cust.name ?? cust.email}
-            src={cust.avatar}
-            size="sm"
-          />
+          <Avatar name={cust.name ?? cust.email} src={cust.avatar} size="sm" />
 
           <div>
             <p className="font-bold text-text-custom">
@@ -405,9 +368,7 @@ export default function UsersPage() {
       label: "Email",
 
       render: (val) => (
-        <span className="text-text-custom/80">
-          {val || "—"}
-        </span>
+        <span className="text-text-custom/80">{val || "—"}</span>
       ),
     },
 
@@ -419,11 +380,7 @@ export default function UsersPage() {
       key: "status",
       label: "Account Status",
       sortable: true,
-      render: (_, cust) => (
-        <StatusBadge
-          status={cust.roleName || "No Role"}
-        />
-      ),
+      render: (_, cust) => <StatusBadge status={cust.roleName || "No Role"} />,
     },
 
     {
@@ -433,9 +390,7 @@ export default function UsersPage() {
 
       render: (val) => (
         <span suppressHydrationWarning>
-          {val
-            ? new Date(val).toLocaleDateString()
-            : "—"}
+          {val ? new Date(val).toLocaleDateString() : "—"}
         </span>
       ),
     },
@@ -449,20 +404,14 @@ export default function UsersPage() {
           items={[
             {
               label: "Edit Info",
-              icon: (
-                <Edit className="w-3.5 h-3.5" />
-              ),
-              onClick: () =>
-                handleEditClick(cust),
+              icon: <Edit className="w-3.5 h-3.5" />,
+              onClick: () => handleEditClick(cust),
             },
 
             {
               label: "Delete Customer",
-              icon: (
-                <Trash className="w-3.5 h-3.5" />
-              ),
-              onClick: () =>
-                handleDeleteClick(cust),
+              icon: <Trash className="w-3.5 h-3.5" />,
+              onClick: () => handleDeleteClick(cust),
               variant: "danger",
             },
           ]}
@@ -477,7 +426,6 @@ export default function UsersPage() {
 
   return (
     <div className="space-y-6">
-
       {/* =====================================================
           TITLE + TOP ACTIONS
           ===================================================== */}
@@ -493,9 +441,7 @@ export default function UsersPage() {
             ]}
           />
 
-          <h1 className="text-2xl font-bold text-text-custom mt-2">
-            Users
-          </h1>
+          <h1 className="text-2xl font-bold text-text-custom mt-2">Users</h1>
         </div>
 
         <div className="flex gap-2 shrink-0 self-start sm:self-auto">
@@ -506,7 +452,6 @@ export default function UsersPage() {
             className="flex items-center gap-1.5"
           >
             <UserPlus className="w-4 h-4" />
-
             Add User
           </Button>
         </div>
@@ -518,11 +463,8 @@ export default function UsersPage() {
 
       <Card>
         <div className="space-y-4">
-
           {loading && (
-            <div className="text-sm text-text-custom/50">
-              Loading...
-            </div>
+            <div className="text-sm text-text-custom/50">Loading...</div>
           )}
 
           <DataTable
@@ -545,18 +487,11 @@ export default function UsersPage() {
 
       <Modal
         isOpen={createModalOpen}
-        onClose={() =>
-          setCreateModalOpen(false)
-        }
+        onClose={() => setCreateModalOpen(false)}
         title="Create User"
         footer={
           <>
-            <Button
-              variant="outline"
-              onClick={() =>
-                setCreateModalOpen(false)
-              }
-            >
+            <Button variant="outline" onClick={() => setCreateModalOpen(false)}>
               Cancel
             </Button>
 
@@ -564,9 +499,7 @@ export default function UsersPage() {
               variant="primary"
               disabled={loading}
               onClick={() => {
-                void handleSubmitCreate(
-                  onSubmitCreate,
-                )();
+                void handleSubmitCreate(onSubmitCreate)();
               }}
             >
               Create User
@@ -575,7 +508,6 @@ export default function UsersPage() {
         }
       >
         <form className="space-y-4">
-
           <Input
             label="Full Name"
             {...registerCreate("name", {
@@ -600,15 +532,11 @@ export default function UsersPage() {
               required: "Password is required",
               minLength: {
                 value: 6,
-                message:
-                  "Password must be at least 6 characters",
+                message: "Password must be at least 6 characters",
               },
             })}
-            error={
-              createErrors.password?.message
-            }
+            error={createErrors.password?.message}
           />
-
         </form>
       </Modal>
 
@@ -639,9 +567,7 @@ export default function UsersPage() {
               variant="primary"
               disabled={loading}
               onClick={() => {
-                void handleSubmitEdit(
-                  onSubmitEdit,
-                )();
+                void handleSubmitEdit(onSubmitEdit)();
               }}
             >
               Save Changes
@@ -650,7 +576,6 @@ export default function UsersPage() {
         }
       >
         <form className="space-y-4">
-
           <Input
             label="Full Name"
             {...registerEdit("name", {
@@ -668,10 +593,7 @@ export default function UsersPage() {
             error={editErrors.email?.message}
           />
 
-          <Input
-            label="Phone Number"
-            {...registerEdit("phone")}
-          />
+          <Input label="Phone Number" {...registerEdit("phone")} />
 
           <Select
             label="Account Status"
@@ -687,7 +609,6 @@ export default function UsersPage() {
               },
             ]}
           />
-
         </form>
       </Modal>
 
@@ -697,17 +618,11 @@ export default function UsersPage() {
 
       <DeleteDialog
         isOpen={deleteDialogOpen}
-        onClose={() =>
-          setDeleteDialogOpen(false)
-        }
+        onClose={() => setDeleteDialogOpen(false)}
         onConfirm={() => void confirmDelete()}
-        itemName={
-          selectedCustomer?.name ??
-          selectedCustomer?.email
-        }
+        itemName={selectedCustomer?.name ?? selectedCustomer?.email}
         title="Delete Customer Account"
       />
-
     </div>
   );
 }

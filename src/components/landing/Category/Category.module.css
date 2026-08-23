@@ -1,0 +1,307 @@
+/* ========================================
+   CATEGORY SECTION
+======================================== */
+
+.section {
+  width: 100%;
+  padding: 20px 55px 50px;
+  background: #ffffff;
+  box-sizing: border-box;
+}
+
+
+/* ========================================
+   HEADER
+======================================== */
+
+.sectionHeader {
+  width: 100%;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  margin-bottom: 35px;
+}
+
+.titleWrapper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.titleBar {
+  width: 12px;
+  height: 45px;
+
+  background: #19002d;
+
+  flex-shrink: 0;
+}
+
+.titleWrapper h2 {
+  margin: 0;
+
+  color: #111111;
+
+  font-size: 25px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.browseLink {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+
+  color: #111111;
+
+  font-size: 13px;
+  font-weight: 500;
+
+  text-decoration: none;
+
+  white-space: nowrap;
+}
+
+.browseLink span {
+  font-size: 18px;
+}
+
+
+/* ========================================
+   CATEGORY GRID
+======================================== */
+
+.categoryGrid {
+  width: 100%;
+
+  display: grid;
+
+  grid-template-columns: repeat(3, 1fr);
+
+  column-gap: 40px;
+  row-gap: 35px;
+
+  box-sizing: border-box;
+}
+
+
+/* ========================================
+   CATEGORY CARD
+======================================== */
+
+.categoryCard {
+  width: 100%;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  box-sizing: border-box;
+}
+
+
+/* ========================================
+   CATEGORY TITLE
+======================================== */
+
+.categoryCard h3 {
+  margin: 0;
+
+  color: #111111;
+
+  font-size: 24px;
+  font-weight: 700;
+
+  line-height: 1.2;
+
+  text-align: center;
+}
+
+
+/* ========================================
+   IMAGE BOX
+======================================== */
+
+.imageBox {
+  width: 100%;
+  height: 290px;
+
+  margin-top: 16px;
+
+  background: #e8e8e8;
+
+  border-radius: 9px;
+
+  box-sizing: border-box;
+}
+
+
+/* ========================================
+   NORMAL
+   TITLE → IMAGE
+
+   Marvel
+   ┌─────────┐
+   │         │
+   │         │
+   └─────────┘
+======================================== */
+
+.titleFirst {
+  justify-content: flex-start;
+}
+
+
+/* ========================================
+   CENTER
+   IMAGE → TITLE
+
+   ┌─────────┐
+   │         │
+   │         │
+   └─────────┘
+      Anime
+======================================== */
+
+.imageFirst {
+  flex-direction: column;
+}
+
+.imageFirst .imageBox {
+  order: 1;
+
+  margin-top: 0;
+  margin-bottom: 22px;
+}
+
+.imageFirst h3 {
+  order: 2;
+}
+
+
+/* ========================================
+   TABLET
+======================================== */
+
+@media (max-width: 900px) {
+
+  .section {
+    padding: 18px 30px 40px;
+  }
+
+  .categoryGrid {
+    column-gap: 22px;
+    row-gap: 28px;
+  }
+
+  .categoryCard h3 {
+    font-size: 20px;
+  }
+
+  .imageBox {
+    height: 230px;
+  }
+
+  .titleBar {
+    width: 10px;
+    height: 40px;
+  }
+
+  .titleWrapper h2 {
+    font-size: 23px;
+  }
+}
+
+
+/* ========================================
+   MOBILE
+======================================== */
+
+@media (max-width: 650px) {
+
+  .section {
+    padding: 15px 16px 35px;
+  }
+
+  .sectionHeader {
+    margin-bottom: 25px;
+  }
+
+  .titleBar {
+    width: 8px;
+    height: 34px;
+  }
+
+  .titleWrapper h2 {
+    font-size: 20px;
+  }
+
+  .browseLink {
+    font-size: 9px;
+  }
+
+  .browseLink span {
+    font-size: 14px;
+  }
+
+
+  /* 2 columns */
+
+  .categoryGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+
+    column-gap: 14px;
+    row-gap: 25px;
+  }
+
+  .categoryCard h3 {
+    font-size: 16px;
+  }
+
+  .imageBox {
+    height: 180px;
+    margin-top: 10px;
+    border-radius: 7px;
+  }
+
+  .imageFirst .imageBox {
+    margin-bottom: 12px;
+  }
+}
+
+
+/* ========================================
+   SMALL MOBILE
+======================================== */
+
+@media (max-width: 400px) {
+
+  .section {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+
+  .categoryGrid {
+    column-gap: 10px;
+    row-gap: 20px;
+  }
+
+  .categoryCard h3 {
+    font-size: 14px;
+  }
+
+  .imageBox {
+    height: 150px;
+  }
+
+  .titleWrapper h2 {
+    font-size: 18px;
+  }
+
+  .titleBar {
+    width: 7px;
+    height: 30px;
+  }
+}
