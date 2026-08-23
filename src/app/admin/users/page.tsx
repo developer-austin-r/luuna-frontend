@@ -50,7 +50,7 @@ interface EditUserFormData {
   email: string;
 }
 
-type UserTab = "Admin" | "User";
+type UserTab = "Admin" | "Billing User";
 
 // ========================================
 // COMPONENT
@@ -633,19 +633,19 @@ export default function UsersPage() {
 
           <button
             type="button"
-            onClick={() => handleTabChange("User")}
+            onClick={() => handleTabChange("Billing User")}
             className={`
               relative pb-3 text-sm font-semibold
               transition-colors
               ${
-                activeTab === "User"
+                activeTab === "Billing User"
                   ? "text-text-custom"
                   : "text-text-custom/50 hover:text-text-custom"
               }
             `}
           >
             Billing User
-            {activeTab === "User" && (
+            {activeTab === "Billing User" && (
               <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-text-custom rounded-full" />
             )}
           </button>
