@@ -385,11 +385,7 @@ export default function UsersPage() {
   };
 
   // ========================================
-  // FILTER BY ROLE/TAB
-  // ========================================
-
-  // ========================================
-  // PAGINATION
+  // SORT
   // ========================================
 
   const handleSort = (key: keyof User, direction: "asc" | "desc") => {
