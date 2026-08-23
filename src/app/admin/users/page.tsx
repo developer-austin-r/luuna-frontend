@@ -1,19 +1,8 @@
 "use client";
 
-import React, {
-  useCallback,
-  useEffect,
-  useState,
-} from "react"; import { useForm } from "react-hook-form";
-
-import {
-  Edit,
-  Trash,
-  UserPlus,
-  Mail,
-  Eye,
-  EyeOff,
-} from "lucide-react";
+import React, { useCallback, useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
+import { Edit, Eye, EyeOff, Mail, Trash, UserPlus } from "lucide-react";
 
 import {
   ActionMenu,
@@ -28,7 +17,6 @@ import {
   Modal,
   Pagination,
 } from "@/components/admin";
-
 import { useToast } from "@/providers/toast-provider";
 
 const API_BASE =
@@ -96,8 +84,7 @@ export default function UsersPage() {
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
-  const [selectedCustomer, setSelectedCustomer] =
-    useState<User | null>(null);
+  const [selectedCustomer, setSelectedCustomer] = useState<User | null>(null);
 
   // ========================================
   // PASSWORD VISIBILITY
@@ -127,10 +114,7 @@ export default function UsersPage() {
     formState: { errors: editErrors },
   } = useForm<EditUserFormData>();
 
-  const {
-    success: toastSuccess,
-    error: toastError,
-  } = useToast();
+  const { success: toastSuccess, error: toastError } = useToast();
 
   const ROLE_IDS = {
     ADMIN: "00000000-0000-0000-0000-000000000001",
@@ -166,64 +150,36 @@ export default function UsersPage() {
 
       const result = await response.json();
 
-      console.log(
-        "GET USERS STATUS:",
-        response.status,
-      );
+      console.log("GET USERS STATUS:", response.status);
 
-      console.log(
-        "GET USERS RESPONSE:",
-        result,
-      );
+      console.log("GET USERS RESPONSE:", result);
 
       if (!response.ok) {
         throw new Error(
-          result?.message ||
-          `Failed to fetch users (${response.status})`,
+          result?.message || `Failed to fetch users (${response.status})`,
         );
       }
 
       const users = result?.data?.data ?? [];
 
-      const pagination =
-        result?.data?.pagination ?? {};
+      const pagination = result?.data?.pagination ?? {};
 
-      setCustomers(
-        Array.isArray(users)
-          ? users
-          : [],
-      );
+      setCustomers(Array.isArray(users) ? users : []);
 
-      setTotalPages(
-        pagination.totalPages ?? 1,
-      );
+      setTotalPages(pagination.totalPages ?? 1);
 
-      setTotalUsers(
-        pagination.total ?? 0,
-      );
+      setTotalUsers(pagination.total ?? 0);
     } catch (error) {
-      console.error(
-        "GET USERS ERROR:",
-        error,
-      );
+      console.error("GET USERS ERROR:", error);
 
       const message =
-        error instanceof Error
-          ? error.message
-          : "Failed to load users";
+        error instanceof Error ? error.message : "Failed to load users";
 
       toastError(message);
     } finally {
       setLoading(false);
     }
-  }, [
-    currentPage,
-    searchTerm,
-    activeTab,
-    sortBy,
-    sortDir,
-    toastError,
-  ]);
+  }, [currentPage, searchTerm, activeTab, sortBy, sortDir, toastError]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -301,14 +257,10 @@ export default function UsersPage() {
       // Reset password visibility
       setShowPassword(false);
 
-      toastSuccess(
-        `User "${data.name}" created successfully.`,
-      );
+      toastSuccess(`User "${data.name}" created successfully.`);
     } catch (error) {
       const message =
-        error instanceof Error
-          ? error.message
-          : "Failed to create user";
+        error instanceof Error ? error.message : "Failed to create user";
 
       toastError(message);
     } finally {
@@ -337,27 +289,21 @@ export default function UsersPage() {
     try {
       setLoading(true);
 
-      const response = await fetch(
-        `${API_BASE}/users/${selectedCustomer.id}`,
-        {
-          method: "PATCH",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            name: data.name,
-            email: data.email,
-          }),
+      const response = await fetch(`${API_BASE}/users/${selectedCustomer.id}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
         },
-      );
+        body: JSON.stringify({
+          name: data.name,
+          email: data.email,
+        }),
+      });
 
       if (!response.ok) {
         const errorText = await response.text();
 
-        console.error(
-          "Update user response:",
-          errorText,
-        );
+        console.error("Update user response:", errorText);
 
         throw new Error("Failed to update user");
       }
@@ -368,9 +314,7 @@ export default function UsersPage() {
 
       setCustomers((current) =>
         current.map((user) =>
-          user.id === updatedUser.id
-            ? updatedUser
-            : user,
+          user.id === updatedUser.id ? updatedUser : user,
         ),
       );
 
@@ -380,14 +324,10 @@ export default function UsersPage() {
 
       resetEdit();
 
-      toastSuccess(
-        `User "${data.name}" updated successfully.`,
-      );
+      toastSuccess(`User "${data.name}" updated successfully.`);
     } catch (error) {
       const message =
-        error instanceof Error
-          ? error.message
-          : "Failed to update user";
+        error instanceof Error ? error.message : "Failed to update user";
 
       toastError(message);
     } finally {
@@ -411,46 +351,32 @@ export default function UsersPage() {
     try {
       setLoading(true);
 
-      const response = await fetch(
-        `${API_BASE}/users/${selectedCustomer.id}`,
-        {
-          method: "DELETE",
-        },
-      );
+      const response = await fetch(`${API_BASE}/users/${selectedCustomer.id}`, {
+        method: "DELETE",
+      });
 
       if (!response.ok) {
         const errorText = await response.text();
 
-        console.error(
-          "Delete user response:",
-          errorText,
-        );
+        console.error("Delete user response:", errorText);
 
         throw new Error("Failed to delete user");
       }
 
-      const deletedUserName =
-        selectedCustomer.name ??
-        selectedCustomer.email;
+      const deletedUserName = selectedCustomer.name ?? selectedCustomer.email;
 
       setCustomers((current) =>
-        current.filter(
-          (user) => user.id !== selectedCustomer.id,
-        ),
+        current.filter((user) => user.id !== selectedCustomer.id),
       );
 
       setDeleteDialogOpen(false);
 
       setSelectedCustomer(null);
 
-      toastSuccess(
-        `User "${deletedUserName}" deleted successfully.`,
-      );
+      toastSuccess(`User "${deletedUserName}" deleted successfully.`);
     } catch (error) {
       const message =
-        error instanceof Error
-          ? error.message
-          : "Failed to delete user";
+        error instanceof Error ? error.message : "Failed to delete user";
 
       toastError(message);
     } finally {
@@ -462,33 +388,11 @@ export default function UsersPage() {
   // FILTER BY ROLE/TAB
   // ========================================
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
   // ========================================
   // PAGINATION
   // ========================================
 
-  const handleSort = (
-    key: keyof User,
-    direction: "asc" | "desc",
-  ) => {
+  const handleSort = (key: keyof User, direction: "asc" | "desc") => {
     setSortBy(key);
     setSortDir(direction);
     setCurrentPage(1);
@@ -521,14 +425,11 @@ export default function UsersPage() {
 
       if (!response.ok) {
         throw new Error(
-          result?.message ||
-          "Failed to resend verification email",
+          result?.message || "Failed to resend verification email",
         );
       }
 
-      toastSuccess(
-        `Verification email sent to ${user.email}`,
-      );
+      toastSuccess(`Verification email sent to ${user.email}`);
     } catch (error) {
       const message =
         error instanceof Error
@@ -553,13 +454,7 @@ export default function UsersPage() {
 
       render: (_, customer) => (
         <div className="flex items-center gap-3">
-          <Avatar
-            name={
-              customer.name ??
-              customer.email
-            }
-            size="sm"
-          />
+          <Avatar name={customer.name ?? customer.email} size="sm" />
 
           <div>
             <p className="font-bold text-text-custom">
@@ -576,9 +471,7 @@ export default function UsersPage() {
       sortable: true,
 
       render: (value) => (
-        <span className="text-text-custom/80">
-          {value || "—"}
-        </span>
+        <span className="text-text-custom/80">{value || "—"}</span>
       ),
     },
 
@@ -641,9 +534,7 @@ export default function UsersPage() {
 
       render: (value) => (
         <span suppressHydrationWarning>
-          {value
-            ? new Date(value).toLocaleDateString()
-            : "—"}
+          {value ? new Date(value).toLocaleDateString() : "—"}
         </span>
       ),
     },
@@ -657,36 +548,25 @@ export default function UsersPage() {
           items={[
             {
               label: "Edit Info",
-              icon: (
-                <Edit className="w-3.5 h-3.5" />
-              ),
-              onClick: () =>
-                handleEditClick(customer),
+              icon: <Edit className="w-3.5 h-3.5" />,
+              onClick: () => handleEditClick(customer),
             },
 
             // Only show resend option when not verified
             ...(!customer.emailVerified
               ? [
-                {
-                  label: "Resend Verification",
-                  icon: (
-                    <Mail className="w-3.5 h-3.5" />
-                  ),
-                  onClick: () =>
-                    void handleResendVerification(
-                      customer,
-                    ),
-                },
-              ]
+                  {
+                    label: "Resend Verification",
+                    icon: <Mail className="w-3.5 h-3.5" />,
+                    onClick: () => void handleResendVerification(customer),
+                  },
+                ]
               : []),
 
             {
               label: "Delete Customer",
-              icon: (
-                <Trash className="w-3.5 h-3.5" />
-              ),
-              onClick: () =>
-                handleDeleteClick(customer),
+              icon: <Trash className="w-3.5 h-3.5" />,
+              onClick: () => handleDeleteClick(customer),
               variant: "danger",
             },
           ]}
@@ -701,11 +581,9 @@ export default function UsersPage() {
 
   return (
     <div className="space-y-6">
-
       {/* ================= HEADER ================= */}
 
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-
         <div>
           <Breadcrumb
             items={[
@@ -716,9 +594,7 @@ export default function UsersPage() {
             ]}
           />
 
-          <h1 className="text-2xl font-bold text-text-custom mt-2">
-            Users
-          </h1>
+          <h1 className="text-2xl font-bold text-text-custom mt-2">Users</h1>
         </div>
 
         <Button
@@ -735,27 +611,23 @@ export default function UsersPage() {
       {/* ================= TABS ================= */}
 
       <div className="border-b border-gray-200">
-
         <div className="flex items-center gap-8">
-
           {/* ADMIN TAB */}
 
           <button
             type="button"
-            onClick={() =>
-              handleTabChange("Admin")
-            }
+            onClick={() => handleTabChange("Admin")}
             className={`
               relative pb-3 text-sm font-semibold
               transition-colors
-              ${activeTab === "Admin"
-                ? "text-text-custom"
-                : "text-text-custom/50 hover:text-text-custom"
+              ${
+                activeTab === "Admin"
+                  ? "text-text-custom"
+                  : "text-text-custom/50 hover:text-text-custom"
               }
             `}
           >
             Admin
-
             {activeTab === "Admin" && (
               <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-text-custom rounded-full" />
             )}
@@ -765,42 +637,35 @@ export default function UsersPage() {
 
           <button
             type="button"
-            onClick={() =>
-              handleTabChange("User")
-            }
+            onClick={() => handleTabChange("User")}
             className={`
               relative pb-3 text-sm font-semibold
               transition-colors
-              ${activeTab === "User"
-                ? "text-text-custom"
-                : "text-text-custom/50 hover:text-text-custom"
+              ${
+                activeTab === "User"
+                  ? "text-text-custom"
+                  : "text-text-custom/50 hover:text-text-custom"
               }
             `}
           >
             Billing User
-
             {activeTab === "User" && (
               <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-text-custom rounded-full" />
             )}
           </button>
-
         </div>
       </div>
 
       {/* ================= TABLE ================= */}
 
       <Card>
-
         {loading && (
-          <div className="text-sm text-text-custom/50 mb-4">
-            Loading...
-          </div>
+          <div className="text-sm text-text-custom/50 mb-4">Loading...</div>
         )}
 
         {/* SEARCH */}
 
         <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-
           <div className="w-full sm:w-80">
             <Input
               placeholder="Search users..."
@@ -815,17 +680,11 @@ export default function UsersPage() {
           <div className="text-sm text-text-custom/60">
             Total Users: {totalUsers}
           </div>
-
         </div>
-
 
         {/* TABLE */}
 
-        <DataTable
-          columns={columns}
-          data={customers}
-          onSort={handleSort}
-        />
+        <DataTable columns={columns} data={customers} onSort={handleSort} />
 
         {/* PAGINATION */}
 
@@ -836,7 +695,6 @@ export default function UsersPage() {
             setCurrentPage(page);
           }}
         />
-
       </Card>
 
       {/* ================= CREATE USER MODAL ================= */}
@@ -864,9 +722,7 @@ export default function UsersPage() {
               variant="primary"
               disabled={loading}
               onClick={() => {
-                void handleSubmitCreate(
-                  onSubmitCreate,
-                )();
+                void handleSubmitCreate(onSubmitCreate)();
               }}
             >
               Create User
@@ -875,7 +731,6 @@ export default function UsersPage() {
         }
       >
         <form className="space-y-4">
-
           {/* FULL NAME */}
 
           <Input
@@ -883,9 +738,7 @@ export default function UsersPage() {
             {...registerCreate("name", {
               required: "Name is required",
             })}
-            error={
-              createErrors.name?.message
-            }
+            error={createErrors.name?.message}
           />
 
           {/* EMAIL */}
@@ -896,9 +749,7 @@ export default function UsersPage() {
             {...registerCreate("email", {
               required: "Email is required",
             })}
-            error={
-              createErrors.email?.message
-            }
+            error={createErrors.email?.message}
           />
 
           {/* PASSWORD WITH EYE ICON */}
@@ -906,43 +757,26 @@ export default function UsersPage() {
           <div className="relative">
             <Input
               label="Password"
-              type={
-                showPassword
-                  ? "text"
-                  : "password"
-              }
+              type={showPassword ? "text" : "password"}
               {...registerCreate("password", {
-                required:
-                  "Password is required",
+                required: "Password is required",
                 minLength: {
                   value: 6,
-                  message:
-                    "Password must be at least 6 characters",
+                  message: "Password must be at least 6 characters",
                 },
               })}
-              error={
-                createErrors.password?.message
-              }
+              error={createErrors.password?.message}
               className="pr-10"
             />
 
             <button
               type="button"
-              onClick={() =>
-                setShowPassword(
-                  (current) => !current,
-                )
-              }
+              onClick={() => setShowPassword((current) => !current)}
               className="absolute right-3 top-[30px] flex items-center justify-center text-gray-500 hover:text-gray-700"
-              aria-label={
-                showPassword
-                  ? "Hide password"
-                  : "Show password"
-              }
+              aria-label={showPassword ? "Hide password" : "Show password"}
             >
               {showPassword ? (
                 <Eye className="w-5 h-5" />
-
               ) : (
                 <EyeOff className="w-5 h-5" />
               )}
@@ -952,10 +786,7 @@ export default function UsersPage() {
           {/* ROLE */}
 
           <div className="space-y-1.5">
-
-            <label className="text-sm font-medium text-text-custom">
-              Role
-            </label>
+            <label className="text-sm font-medium text-text-custom">Role</label>
 
             <select
               {...registerCreate("roleId", {
@@ -963,17 +794,11 @@ export default function UsersPage() {
               })}
               className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm text-text-custom outline-none focus:border-gray-500 focus:ring-1 focus:ring-gray-500"
             >
-              <option value="">
-                Select Role
-              </option>
+              <option value="">Select Role</option>
 
-              <option value={ROLE_IDS.ADMIN}>
-                Admin
-              </option>
+              <option value={ROLE_IDS.ADMIN}>Admin</option>
 
-              <option value={ROLE_IDS.USER}>
-                Billing User
-              </option>
+              <option value={ROLE_IDS.USER}>Billing User</option>
             </select>
 
             {createErrors.roleId?.message && (
@@ -981,9 +806,7 @@ export default function UsersPage() {
                 {createErrors.roleId.message}
               </p>
             )}
-
           </div>
-
         </form>
       </Modal>
 
@@ -1014,9 +837,7 @@ export default function UsersPage() {
               variant="primary"
               disabled={loading}
               onClick={() => {
-                void handleSubmitEdit(
-                  onSubmitEdit,
-                )();
+                void handleSubmitEdit(onSubmitEdit)();
               }}
             >
               Save Changes
@@ -1025,15 +846,12 @@ export default function UsersPage() {
         }
       >
         <form className="space-y-4">
-
           <Input
             label="Full Name"
             {...registerEdit("name", {
               required: "Name is required",
             })}
-            error={
-              editErrors.name?.message
-            }
+            error={editErrors.name?.message}
           />
 
           <Input
@@ -1042,11 +860,8 @@ export default function UsersPage() {
             {...registerEdit("email", {
               required: "Email is required",
             })}
-            error={
-              editErrors.email?.message
-            }
+            error={editErrors.email?.message}
           />
-
         </form>
       </Modal>
 
@@ -1058,16 +873,10 @@ export default function UsersPage() {
           setDeleteDialogOpen(false);
           setSelectedCustomer(null);
         }}
-        onConfirm={() =>
-          void confirmDelete()
-        }
-        itemName={
-          selectedCustomer?.name ??
-          selectedCustomer?.email
-        }
+        onConfirm={() => void confirmDelete()}
+        itemName={selectedCustomer?.name ?? selectedCustomer?.email}
         title="Delete User Account"
       />
-
     </div>
   );
 }
