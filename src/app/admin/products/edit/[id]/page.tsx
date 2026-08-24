@@ -44,6 +44,7 @@ interface ProductFormValues {
   description: string;
   slug: string;
   keywords: string;
+  productSize?: string;
 }
 
 interface StatusOption {
@@ -154,6 +155,7 @@ export default function EditProductPage() {
             keywords: prod.keywords
               ? prod.keywords.map((k: any) => k.keyword).join(", ")
               : "",
+            productSize: prod.productSize || "",
           });
 
           if (prod.images) {
@@ -401,6 +403,7 @@ export default function EditProductPage() {
         sku: data.sku,
         slug: data.slug || data.name.toLowerCase().replace(/[^a-z0-9]+/g, "-"),
         shortDescription: data.name,
+        productSize: data.productSize || undefined,
         description: data.description,
         brandName: data.brandName ? data.brandName.trim() : undefined,
         basePrice: Number(data.basePrice),
@@ -545,7 +548,7 @@ export default function EditProductPage() {
                     Click or drag images to upload
                   </p>
                   <p className="text-xs text-text-custom/40 mt-1">
-                    Supports PNG, JPG, WEBP formats (Max 7)
+                    Supports PNG, JPG, WEBP, AVIF formats (Max 7)
                   </p>
                 </div>
 
@@ -727,7 +730,7 @@ export default function EditProductPage() {
           <Card title="Pricing & Tax rates">
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-2">
               <Input
-                label="Regular Retail Price ($)"
+                label="Regular Retail Price (₹)"
                 type="number"
                 step="0.01"
                 {...register("basePrice", {
@@ -737,7 +740,7 @@ export default function EditProductPage() {
                 error={errors.basePrice?.message}
               />
               <Input
-                label="Discount Price ($)"
+                label="Discount Price (₹)"
                 type="number"
                 step="0.01"
                 {...register("discountPrice", { valueAsNumber: true })}
@@ -802,6 +805,16 @@ export default function EditProductPage() {
             </div>
           </Card>
 
+          <Card title="Product Size">
+            <div className="space-y-4 mt-2">
+              <Input
+                label="Product Size"
+                placeholder="e.g. S, M, L, XL, 32, 34"
+                {...register("productSize")}
+              />
+            </div>
+          </Card>
+
           {/* Product Preview Card */}
           <div className="sticky top-20">
             <div className="text-xs font-semibold text-text-custom/60 uppercase tracking-wider mb-2 flex items-center gap-1.5">
@@ -862,15 +875,15 @@ export default function EditProductPage() {
                   {watchedDiscountPrice ? (
                     <>
                       <span className="text-sm font-extrabold text-primary">
-                        ${Number(watchedDiscountPrice).toFixed(2)}
+                        ₹{Number(watchedDiscountPrice).toFixed(2)}
                       </span>
                       <span className="text-xs text-text-custom/35 line-through">
-                        ${Number(watchedBasePrice).toFixed(2)}
+                        ₹{Number(watchedBasePrice).toFixed(2)}
                       </span>
                     </>
                   ) : (
                     <span className="text-sm font-extrabold text-text-custom">
-                      ${Number(watchedBasePrice).toFixed(2)}
+                      ₹{Number(watchedBasePrice).toFixed(2)}
                     </span>
                   )}
                 </div>

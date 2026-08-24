@@ -22,6 +22,32 @@ export default function ViewProductPage() {
   const [product, setProduct] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
+  const renderDescription = (description: string) => {
+    if (!description) return "No description has been supplied for this item.";
+
+    const disclaimerMarker = "Please note:";
+    const index = description.indexOf(disclaimerMarker);
+
+    if (index !== -1) {
+      const mainText = description.substring(0, index);
+      const disclaimerText = description.substring(index);
+
+      return (
+        <div className="flex flex-col gap-3">
+          <span className="whitespace-pre-wrap">{mainText.trim()}</span>
+          <div className="p-3 bg-amber-50/60 border border-amber-200/60 rounded-lg text-amber-800 text-xs italic">
+            <span className="font-bold not-italic mr-1">
+              {disclaimerMarker}
+            </span>
+            {disclaimerText.replace(disclaimerMarker, "").trim()}
+          </div>
+        </div>
+      );
+    }
+
+    return <span className="whitespace-pre-wrap">{description}</span>;
+  };
+
   // Retrieve product from Redux store as initial cache
   const products = useAppSelector((state) => state.admin.products);
 
@@ -53,6 +79,7 @@ export default function ViewProductPage() {
               p.images?.[0]?.imageUrl ||
               "https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=300&q=80",
             description: p.description || "",
+            productSize: p.productSize || null,
           };
           setProduct(mapped);
         }
@@ -203,10 +230,10 @@ export default function ViewProductPage() {
                 {product.salePrice ? (
                   <>
                     <span className="text-2xl font-extrabold text-primary">
-                      ${product.salePrice.toFixed(2)}
+                      ₹{product.salePrice.toFixed(2)}
                     </span>
                     <span className="text-sm text-text-custom/40 line-through">
-                      ${product.price.toFixed(2)}
+                      ₹{product.price.toFixed(2)}
                     </span>
                     <span className="inline-flex items-center gap-0.5 text-emerald-600 font-semibold bg-emerald-50 px-2 py-0.5 rounded text-2xs border border-emerald-100">
                       <Tag className="w-3 h-3" />
@@ -215,13 +242,23 @@ export default function ViewProductPage() {
                   </>
                 ) : (
                   <span className="text-2xl font-extrabold text-text-custom">
-                    ${product.price.toFixed(2)}
+                    ₹{product.price.toFixed(2)}
                   </span>
                 )}
               </div>
 
               {/* Stock status */}
               <div className="space-y-2 text-xs">
+                {product.productSize && (
+                  <div className="flex items-center gap-2">
+                    <span className="font-bold text-text-custom">
+                      Product Size:
+                    </span>
+                    <span className="font-semibold text-primary bg-primary/5 border border-primary/10 px-2 py-0.5 rounded">
+                      {product.productSize}
+                    </span>
+                  </div>
+                )}
                 <div className="flex items-center gap-2">
                   <span className="font-bold text-text-custom">
                     Available Stock:
@@ -253,10 +290,9 @@ export default function ViewProductPage() {
                 <h4 className="text-xs font-bold text-text-custom uppercase tracking-wider">
                   Product Description
                 </h4>
-                <p className="text-xs text-text-custom/80 leading-relaxed font-medium">
-                  {product.description ||
-                    "No description has been supplied for this item."}
-                </p>
+                <div className="text-xs text-text-custom/80 leading-relaxed font-medium">
+                  {renderDescription(product.description)}
+                </div>
               </div>
             </div>
           </Card>
