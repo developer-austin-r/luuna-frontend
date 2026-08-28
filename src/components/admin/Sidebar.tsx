@@ -9,6 +9,7 @@ import {
   Layers,
   LayoutDashboard,
   LogOut,
+  Receipt,
   Settings,
   ShoppingBag,
   ShoppingCart,
@@ -32,20 +33,22 @@ interface MenuItem {
   name: string;
   href: string;
   icon: React.FC<{ className?: string }>;
+  roles: string[];
 }
 
 export const menuItems: MenuItem[] = [
-  { name: "Dashboard", href: "/admin", icon: LayoutDashboard },
-  { name: "Customers", href: "/admin/customers", icon: Users },
-  { name: "Products", href: "/admin/products", icon: ShoppingBag },
-  { name: "Categories", href: "/admin/categories", icon: FolderTree },
-  { name: "Inventory", href: "/admin/inventory", icon: Layers },
-  { name: "Coupons", href: "/admin/coupons", icon: Ticket },
-  { name: "Orders", href: "/admin/orders", icon: ShoppingCart },
-  { name: "Reports", href: "/admin/reports", icon: FileText },
-  { name: "Activity Logs", href: "/admin/activity-logs", icon: History },
-  { name: "Settings", href: "/admin/settings", icon: Settings },
-  { name: "Users", href: "/admin/users", icon: Users },
+  { name: "Dashboard", href: "/admin", icon: LayoutDashboard, roles: ["Admin"] },
+  { name: "Customers", href: "/admin/customers", icon: Users, roles: ["Admin"] },
+  { name: "Products", href: "/admin/products", icon: ShoppingBag, roles: ["Admin"] },
+  { name: "Categories", href: "/admin/categories", icon: FolderTree, roles: ["Admin"] },
+  { name: "Inventory", href: "/admin/inventory", icon: Layers, roles: ["Admin"] },
+  { name: "Coupons", href: "/admin/coupons", icon: Ticket, roles: ["Admin"] },
+  { name: "Orders", href: "/admin/orders", icon: ShoppingCart, roles: ["Admin"] },
+  { name: "Reports", href: "/admin/reports", icon: FileText, roles: ["Admin"] },
+  { name: "Activity Logs", href: "/admin/activity-logs", icon: History, roles: ["Admin"]},
+  { name: "Settings", href: "/admin/settings", icon: Settings, roles: ["Admin"] },
+  { name: "Users", href: "/admin/users", icon: Users, roles: ["Admin"] },
+  { name: "Billing", href: "/admin/billing", icon: Receipt,roles: ["Admin", "Billing User"],},
 ];
 
 export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
@@ -73,6 +76,41 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
     }
     return pathname.startsWith(href);
   };
+
+  const [currentRole, setCurrentRole] = useState<string>("");
+
+React.useEffect(() => {
+  const storedUser = localStorage.getItem("user");
+
+  console.log("STORED USER:", storedUser);
+
+  if (storedUser) {
+    try {
+      const parsedUser = JSON.parse(storedUser);
+
+      console.log("PARSED USER:", parsedUser);
+      console.log("STORED ROLE:", parsedUser.role);
+
+      setCurrentRole(parsedUser.role);
+    } catch (error) {
+      console.error("Failed to parse stored user:", error);
+    }
+  }
+}, []);
+const roleName = user?.role ?? "Admin";
+console.log("========== SIDEBAR DEBUG ==========");
+console.log("USER:", user);
+console.log("ROLE:", roleName);
+console.log("ROLE TYPE:", typeof roleName);
+
+const visibleMenuItems = menuItems.filter((item) =>
+  item.roles.includes(roleName ?? "")
+);
+
+console.log("VISIBLE MENU:", visibleMenuItems);
+console.log("==================================");
+
+
 
   return (
     <>
@@ -113,7 +151,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
 
         {/* Navigation Items */}
         <nav className="flex-1 overflow-y-auto px-4 py-6 space-y-1">
-          {menuItems.map((item) => {
+          {visibleMenuItems.map((item) => {
             const Icon = item.icon;
             const active = isLinkActive(item.href);
             return (
