@@ -5,6 +5,18 @@
   --foreground: #18181b;
 }
 
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+
+  --color-primary: #7c6ef6;
+  --color-primary-hover: #6a5ce5;
+  --color-bg-secondary: #f8f8fc;
+  --color-border-custom: #e7e8f0;
+  --color-text-custom: #1e293b;
+}
 
 body {
   background: var(--background);
