@@ -1,0 +1,113 @@
+.featuresSection {
+  width: 100%;
+  background: #ffffff;
+  padding: 28px 0;
+}
+
+.featuresContainer {
+  width: 100%;
+  max-width: 1200px;
+
+  margin: 0 auto;
+  padding: 0 48px;
+
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+
+  gap: 28px;
+}
+
+.featureCard {
+  min-height: 72px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 14px;
+
+  background: #eeeeee;
+
+  border-radius: 8px;
+
+  padding: 15px 20px;
+}
+
+.icon {
+  font-size: 27px;
+  line-height: 1;
+}
+
+.title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #111111;
+}
+
+/* Tablet */
+
+@media (max-width: 900px) {
+  .featuresContainer {
+    padding: 0 30px;
+    gap: 16px;
+  }
+
+  .featureCard {
+    padding: 12px;
+  }
+
+  .title {
+    font-size: 14px;
+  }
+
+  .icon {
+    font-size: 23px;
+  }
+}
+
+/* Mobile */
+
+@media (max-width: 650px) {
+  .featuresSection {
+    padding: 18px 0;
+  }
+
+  .featuresContainer {
+    padding: 0 16px;
+
+    grid-template-columns: repeat(2, 1fr);
+
+    gap: 12px;
+  }
+
+  .featureCard {
+    min-height: 62px;
+    gap: 8px;
+    padding: 10px;
+  }
+
+  .icon {
+    font-size: 20px;
+  }
+
+  .title {
+    font-size: 12px;
+  }
+}
+
+/* Small mobile */
+
+@media (max-width: 400px) {
+  .featuresContainer {
+    padding: 0 10px;
+    gap: 8px;
+  }
+
+  .featureCard {
+    min-height: 58px;
+  }
+
+  .title {
+    font-size: 11px;
+  }
+}
