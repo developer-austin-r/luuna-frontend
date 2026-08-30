@@ -91,8 +91,7 @@ const eslintConfig = defineConfig([
       "build/**",
       "next-env.d.ts",
       "next.config.ts",
-      // Ignore nested backend repository cloned into the frontend workspace.
-      "luuna-backend/**",
+
     ],
   },
 ]);
