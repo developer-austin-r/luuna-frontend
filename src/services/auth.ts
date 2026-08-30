@@ -1,15 +1,29 @@
 import { apiClient } from "./api-client";
 
+export interface MenuNode {
+  id: string;
+  name: string;
+  slug: string;
+  icon: string | null;
+  permission: string | null;
+  sortOrder: number;
+  children: MenuNode[];
+}
+
 export interface AuthUser {
   id: string;
   email: string;
   name: string | null;
   role: string | null;
+  permissions: string[];
+  menus: MenuNode[];
 }
 
 interface AuthApiResponse {
   data: {
-    user: AuthUser;
+    user: Omit<AuthUser, "permissions" | "menus">;
+    permissions: string[];
+    menus: MenuNode[];
   };
 }
 
@@ -28,7 +42,11 @@ export async function loginApi(payload: LoginPayload): Promise<AuthUser> {
     method: "POST",
     body: JSON.stringify(payload),
   });
-  return res.data.user;
+  return {
+    ...res.data.user,
+    permissions: res.data.permissions ?? [],
+    menus: res.data.menus ?? [],
+  };
 }
 
 /**
@@ -38,7 +56,11 @@ export async function refreshTokenApi(): Promise<AuthUser> {
   const res = await apiClient<AuthApiResponse>("/auth/refresh", {
     method: "POST",
   });
-  return res.data.user;
+  return {
+    ...res.data.user,
+    permissions: res.data.permissions ?? [],
+    menus: res.data.menus ?? [],
+  };
 }
 
 /**

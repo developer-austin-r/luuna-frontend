@@ -49,7 +49,9 @@ export function middleware(request: NextRequest) {
       const loginUrl = new URL("/login", request.url);
       return NextResponse.redirect(loginUrl);
     }
-    if (role !== "admin") {
+    // Only admin and billing-user roles can access /admin routes
+    const isAdminRole = role === "admin" || role === "billing user";
+    if (!isAdminRole) {
       return NextResponse.redirect(new URL("/", request.url));
     }
   }
@@ -57,7 +59,8 @@ export function middleware(request: NextRequest) {
   // Redirect already-authenticated users away from /login.
   const isAuthRoute = AUTH_ROUTES.some((route) => pathname.startsWith(route));
   if (isAuthRoute && isAuthenticated) {
-    if (role === "admin") {
+    const isAdminRole = role === "admin" || role === "billing user";
+    if (isAdminRole) {
       return NextResponse.redirect(new URL("/admin/dashboard", request.url));
     } else {
       return NextResponse.redirect(new URL("/", request.url));
