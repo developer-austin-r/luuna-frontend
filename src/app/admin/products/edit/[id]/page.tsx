@@ -44,6 +44,7 @@ interface ProductFormValues {
   description: string;
   slug: string;
   keywords: string;
+  productSize?: string;
 }
 
 interface StatusOption {
@@ -55,6 +56,8 @@ interface StatusOption {
 interface ImageUploadItem {
   id: string;
   imageUrl: string;
+  originalUrl?: string;
+  displayUrl?: string;
   displayOrder: number;
   file?: File;
   uploading: boolean;
@@ -107,6 +110,7 @@ export default function EditProductPage() {
     control,
     setValue,
     reset,
+    watch,
     formState: { errors, isSubmitting },
   } = useForm<ProductFormValues>();
 
@@ -151,13 +155,16 @@ export default function EditProductPage() {
             keywords: prod.keywords
               ? prod.keywords.map((k: any) => k.keyword).join(", ")
               : "",
+            productSize: prod.productSize || "",
           });
 
           if (prod.images) {
             setImages(
               prod.images.map((img: any) => ({
                 id: img.id,
-                imageUrl: img.imageUrl,
+                imageUrl: img.displayUrl || img.imageUrl,
+                originalUrl: img.originalUrl || img.imageUrl,
+                displayUrl: img.displayUrl || img.imageUrl,
                 displayOrder: img.displayOrder,
                 uploading: false,
                 progress: 100,
@@ -207,6 +214,7 @@ export default function EditProductPage() {
     name: "keywords",
     defaultValue: "",
   });
+  const watchCategoryIds = watch("categoryIds") || [];
 
   // Generate SEO slug helper
   const handleAutoGenerateSlug = () => {
@@ -229,11 +237,21 @@ export default function EditProductPage() {
       return;
     }
 
+    // Enforce 10MB limit per image
+    const oversizedFile = filesArray.find(
+      (file) => file.size > 10 * 1024 * 1024,
+    );
+    if (oversizedFile) {
+      setApiError("Each image must be 10MB or less.");
+      return;
+    }
+
     filesArray.forEach((file, index) => {
       const imgId = Math.random().toString(36).substr(2, 9);
+      const localUrl = URL.createObjectURL(file);
       const newItem: ImageUploadItem = {
         id: imgId,
-        imageUrl: "",
+        imageUrl: localUrl,
         displayOrder: images.length + index,
         file,
         uploading: true,
@@ -243,11 +261,18 @@ export default function EditProductPage() {
       setImages((prev) => [...prev, newItem]);
 
       void uploadImage(file)
-        .then((imageUrl) => {
+        .then(({ originalUrl, displayUrl }) => {
           setImages((prev) =>
             prev.map((item) =>
               item.id === imgId
-                ? { ...item, imageUrl, uploading: false, progress: 100 }
+                ? {
+                    ...item,
+                    imageUrl: displayUrl,
+                    originalUrl,
+                    displayUrl,
+                    uploading: false,
+                    progress: 100,
+                  }
                 : item,
             ),
           );
@@ -378,6 +403,7 @@ export default function EditProductPage() {
         sku: data.sku,
         slug: data.slug || data.name.toLowerCase().replace(/[^a-z0-9]+/g, "-"),
         shortDescription: data.name,
+        productSize: data.productSize || undefined,
         description: data.description,
         brandName: data.brandName ? data.brandName.trim() : undefined,
         basePrice: Number(data.basePrice),
@@ -401,6 +427,8 @@ export default function EditProductPage() {
               .filter(Boolean)
           : [],
         images: images.map((img) => ({
+          originalUrl: img.originalUrl || img.imageUrl,
+          displayUrl: img.displayUrl || img.imageUrl,
           imageUrl: img.imageUrl,
           displayOrder: img.displayOrder,
         })),
@@ -497,106 +525,6 @@ export default function EditProductPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left Column: Edit Form */}
         <div className="lg:col-span-2 space-y-6">
-          {/* Basic Info */}
-          <Card title="Basic Information">
-            <div className="space-y-4 mt-2">
-              <Input
-                label="Product Title"
-                {...register("name", { required: "Product title is required" })}
-                error={errors.name?.message}
-              />
-              <div>
-                <label className="text-xs font-semibold text-text-custom/80 uppercase tracking-wider block mb-1.5">
-                  Long Description
-                </label>
-                <textarea
-                  rows={4}
-                  {...register("description")}
-                  className="w-full px-3 py-2 text-sm border border-border-custom rounded-lg bg-white focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all"
-                  placeholder="Describe material compositions, measurements, style suggestions..."
-                />
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <Select
-                  label="Category Taxonomy"
-                  {...register("categoryIds")}
-                  multiple
-                  options={categories.map((c) => ({
-                    value: c.id,
-                    label: c.name,
-                  }))}
-                />
-                <Input
-                  label="Product Brand"
-                  {...register("brandName")}
-                  placeholder="e.g. Nike, Adidas, Gucci"
-                />
-              </div>
-            </div>
-          </Card>
-
-          {/* Pricing */}
-          <Card title="Pricing & Tax rates">
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-2">
-              <Input
-                label="Regular Retail Price ($)"
-                type="number"
-                step="0.01"
-                {...register("basePrice", {
-                  valueAsNumber: true,
-                  required: "Retail price is required",
-                })}
-                error={errors.basePrice?.message}
-              />
-              <Input
-                label="Discount Price ($)"
-                type="number"
-                step="0.01"
-                {...register("discountPrice", { valueAsNumber: true })}
-              />
-              <Input
-                label="Sales Tax Rate (%)"
-                type="number"
-                {...register("taxPercentage", {
-                  valueAsNumber: true,
-                  min: { value: 0, message: "Tax percentage must be >= 0" },
-                  max: { value: 100, message: "Tax percentage must be <= 100" },
-                })}
-                error={errors.taxPercentage?.message}
-              />
-            </div>
-          </Card>
-
-          {/* Inventory */}
-          <Card title="Inventory Management">
-            <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 mt-2">
-              <Input
-                label="SKU Code"
-                {...register("sku", { required: "SKU barcode is required" })}
-                error={errors.sku?.message}
-              />
-              <Input
-                label="Stock Quantity"
-                type="number"
-                {...register("stock", {
-                  valueAsNumber: true,
-                  required: "Stock volume is required",
-                })}
-                error={errors.stock?.message}
-              />
-              <Input
-                label="Reserved Stock"
-                type="number"
-                {...register("reservedStock", { valueAsNumber: true })}
-              />
-              <Input
-                label="Alert Level Threshold"
-                type="number"
-                {...register("alertLevel", { valueAsNumber: true })}
-              />
-            </div>
-          </Card>
-
           {/* Product Media (Images & Video) */}
           <Card title="Product Media Assets">
             <div className="space-y-6 mt-2">
@@ -620,7 +548,7 @@ export default function EditProductPage() {
                     Click or drag images to upload
                   </p>
                   <p className="text-xs text-text-custom/40 mt-1">
-                    Supports PNG, JPG, WEBP formats (Max 7)
+                    Supports PNG, JPG, WEBP, AVIF formats (Max 7)
                   </p>
                 </div>
 
@@ -725,6 +653,140 @@ export default function EditProductPage() {
               </div>
             </div>
           </Card>
+
+          {/* Basic Info */}
+          <Card title="Basic Information">
+            <div className="space-y-4 mt-2">
+              <Input
+                label="Product Title"
+                {...register("name", { required: "Product title is required" })}
+                error={errors.name?.message}
+              />
+              <div>
+                <label className="text-xs font-semibold text-text-custom/80 uppercase tracking-wider block mb-1.5">
+                  Long Description
+                </label>
+                <textarea
+                  rows={4}
+                  {...register("description")}
+                  className="w-full px-3 py-2 text-sm border border-border-custom rounded-lg bg-white focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all"
+                  placeholder="Describe material compositions, measurements, style suggestions..."
+                />
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="text-xs font-semibold text-text-custom/80 uppercase tracking-wider block mb-1.5">
+                    Category Taxonomy
+                  </label>
+                  <div className="border border-border-custom rounded-lg p-3 max-h-[160px] overflow-y-auto bg-white space-y-1.5 shadow-sm">
+                    {categories.length === 0 ? (
+                      <span className="text-xs text-text-custom/50 italic">
+                        No categories found
+                      </span>
+                    ) : (
+                      categories.map((c) => (
+                        <label
+                          key={c.id}
+                          className="flex items-center gap-2.5 text-sm text-text-custom cursor-pointer hover:bg-neutral-50 p-1.5 rounded transition-colors select-none"
+                        >
+                          <input
+                            type="checkbox"
+                            value={c.id}
+                            checked={watchCategoryIds.includes(c.id)}
+                            onChange={(e) => {
+                              const checked = e.target.checked;
+                              if (checked) {
+                                setValue("categoryIds", [
+                                  ...watchCategoryIds,
+                                  c.id,
+                                ]);
+                              } else {
+                                setValue(
+                                  "categoryIds",
+                                  watchCategoryIds.filter((id) => id !== c.id),
+                                );
+                              }
+                            }}
+                            className="rounded border-border-custom text-primary focus:ring-primary h-4 w-4 cursor-pointer accent-primary"
+                          />
+                          <span className="font-medium text-xs uppercase tracking-wider text-text-custom/90">
+                            {c.name}
+                          </span>
+                        </label>
+                      ))
+                    )}
+                  </div>
+                </div>
+                <Input
+                  label="Product Brand"
+                  {...register("brandName")}
+                  placeholder="e.g. Nike, Adidas, Gucci"
+                />
+              </div>
+            </div>
+          </Card>
+
+          {/* Pricing */}
+          <Card title="Pricing & Tax rates">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-2">
+              <Input
+                label="Regular Retail Price (₹)"
+                type="number"
+                step="0.01"
+                {...register("basePrice", {
+                  valueAsNumber: true,
+                  required: "Retail price is required",
+                })}
+                error={errors.basePrice?.message}
+              />
+              <Input
+                label="Discount Price (₹)"
+                type="number"
+                step="0.01"
+                {...register("discountPrice", { valueAsNumber: true })}
+              />
+              <Input
+                label="Sales Tax Rate (%)"
+                type="number"
+                {...register("taxPercentage", {
+                  valueAsNumber: true,
+                  min: { value: 0, message: "Tax percentage must be >= 0" },
+                  max: { value: 100, message: "Tax percentage must be <= 100" },
+                })}
+                error={errors.taxPercentage?.message}
+              />
+            </div>
+          </Card>
+
+          {/* Inventory */}
+          <Card title="Inventory Management">
+            <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 mt-2">
+              <Input
+                label="SKU Code"
+                {...register("sku", { required: "SKU barcode is required" })}
+                error={errors.sku?.message}
+              />
+              <Input
+                label="Stock Quantity"
+                type="number"
+                {...register("stock", {
+                  valueAsNumber: true,
+                  required: "Stock volume is required",
+                })}
+                error={errors.stock?.message}
+              />
+              <Input
+                label="Reserved Stock"
+                type="number"
+                {...register("reservedStock", { valueAsNumber: true })}
+              />
+              <Input
+                label="Alert Level Threshold"
+                type="number"
+                {...register("alertLevel", { valueAsNumber: true })}
+              />
+            </div>
+          </Card>
         </div>
 
         {/* Right Column: Preview & Status */}
@@ -739,6 +801,16 @@ export default function EditProductPage() {
                   value: s.id,
                   label: s.status,
                 }))}
+              />
+            </div>
+          </Card>
+
+          <Card title="Product Size">
+            <div className="space-y-4 mt-2">
+              <Input
+                label="Product Size"
+                placeholder="e.g. S, M, L, XL, 32, 34"
+                {...register("productSize")}
               />
             </div>
           </Card>
@@ -803,15 +875,15 @@ export default function EditProductPage() {
                   {watchedDiscountPrice ? (
                     <>
                       <span className="text-sm font-extrabold text-primary">
-                        ${Number(watchedDiscountPrice).toFixed(2)}
+                        ₹{Number(watchedDiscountPrice).toFixed(2)}
                       </span>
                       <span className="text-xs text-text-custom/35 line-through">
-                        ${Number(watchedBasePrice).toFixed(2)}
+                        ₹{Number(watchedBasePrice).toFixed(2)}
                       </span>
                     </>
                   ) : (
                     <span className="text-sm font-extrabold text-text-custom">
-                      ${Number(watchedBasePrice).toFixed(2)}
+                      ₹{Number(watchedBasePrice).toFixed(2)}
                     </span>
                   )}
                 </div>

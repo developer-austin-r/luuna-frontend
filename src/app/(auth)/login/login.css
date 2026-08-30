@@ -1,0 +1,286 @@
+.login-wrapper {
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-image: url("/Login (1).png");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  padding: 0.75rem;
+  box-sizing: border-box;
+}
+
+.glass-card {
+  width: 100%;
+  max-width: 380px;
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 20px;
+  padding: 1.25rem 1.5rem;
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4);
+  color: #ffffff;
+  display: flex;
+  flex-direction: column;
+  transition: all 0.2s ease-in-out;
+}
+
+.login-title {
+  color: #ffffff;
+  font-size: 1.3rem;
+  font-weight: 700;
+  margin-bottom: 0.6rem;
+  text-align: center;
+}
+
+.tab-container {
+  display: flex;
+  background: rgba(0, 0, 0, 0.25);
+  padding: 3px;
+  border-radius: 25px;
+  margin-bottom: 0.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.tab-btn {
+  flex: 1;
+  padding: 0.4rem;
+  border: none;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.8rem;
+  font-weight: 600;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.tab-btn.active {
+  background: #ffffff;
+  color: #000000;
+}
+
+.subtitle {
+  text-align: center;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 0.72rem;
+  margin-bottom: 0.6rem;
+}
+
+.error-banner {
+  color: #ff6b6b;
+  font-size: 0.72rem;
+  margin-bottom: 0.4rem;
+  text-align: center;
+}
+
+.form-body {
+  display: flex;
+  flex-direction: column;
+}
+
+.name-row {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  margin-bottom: 0.5rem;
+  flex: 1;
+}
+
+.form-group label {
+  font-size: 0.72rem;
+  color: #ffffff;
+  font-weight: 500;
+}
+
+.input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.input-icon {
+  position: absolute;
+  left: 9px;
+  color: #666;
+}
+
+.form-input {
+  width: 100%;
+  padding: 0.5rem 0.75rem 0.5rem 2.1rem;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: #ffffff;
+  color: #000000;
+  font-size: 0.8rem;
+  outline: none;
+  box-sizing: border-box;
+}
+
+.form-input::placeholder {
+  color: #888888;
+}
+
+.eye-btn {
+  position: absolute;
+  right: 9px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #666;
+  display: flex;
+  align-items: center;
+}
+
+.options-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.7rem;
+  margin-bottom: 0.6rem;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.remember-label {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  cursor: pointer;
+}
+
+.forgot-link {
+  color: #ffffff;
+  text-decoration: none;
+}
+
+.btn-primary {
+  width: 100%;
+  padding: 0.55rem;
+  background: #ffffff;
+  color: #000000;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+}
+
+.btn-primary:hover {
+  opacity: 0.9;
+}
+
+.divider {
+  display: flex;
+  align-items: center;
+  text-align: center;
+  margin: 0.45rem 0;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.68rem;
+}
+
+.divider::before,
+.divider::after {
+  content: "";
+  flex: 1;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.divider span {
+  padding: 0 6px;
+}
+
+.social-login {
+  display: flex;
+  justify-content: center;
+  gap: 0.6rem;
+  margin-bottom: 0.45rem;
+}
+
+.social-btn {
+  flex: 1;
+  max-width: 90px;
+  height: 32px;
+  background: #ffffff;
+  border: none;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.card-footer {
+  text-align: center;
+  font-size: 0.72rem;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.toggle-link {
+  color: #ffffff;
+  font-weight: 700;
+  background: none;
+  border: none;
+  text-decoration: underline;
+  cursor: pointer;
+  margin-left: 2px;
+  font-size: 0.72rem;
+}
+
+.glass-card.register-card {
+  padding: 0.85rem 1.25rem;
+}
+
+.glass-card.register-card .login-title {
+  font-size: 1.15rem;
+  margin-bottom: 0.35rem;
+}
+
+.glass-card.register-card .tab-container {
+  margin-bottom: 0.35rem;
+}
+
+.glass-card.register-card .subtitle {
+  font-size: 0.68rem;
+  margin-bottom: 0.35rem;
+}
+
+.glass-card.register-card .form-group {
+  margin-bottom: 0.3rem;
+}
+
+.glass-card.register-card .form-group label {
+  font-size: 0.68rem;
+}
+
+.glass-card.register-card .form-input {
+  padding: 0.38rem 0.6rem 0.38rem 1.9rem;
+  font-size: 0.75rem;
+}
+
+.glass-card.register-card .input-icon {
+  left: 7px;
+}
+
+.glass-card.register-card .btn-primary {
+  padding: 0.45rem;
+  font-size: 0.8rem;
+  margin-top: 0.15rem;
+}
+
+.glass-card.register-card .divider {
+  margin: 0.3rem 0;
+}
+
+.glass-card.register-card .social-btn {
+  height: 28px;
+}

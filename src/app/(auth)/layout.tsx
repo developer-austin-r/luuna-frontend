@@ -1,3 +1,5 @@
+import "./login/login.css";
+
 export default function AuthLayout({
   children,
 }: {
