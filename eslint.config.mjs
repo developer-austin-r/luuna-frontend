@@ -83,7 +83,6 @@ const eslintConfig = defineConfig([
       "react-refresh/only-export-components": "off",
     },
   },
-  // Override default ignores of eslint-config-next.
   {
     ignores: [
       // Default ignores of eslint-config-next:
@@ -92,6 +91,7 @@ const eslintConfig = defineConfig([
       "build/**",
       "next-env.d.ts",
       "next.config.ts",
+
     ],
   },
 ]);
