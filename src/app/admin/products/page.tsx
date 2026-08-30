@@ -2,7 +2,16 @@
 
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Archive, Barcode, Edit, Eye, Plus, RotateCcw, Tag, Trash } from "lucide-react";
+import {
+  Archive,
+  Barcode,
+  Edit,
+  Eye,
+  Plus,
+  RotateCcw,
+  Tag,
+  Trash,
+} from "lucide-react";
 
 import {
   ActionMenu,
@@ -258,7 +267,7 @@ export default function ProductsPage() {
       for (let i = 0; i < productsWithBarcodes.length; i++) {
         const prod = productsWithBarcodes[i];
         if (!prod) continue;
-        
+
         if (rowIndex >= rowsPerPage) {
           doc.addPage();
           rowIndex = 0;
@@ -273,14 +282,19 @@ export default function ProductsPage() {
 
         doc.setFont("Helvetica", "bold");
         doc.setFontSize(8);
-        const nameText = prod.name.length > 25 ? prod.name.substring(0, 22) + "..." : prod.name;
+        const nameText =
+          prod.name.length > 25
+            ? prod.name.substring(0, 22) + "..."
+            : prod.name;
         doc.text(nameText, x + 3, y + 6);
 
         doc.setFont("Helvetica", "normal");
         doc.setFontSize(6);
         doc.setTextColor(100, 100, 100);
         doc.text(`ID: ${prod.id.substring(0, 8)}...`, x + 3, y + 10);
-        doc.text(`SKU: ${prod.sku}`, x + colWidth - 3, y + 10, { align: "right" });
+        doc.text(`SKU: ${prod.sku}`, x + colWidth - 3, y + 10, {
+          align: "right",
+        });
 
         try {
           const imageUrl = `${appConfig.apiBaseUrl}/products/${prod.id}/barcode`;
@@ -294,7 +308,10 @@ export default function ProductsPage() {
           });
           doc.addImage(imgData, "PNG", x + 5, y + 13, colWidth - 10, 22);
         } catch (err) {
-          console.error(`Failed to fetch barcode image for product ${prod.sku}:`, err);
+          console.error(
+            `Failed to fetch barcode image for product ${prod.sku}:`,
+            err,
+          );
           doc.setFontSize(7);
           doc.setTextColor(200, 50, 50);
           doc.text(`[Barcode Generation Error]`, x + 10, y + 25);

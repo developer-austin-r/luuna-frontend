@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { ArrowLeft, Edit, Tag } from "lucide-react";
 
-import { appConfig } from "@/config";
 import {
   Badge,
   Breadcrumb,
@@ -12,6 +11,7 @@ import {
   Card,
   StatusBadge,
 } from "@/components/admin";
+import { appConfig } from "@/config";
 import { useAppSelector } from "@/redux/hooks";
 import { apiClient } from "@/services/api-client";
 
@@ -227,7 +227,9 @@ export default function ViewProductPage() {
                 </span>
               </div>
             ) : (
-              <span className="text-xs text-text-custom/50">No barcode assigned</span>
+              <span className="text-xs text-text-custom/50">
+                No barcode assigned
+              </span>
             )}
           </Card>
         </div>
