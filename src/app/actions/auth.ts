@@ -156,6 +156,8 @@ export async function authenticate(
 
     if (role === "admin") {
       redirectUrl = "/admin/dashboard";
+    } else if (role === "billing user") {
+      redirectUrl = "/admin/billing";
     } else {
       redirectUrl = "/";
     }

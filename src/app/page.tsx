@@ -20,9 +20,10 @@ export default async function Home() {
         const currentTime = Math.floor(Date.now() / 1000);
         if (payload.exp && payload.exp > currentTime) {
           const role = payload.role?.toLowerCase() || "";
-          const isAdminRole = role === "admin" || role === "billing user";
-          if (isAdminRole) {
+          if (role === "admin") {
             redirect("/admin/dashboard");
+          } else if (role === "billing user") {
+            redirect("/admin/billing");
           } else {
             userEmail = payload.email || "Client User";
             shouldRenderClient = true;

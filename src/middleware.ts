@@ -54,14 +54,23 @@ export function middleware(request: NextRequest) {
     if (!isAdminRole) {
       return NextResponse.redirect(new URL("/", request.url));
     }
+
+    // Role-based route restrictions inside /admin
+    if (role === "billing user") {
+      const isBillingPath = pathname.startsWith("/admin/billing");
+      if (!isBillingPath) {
+        return NextResponse.redirect(new URL("/admin/billing", request.url));
+      }
+    }
   }
 
   // Redirect already-authenticated users away from /login.
   const isAuthRoute = AUTH_ROUTES.some((route) => pathname.startsWith(route));
   if (isAuthRoute && isAuthenticated) {
-    const isAdminRole = role === "admin" || role === "billing user";
-    if (isAdminRole) {
+    if (role === "admin") {
       return NextResponse.redirect(new URL("/admin/dashboard", request.url));
+    } else if (role === "billing user") {
+      return NextResponse.redirect(new URL("/admin/billing", request.url));
     } else {
       return NextResponse.redirect(new URL("/", request.url));
     }
