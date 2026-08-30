@@ -20,7 +20,8 @@ export default async function Home() {
         const currentTime = Math.floor(Date.now() / 1000);
         if (payload.exp && payload.exp > currentTime) {
           const role = payload.role?.toLowerCase() || "";
-          if (role === "admin") {
+          const isAdminRole = role === "admin" || role === "billing user";
+          if (isAdminRole) {
             redirect("/admin/dashboard");
           } else {
             userEmail = payload.email || "Client User";

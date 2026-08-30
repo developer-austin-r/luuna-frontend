@@ -1,24 +1,30 @@
+"use client";
+
 import React, { useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
+  Barcode,
   Compass,
+  CreditCard,
   FileText,
   FolderTree,
   History,
-  Layers,
   LayoutDashboard,
+  Layers,
   LogOut,
+  Package,
   Settings,
-  ShoppingBag,
   ShoppingCart,
   Ticket,
   Users,
   X,
+  BarChart2,
 } from "lucide-react";
 
 import { useAppDispatch, useAppSelector } from "@/redux/hooks";
 import { logoutThunk } from "@/redux/slices/auth-slice";
+import type { MenuNode } from "@/services/auth";
 
 import { Button } from "./Button";
 import { Modal } from "./Modal";
@@ -28,25 +34,95 @@ interface SidebarProps {
   onClose: () => void;
 }
 
-interface MenuItem {
+/** Map backend icon names → Lucide components */
+const ICON_MAP: Record<string, React.FC<{ className?: string }>> = {
+  LayoutDashboard,
+  Users,
+  Products: Package,
+  Package,
+  Orders: ShoppingCart,
+  ShoppingCart,
+  Billing: CreditCard,
+  CreditCard,
+  Barcode,
+  Reports: FileText,
+  FileText,
+  Settings,
+  FolderTree,
+  Layers,
+  Ticket,
+  History,
+  "Invoice History": FileText,
+  InvoiceHistory: FileText,
+  BarChart2,
+};
+
+/** Fallback static menu (shown only if backend menus unavailable) */
+export const STATIC_MENU_ITEMS = [
+  { name: "Dashboard", href: "/admin", icon: LayoutDashboard, permission: null },
+  { name: "Users", href: "/admin/users", icon: Users, permission: "users.view" },
+  { name: "Products", href: "/admin/products", icon: Package, permission: "products.view" },
+  { name: "Orders", href: "/admin/orders", icon: ShoppingCart, permission: "orders.view" },
+  { name: "Billing", href: "/admin/billing", icon: CreditCard, permission: "billing.view" },
+  { name: "Barcode", href: "/admin/barcode", icon: Barcode, permission: "barcode.view" },
+  { name: "Reports", href: "/admin/reports", icon: FileText, permission: "reports.view" },
+  { name: "Settings", href: "/admin/settings", icon: Settings, permission: "settings.view" },
+];
+
+/** Convert backend slug → frontend href */
+function slugToHref(slug: string): string {
+  const map: Record<string, string> = {
+    dashboard: "/admin/dashboard",
+    users: "/admin/users",
+    products: "/admin/products",
+    orders: "/admin/orders",
+    billing: "/admin/billing",
+    "invoice-history": "/admin/billing/invoices",
+    barcode: "/admin/barcode",
+    reports: "/admin/reports",
+    settings: "/admin/settings",
+  };
+  return map[slug] ?? `/admin/${slug}`;
+}
+
+/** Get icon from icon name string */
+function getIcon(iconName: string | null): React.FC<{ className?: string }> {
+  if (!iconName) return FileText;
+  return ICON_MAP[iconName] ?? FileText;
+}
+
+interface NavItemProps {
   name: string;
   href: string;
   icon: React.FC<{ className?: string }>;
+  isActive: boolean;
+  onClick: () => void;
+  depth?: number;
 }
 
-export const menuItems: MenuItem[] = [
-  { name: "Dashboard", href: "/admin", icon: LayoutDashboard },
-  { name: "Customers", href: "/admin/customers", icon: Users },
-  { name: "Products", href: "/admin/products", icon: ShoppingBag },
-  { name: "Categories", href: "/admin/categories", icon: FolderTree },
-  { name: "Inventory", href: "/admin/inventory", icon: Layers },
-  { name: "Coupons", href: "/admin/coupons", icon: Ticket },
-  { name: "Orders", href: "/admin/orders", icon: ShoppingCart },
-  { name: "Reports", href: "/admin/reports", icon: FileText },
-  { name: "Activity Logs", href: "/admin/activity-logs", icon: History },
-  { name: "Settings", href: "/admin/settings", icon: Settings },
-  { name: "Users", href: "/admin/users", icon: Users },
-];
+const NavItem: React.FC<NavItemProps> = ({
+  name,
+  href,
+  icon: Icon,
+  isActive,
+  onClick,
+  depth = 0,
+}) => (
+  <Link
+    href={href}
+    onClick={onClick}
+    className={`flex items-center gap-3 px-4 py-2.5 rounded-lg text-xs font-semibold tracking-wide transition-all duration-200 ${
+      depth > 0 ? "ml-4 py-2 text-2xs" : ""
+    } ${
+      isActive
+        ? "bg-primary text-white shadow-md shadow-primary/20 scale-102"
+        : "text-text-custom/75 hover:bg-bg-secondary hover:text-text-custom"
+    }`}
+  >
+    <Icon className={`w-4 h-4 shrink-0 ${isActive ? "text-white" : "text-text-custom/60"}`} />
+    {name}
+  </Link>
+);
 
 export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
   const pathname = usePathname();
@@ -56,10 +132,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
 
   const handleLinkClick = () => {
-    // Close sidebar on mobile/tablet after click
-    if (window.innerWidth < 1024) {
-      onClose();
-    }
+    if (window.innerWidth < 1024) onClose();
   };
 
   const handleLogout = async () => {
@@ -68,11 +141,38 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
   };
 
   const isLinkActive = (href: string) => {
-    if (href === "/admin") {
+    if (href === "/admin" || href === "/admin/dashboard") {
       return pathname === "/admin" || pathname === "/admin/dashboard";
     }
     return pathname.startsWith(href);
   };
+
+  /** Render a backend menu node (and its children) */
+  const renderMenuNode = (node: MenuNode, depth = 0) => {
+    const href = slugToHref(node.slug);
+    const icon = getIcon(node.icon);
+    const active = isLinkActive(href);
+
+    return (
+      <div key={node.id}>
+        <NavItem
+          name={node.name}
+          href={href}
+          icon={icon}
+          isActive={active}
+          onClick={handleLinkClick}
+          depth={depth}
+        />
+        {node.children.length > 0 && (
+          <div className="mt-1 space-y-1">
+            {node.children.map((child) => renderMenuNode(child, depth + 1))}
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  const hasMenus = user?.menus && user.menus.length > 0;
 
   return (
     <>
@@ -113,40 +213,31 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
 
         {/* Navigation Items */}
         <nav className="flex-1 overflow-y-auto px-4 py-6 space-y-1">
-          {menuItems.map((item) => {
-            const Icon = item.icon;
-            const active = isLinkActive(item.href);
-            return (
-              <Link
-                key={item.name}
-                href={item.href}
-                onClick={handleLinkClick}
-                className={`flex items-center gap-3 px-4 py-2.5 rounded-lg text-xs font-semibold tracking-wide transition-all duration-200 ${
-                  active
-                    ? "bg-primary text-white shadow-md shadow-primary/20 scale-102"
-                    : "text-text-custom/75 hover:bg-bg-secondary hover:text-text-custom"
-                }`}
-              >
-                <Icon
-                  className={`w-4 h-4 shrink-0 ${active ? "text-white" : "text-text-custom/60"}`}
+          {hasMenus
+            ? user!.menus.map((node) => renderMenuNode(node))
+            : STATIC_MENU_ITEMS.map((item) => (
+                <NavItem
+                  key={item.name}
+                  name={item.name}
+                  href={item.href}
+                  icon={item.icon}
+                  isActive={isLinkActive(item.href)}
+                  onClick={handleLinkClick}
                 />
-                {item.name}
-              </Link>
-            );
-          })}
+              ))}
         </nav>
 
         {/* Sidebar Footer */}
         <div className="p-4 border-t border-border-custom bg-bg-secondary/10 flex items-center gap-3">
           <div className="w-8 h-8 shrink-0 rounded-full bg-primary text-white flex items-center justify-center font-bold text-xs uppercase">
-            {user?.email?.[0] ?? "U"}
+            {user?.name?.[0] ?? user?.email?.[0] ?? "U"}
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-xs font-bold text-text-custom truncate">
-              {user?.email ?? "User"}
+              {user?.name ?? user?.email ?? "—"}
             </p>
             <p className="text-2xs text-text-custom/50 truncate">
-              {user?.role ?? "Admin"}
+              {user?.role ?? "—"}
             </p>
           </div>
           <button
