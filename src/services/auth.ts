@@ -21,7 +21,7 @@ export interface AuthUser {
 
 interface AuthApiResponse {
   data: {
-    user: Omit<AuthUser, 'permissions' | 'menus'>;
+    user: Omit<AuthUser, "permissions" | "menus">;
     permissions: string[];
     menus: MenuNode[];
   };

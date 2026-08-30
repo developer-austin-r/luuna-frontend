@@ -4,14 +4,15 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
+  BarChart2,
   Barcode,
   Compass,
   CreditCard,
   FileText,
   FolderTree,
   History,
-  LayoutDashboard,
   Layers,
+  LayoutDashboard,
   LogOut,
   Package,
   Settings,
@@ -19,7 +20,6 @@ import {
   Ticket,
   Users,
   X,
-  BarChart2,
 } from "lucide-react";
 
 import { useAppDispatch, useAppSelector } from "@/redux/hooks";
@@ -59,14 +59,54 @@ const ICON_MAP: Record<string, React.FC<{ className?: string }>> = {
 
 /** Fallback static menu (shown only if backend menus unavailable) */
 export const STATIC_MENU_ITEMS = [
-  { name: "Dashboard", href: "/admin", icon: LayoutDashboard, permission: null },
-  { name: "Users", href: "/admin/users", icon: Users, permission: "users.view" },
-  { name: "Products", href: "/admin/products", icon: Package, permission: "products.view" },
-  { name: "Orders", href: "/admin/orders", icon: ShoppingCart, permission: "orders.view" },
-  { name: "Billing", href: "/admin/billing", icon: CreditCard, permission: "billing.view" },
-  { name: "Barcode", href: "/admin/barcode", icon: Barcode, permission: "barcode.view" },
-  { name: "Reports", href: "/admin/reports", icon: FileText, permission: "reports.view" },
-  { name: "Settings", href: "/admin/settings", icon: Settings, permission: "settings.view" },
+  {
+    name: "Dashboard",
+    href: "/admin",
+    icon: LayoutDashboard,
+    permission: null,
+  },
+  {
+    name: "Users",
+    href: "/admin/users",
+    icon: Users,
+    permission: "users.view",
+  },
+  {
+    name: "Products",
+    href: "/admin/products",
+    icon: Package,
+    permission: "products.view",
+  },
+  {
+    name: "Orders",
+    href: "/admin/orders",
+    icon: ShoppingCart,
+    permission: "orders.view",
+  },
+  {
+    name: "Billing",
+    href: "/admin/billing",
+    icon: CreditCard,
+    permission: "billing.view",
+  },
+  {
+    name: "Barcode",
+    href: "/admin/barcode",
+    icon: Barcode,
+    permission: "barcode.view",
+  },
+  {
+    name: "Reports",
+    href: "/admin/reports",
+    icon: FileText,
+    permission: "reports.view",
+  },
+  {
+    name: "Settings",
+    href: "/admin/settings",
+    icon: Settings,
+    permission: "settings.view",
+  },
 ];
 
 /** Convert backend slug → frontend href */
@@ -119,7 +159,9 @@ const NavItem: React.FC<NavItemProps> = ({
         : "text-text-custom/75 hover:bg-bg-secondary hover:text-text-custom"
     }`}
   >
-    <Icon className={`w-4 h-4 shrink-0 ${isActive ? "text-white" : "text-text-custom/60"}`} />
+    <Icon
+      className={`w-4 h-4 shrink-0 ${isActive ? "text-white" : "text-text-custom/60"}`}
+    />
     {name}
   </Link>
 );
