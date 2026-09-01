@@ -163,6 +163,61 @@ export default function InventoryPage() {
     URL.revokeObjectURL(url);
   };
 
+  const handleExportMonthlyStock = async () => {
+    toastInfo("Generating monthly stock report...");
+    try {
+      // The API returns the raw array directly, or wrapped in { data: ... } depending on Nest interceptors,
+      // but usually NestJS returns raw arrays if no interceptor wraps it. Let's handle both.
+      const rawRes = await apiClient("/products/monthly-stock");
+      const res: any[] = Array.isArray(rawRes) ? rawRes : (rawRes as any)?.data;
+
+      if (!res || !Array.isArray(res)) {
+        toastError("No monthly stock data available to export.");
+        return;
+      }
+
+      const headers = [
+        "Product Name",
+        "Product Code (SKU)",
+        "Barcode",
+        "Initial Added Stock",
+        "Sold Quantity (Last 30 Days)",
+        "Balance Stock",
+      ];
+
+      const rows = res.map((item) => [
+        `"${String(item.name).replace(/"/g, '""')}"`,
+        `"${String(item.sku).replace(/"/g, '""')}"`,
+        `"${String(item.barcode).replace(/"/g, '""')}"`,
+        item.initialStock,
+        item.soldQuantity,
+        item.balanceStock,
+      ]);
+
+      const csvString = [
+        headers.join(","),
+        ...rows.map((row) => row.join(",")),
+      ].join("\n");
+      const blob = new Blob([csvString], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+
+      const link = document.createElement("a");
+      link.setAttribute("href", url);
+      link.setAttribute(
+        "download",
+        `monthly_stock_report_${new Date().toISOString().split("T")[0]}.csv`,
+      );
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+      toastSuccess("Monthly stock report generated successfully.");
+    } catch (err: any) {
+      console.error(err);
+      toastError(err.message || "Failed to export monthly stock report.");
+    }
+  };
+
   const onSubmitAdjustment = async (data: AdjustmentFormValues) => {
     if (!selectedItem) return;
 
@@ -306,14 +361,24 @@ export default function InventoryPage() {
             Inventory Management
           </h1>
         </div>
-        <Button
-          onClick={handleExportCSV}
-          variant="outline"
-          className="flex items-center gap-1.5 shrink-0 self-start sm:self-auto"
-        >
-          <Download className="w-4 h-4" />
-          Export Stock Sheet
-        </Button>
+        <div className="flex gap-2 shrink-0 self-start sm:self-auto">
+          <Button
+            onClick={handleExportCSV}
+            variant="outline"
+            className="flex items-center gap-1.5"
+          >
+            <Download className="w-4 h-4" />
+            Export Stock Sheet
+          </Button>
+          <Button
+            onClick={handleExportMonthlyStock}
+            variant="outline"
+            className="flex items-center gap-1.5 bg-primary/5 border-primary/20 hover:bg-primary/10 text-primary"
+          >
+            <Download className="w-4 h-4" />
+            Export Monthly Stock
+          </Button>
+        </div>
       </div>
 
       {/* Low stock warning banner grid */}
