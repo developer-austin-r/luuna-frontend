@@ -3,40 +3,43 @@ import styles from "./Footer.module.css";
 export default function Footer() {
   return (
     <footer className={styles.footer}>
-      <div className={styles.footerContainer}>
-        {/* Brand / Subscribe */}
-        <div className={styles.brandColumn}>
+      <div className={styles.footerContent}>
+        {/* Subscribe */}
+        <div className={styles.subscribe}>
           <div className={styles.logo}>LUUNA</div>
 
           <h3>Subscribe</h3>
 
           <p>Get 10% off your first order</p>
 
-          <form className={styles.subscribeForm}>
+          <div className={styles.subscribeBox}>
             <input
               type="email"
               placeholder="Enter your email"
               aria-label="Email address"
             />
 
-            <button type="submit" aria-label="Subscribe">
-              →
+            <button type="button" aria-label="Subscribe">
+              ➤
             </button>
-          </form>
+          </div>
         </div>
 
         {/* Support */}
-        <div className={styles.column}>
+        <div className={styles.footerColumn}>
           <h3>Support</h3>
 
           <p>ChennaiChennai</p>
           <p>ChennaiChennai</p>
-          <p className={styles.space}>luuna@gmail.com</p>
-          <p>+00000-00000</p>
+
+          <div className={styles.columnSpace}>
+            <p>luuna@gmail.com</p>
+            <p>+00000-00000</p>
+          </div>
         </div>
 
         {/* Account */}
-        <div className={styles.column}>
+        <div className={styles.footerColumn}>
           <h3>Account</h3>
 
           <a href="#">My Account</a>
@@ -46,8 +49,8 @@ export default function Footer() {
           <a href="#">Shop</a>
         </div>
 
-        {/* Quick Links */}
-        <div className={styles.column}>
+        {/* Quick Link */}
+        <div className={styles.footerColumn}>
           <h3>Quick Link</h3>
 
           <a href="#">Privacy Policy</a>
@@ -56,11 +59,11 @@ export default function Footer() {
           <a href="#">Contact</a>
         </div>
 
-        {/* Social */}
-        <div className={styles.column}>
+        {/* Follow Us */}
+        <div className={styles.footerColumn}>
           <h3>Follow Us</h3>
 
-          <div className={styles.socialLinks}>
+          <div className={styles.socialIcons}>
             <a href="#" aria-label="Facebook">
               f
             </a>
@@ -76,9 +79,8 @@ export default function Footer() {
         </div>
       </div>
 
-      {/* Bottom line */}
-      <div className={styles.bottomLine}>
-        <p>© 2026 Luuna. All rights reserved.</p>
+      <div className={styles.copyright}>
+        © Copyright Luuna 2026. All right reserved
       </div>
     </footer>
   );

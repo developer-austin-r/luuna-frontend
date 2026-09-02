@@ -1,0 +1,317 @@
+.section {
+  width: 100%;
+
+  padding: 30px;
+
+  background: #ffffff;
+
+  border-radius: 30px;
+
+  box-sizing: border-box;
+}
+
+
+/* HEADING */
+
+.heading {
+  display: flex;
+  align-items: center;
+
+  gap: 12px;
+
+  margin-bottom: 28px;
+}
+
+.headingBar {
+  width: 7px;
+  height: 30px;
+
+  background: #160525;
+
+  border-radius: 5px;
+
+  flex-shrink: 0;
+}
+
+.heading h2 {
+  margin: 0;
+
+  font-size: 20px;
+  font-weight: 500;
+
+  color: #17131d;
+}
+
+
+/* PAYMENT TABS */
+
+.paymentTabs {
+  display: flex;
+  align-items: center;
+
+  gap: 16px;
+
+  margin-bottom: 22px;
+}
+
+.tab {
+  min-width: 145px;
+  height: 46px;
+
+  padding: 0 20px;
+
+  border: none;
+  border-radius: 24px;
+
+  background: #dfe5ec;
+  color: #666d76;
+
+  font-size: 14px;
+  font-weight: 500;
+
+  cursor: pointer;
+
+  transition:
+    background 0.2s ease,
+    color 0.2s ease,
+    transform 0.2s ease;
+}
+
+.tab:hover {
+  transform: translateY(-1px);
+}
+
+.activeTab {
+  background: #160525;
+  color: #ffffff;
+}
+
+
+/* CARD FORM */
+
+.cardForm {
+  padding: 28px 24px 24px;
+
+  background: #f1f1ff;
+
+  border: 1px solid #dcddef;
+  border-radius: 28px;
+
+  box-sizing: border-box;
+}
+
+.field {
+  width: 100%;
+
+  display: flex;
+  flex-direction: column;
+
+  gap: 8px;
+}
+
+.field label {
+  font-size: 14px;
+  font-weight: 500;
+
+  color: #5c6170;
+}
+
+.field input {
+  width: 100%;
+  height: 53px;
+
+  padding: 0 22px;
+
+  border: 1px solid #c8cce0;
+  border-radius: 28px;
+
+  outline: none;
+
+  background: #ffffff;
+
+  color: #17131d;
+
+  font-size: 14px;
+
+  box-sizing: border-box;
+}
+
+.field input::placeholder {
+  color: #73798a;
+}
+
+.twoColumn {
+  margin-top: 24px;
+
+  display: grid;
+
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+
+  gap: 24px;
+}
+
+
+/* UPI */
+
+.upiForm {
+  padding: 28px 24px;
+
+  background: #f1f1ff;
+
+  border: 1px solid #dcddef;
+  border-radius: 28px;
+}
+
+.upiForm > label {
+  display: block;
+
+  margin-bottom: 8px;
+
+  font-size: 14px;
+  font-weight: 500;
+
+  color: #5c6170;
+}
+
+.upiInputRow {
+  display: flex;
+
+  gap: 12px;
+}
+
+.upiInputRow input {
+  flex: 1;
+
+  min-width: 0;
+
+  height: 53px;
+
+  padding: 0 20px;
+
+  border: 1px solid #c8cce0;
+  border-radius: 28px;
+
+  outline: none;
+
+  background: #ffffff;
+
+  font-size: 14px;
+}
+
+.upiInputRow button {
+  width: 95px;
+
+  border: none;
+  border-radius: 28px;
+
+  background: #160525;
+  color: #ffffff;
+
+  font-weight: 600;
+
+  cursor: pointer;
+}
+
+
+/* UPI APP COLORS */
+
+.upiApps {
+  display: flex;
+  align-items: center;
+
+  gap: 12px;
+
+  margin-top: 22px;
+}
+
+.gpay,
+.phonepe,
+.paytm {
+  min-width: 90px;
+
+  padding: 10px 14px;
+
+  background: #ffffff;
+
+  border-radius: 18px;
+
+  text-align: center;
+
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.gpay {
+  color: #4285f4;
+}
+
+.phonepe {
+  color: #5f259f;
+}
+
+.paytm {
+  color: #00baf2;
+}
+
+
+/* MOBILE */
+
+@media (max-width: 600px) {
+  .section {
+    padding: 22px 18px;
+
+    border-radius: 22px;
+  }
+
+  .heading h2 {
+    font-size: 18px;
+  }
+
+  .paymentTabs {
+    gap: 8px;
+
+    overflow-x: auto;
+
+    scrollbar-width: none;
+  }
+
+  .paymentTabs::-webkit-scrollbar {
+    display: none;
+  }
+
+  .tab {
+    min-width: 120px;
+
+    height: 42px;
+
+    font-size: 12px;
+
+    flex-shrink: 0;
+  }
+
+  .cardForm,
+  .upiForm {
+    padding: 20px 16px;
+
+    border-radius: 22px;
+  }
+
+  .twoColumn {
+    grid-template-columns: 1fr;
+
+    gap: 18px;
+  }
+
+  .upiInputRow {
+    flex-direction: column;
+  }
+
+  .upiInputRow button {
+    width: 100%;
+    height: 45px;
+  }
+
+  .upiApps {
+    flex-wrap: wrap;
+  }
+}
