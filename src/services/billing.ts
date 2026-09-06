@@ -17,6 +17,11 @@ export interface Bill {
   id: string;
   billNumber: string;
   billedBy?: string;
+  billedByUser?: {
+    id: string;
+    name?: string | null;
+    email?: string;
+  };
   customerName?: string;
   customerMobile?: string;
   customerEmail?: string;

@@ -99,8 +99,7 @@ function NewBillPanel() {
         paymentMethod,
         status: "PAID",
       };
-      const name = user?.name ?? user?.email;
-      if (name) dto.billedBy = name;
+      if (user?.id) dto.billedBy = user.id;
       if (customerName) dto.customerName = customerName;
       if (customerMobile) dto.customerMobile = customerMobile;
       if (customerEmail) dto.customerEmail = customerEmail;

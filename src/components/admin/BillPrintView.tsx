@@ -117,10 +117,16 @@ export function BillPrintView({ bill, onClose }: Props) {
                 <span>{bill.customerMobile}</span>
               </div>
             )}
-            {bill.billedBy && (
+            {(bill.billedByUser?.name ||
+              bill.billedByUser?.email ||
+              bill.billedBy) && (
               <div className="flex justify-between">
                 <span className="text-text-custom/60">Cashier:</span>
-                <span>{bill.billedBy}</span>
+                <span>
+                  {bill.billedByUser?.name ||
+                    bill.billedByUser?.email ||
+                    bill.billedBy}
+                </span>
               </div>
             )}
           </div>
