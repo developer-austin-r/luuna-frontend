@@ -2,7 +2,16 @@
 
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Archive, Edit, Eye, Plus, RotateCcw, Tag, Trash } from "lucide-react";
+import {
+  Archive,
+  Barcode,
+  Edit,
+  Eye,
+  Plus,
+  RotateCcw,
+  Tag,
+  Trash,
+} from "lucide-react";
 
 import {
   ActionMenu,
@@ -41,6 +50,7 @@ export default function ProductsPage() {
     { id: string; status: string; slug: string }[]
   >([]);
   const [loading, setLoading] = useState(true);
+  const [exporting, setExporting] = useState(false);
 
   // Toast Notification state
   const [notification, setNotification] = useState<{
@@ -108,6 +118,7 @@ export default function ProductsPage() {
           id: p.id,
           name: p.name,
           sku: p.sku,
+          barcode: p.barcode,
           category: p.productCategories?.[0]?.category?.name || "Uncategorized",
           categoryId: p.productCategories?.[0]?.category?.id,
           price: Number(p.basePrice),
@@ -218,6 +229,111 @@ export default function ProductsPage() {
       }
     }
     setDeleteDialogOpen(false);
+  };
+
+  const handleExportBarcodes = async () => {
+    try {
+      setExporting(true);
+      showNotification("Generating barcode PDF. Please wait...", "success");
+
+      const { jsPDF } = await import("jspdf");
+      const { appConfig } = await import("@/config");
+
+      const productsWithBarcodes = filteredProducts.filter((p) => p.barcode);
+
+      if (productsWithBarcodes.length === 0) {
+        showNotification("No products found with barcodes to export.", "error");
+        setExporting(false);
+        return;
+      }
+
+      const doc = new jsPDF({
+        orientation: "portrait",
+        unit: "mm",
+        format: "a4",
+      });
+
+      const margin = 10;
+      const colWidth = 60;
+      const rowHeight = 40;
+      const colGap = 5;
+      const rowGap = 5;
+      const cols = 3;
+      const rowsPerPage = 6;
+
+      let colIndex = 0;
+      let rowIndex = 0;
+
+      for (let i = 0; i < productsWithBarcodes.length; i++) {
+        const prod = productsWithBarcodes[i];
+        if (!prod) continue;
+
+        if (rowIndex >= rowsPerPage) {
+          doc.addPage();
+          rowIndex = 0;
+          colIndex = 0;
+        }
+
+        const x = margin + colIndex * (colWidth + colGap);
+        const y = margin + rowIndex * (rowHeight + rowGap);
+
+        doc.setDrawColor(220, 220, 220);
+        doc.rect(x, y, colWidth, rowHeight);
+
+        doc.setFont("Helvetica", "bold");
+        doc.setFontSize(8);
+        const nameText =
+          prod.name.length > 25
+            ? prod.name.substring(0, 22) + "..."
+            : prod.name;
+        doc.text(nameText, x + 3, y + 6);
+
+        doc.setFont("Helvetica", "normal");
+        doc.setFontSize(6);
+        doc.setTextColor(100, 100, 100);
+        doc.text(`ID: ${prod.id.substring(0, 8)}...`, x + 3, y + 10);
+        doc.text(`SKU: ${prod.sku}`, x + colWidth - 3, y + 10, {
+          align: "right",
+        });
+
+        try {
+          const imageUrl = `${appConfig.apiBaseUrl}/products/${prod.id}/barcode`;
+          const response = await fetch(imageUrl);
+          const blob = await response.blob();
+          const imgData = await new Promise<string>((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onloadend = () => resolve(reader.result as string);
+            reader.onerror = reject;
+            reader.readAsDataURL(blob);
+          });
+          doc.addImage(imgData, "PNG", x + 5, y + 13, colWidth - 10, 22);
+        } catch (err) {
+          console.error(
+            `Failed to fetch barcode image for product ${prod.sku}:`,
+            err,
+          );
+          doc.setFontSize(7);
+          doc.setTextColor(200, 50, 50);
+          doc.text(`[Barcode Generation Error]`, x + 10, y + 25);
+        }
+
+        doc.setTextColor(0, 0, 0);
+
+        colIndex++;
+        if (colIndex >= cols) {
+          colIndex = 0;
+          rowIndex++;
+        }
+      }
+
+      doc.save(`barcodes-${new Date().toISOString().slice(0, 10)}.pdf`);
+      showNotification("Barcode PDF exported successfully!", "success");
+    } catch (err) {
+      console.error("Export barcodes error:", err);
+      showNotification("Failed to generate PDF. Check console.", "error");
+    } finally {
+      setExporting(false);
+    }
   };
 
   // Filter & Paginate
@@ -368,13 +484,24 @@ export default function ProductsPage() {
             Product Catalog
           </h1>
         </div>
-        <Button
-          onClick={() => router.push("/admin/products/new")}
-          className="flex items-center gap-1.5 shrink-0 self-start sm:self-auto"
-        >
-          <Plus className="w-4 h-4" />
-          Add Product
-        </Button>
+        <div className="flex gap-2 shrink-0 self-start sm:self-auto">
+          <Button
+            onClick={handleExportBarcodes}
+            variant="outline"
+            isLoading={exporting}
+            className="flex items-center gap-1.5"
+          >
+            <Barcode className="w-4 h-4" />
+            Export Barcodes
+          </Button>
+          <Button
+            onClick={() => router.push("/admin/products/new")}
+            className="flex items-center gap-1.5"
+          >
+            <Plus className="w-4 h-4" />
+            Add Product
+          </Button>
+        </div>
       </div>
 
       {/* Products Table Card */}

@@ -1,0 +1,201 @@
+.communityBar {
+  width: 100%;
+
+  background: #f5f2f6;
+
+  border-top: 1px solid #eeeeee;
+  border-bottom: 1px solid #eeeeee;
+
+  padding: 24px 50px;
+
+  box-sizing: border-box;
+}
+
+.communityContent {
+  width: 100%;
+  max-width: 1200px;
+
+  margin: 0 auto;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+
+/* =========================
+   FOLLOW THE JOURNEY
+========================= */
+
+.followSection {
+  display: flex;
+  align-items: center;
+
+  gap: 22px;
+}
+
+.followSection p {
+  margin: 0;
+
+  color: #160024;
+
+  font-size: 11px;
+  font-weight: 700;
+
+  letter-spacing: 1.2px;
+}
+
+.socialIcons {
+  display: flex;
+  align-items: center;
+
+  gap: 12px;
+}
+
+.socialIcons a {
+  width: 30px;
+  height: 30px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 50%;
+
+  background: #160024;
+  color: #ffffff;
+
+  text-decoration: none;
+
+  font-size: 15px;
+  font-weight: 600;
+
+  transition: transform 0.2s ease;
+}
+
+.socialIcons a:hover {
+  transform: translateY(-2px);
+}
+
+
+/* =========================
+   JOIN COMMUNITY
+========================= */
+
+.joinSection {
+  display: flex;
+  align-items: center;
+
+  gap: 14px;
+}
+
+.joinSection span {
+  color: #160024;
+
+  font-size: 11px;
+  font-weight: 700;
+
+  letter-spacing: 1.2px;
+}
+
+.arrowButton {
+  width: 32px;
+  height: 32px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border: 1px solid #160024;
+  border-radius: 50%;
+
+  background: transparent;
+  color: #160024;
+
+  font-size: 17px;
+
+  cursor: pointer;
+
+  transition: all 0.2s ease;
+}
+
+.arrowButton:hover {
+  background: #160024;
+  color: #ffffff;
+}
+
+
+/* =========================
+   TABLET
+========================= */
+
+@media (max-width: 900px) {
+  .communityBar {
+    padding: 22px 30px;
+  }
+
+  .communityContent {
+    gap: 25px;
+  }
+
+  .followSection p,
+  .joinSection span {
+    font-size: 10px;
+  }
+}
+
+
+/* =========================
+   MOBILE
+========================= */
+
+@media (max-width: 650px) {
+  .communityBar {
+    padding: 20px 16px;
+  }
+
+  .communityContent {
+    flex-direction: column;
+
+    align-items: center;
+    justify-content: center;
+
+    gap: 20px;
+  }
+
+  .followSection {
+    flex-direction: column;
+
+    gap: 10px;
+  }
+
+  .followSection p {
+    font-size: 10px;
+  }
+
+  .socialIcons {
+    gap: 10px;
+  }
+
+  .socialIcons a {
+    width: 28px;
+    height: 28px;
+
+    font-size: 14px;
+  }
+
+  .joinSection {
+    gap: 10px;
+  }
+
+  .joinSection span {
+    font-size: 10px;
+  }
+
+  .arrowButton {
+    width: 29px;
+    height: 29px;
+
+    font-size: 15px;
+  }
+}

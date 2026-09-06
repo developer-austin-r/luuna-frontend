@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 
 import { Footer, Navbar, Sidebar } from "@/components/admin";
+import { AuthInitializer } from "@/components/admin/AuthInitializer";
 
 interface AdminLayoutProps {
   children: React.ReactNode;
@@ -13,6 +14,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
 
   return (
     <div className="min-h-screen bg-bg-secondary text-text-custom flex">
+      <AuthInitializer />
       {/* Sidebar navigation */}
       <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
