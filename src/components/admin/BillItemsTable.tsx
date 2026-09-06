@@ -1,6 +1,7 @@
 "use client";
 import React from "react";
 import { Minus, Plus, Trash2 } from "lucide-react";
+
 import type { BillItem } from "@/services/billing";
 
 interface Props {
@@ -10,17 +11,34 @@ interface Props {
   onRemove: (index: number) => void;
 }
 
-export function BillItemsTable({ items, onQuantityChange, onDiscountChange, onRemove }: Props) {
+export function BillItemsTable({
+  items,
+  onQuantityChange,
+  onDiscountChange,
+  onRemove,
+}: Props) {
   if (items.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-12 text-text-custom/40">
         <div className="w-14 h-14 rounded-full bg-bg-secondary flex items-center justify-center mb-3">
-          <svg className="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-3-3v6M5 7h14a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V9a2 2 0 012-2z" />
+          <svg
+            className="w-7 h-7"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={1.5}
+              d="M9 12h6m-3-3v6M5 7h14a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V9a2 2 0 012-2z"
+            />
           </svg>
         </div>
         <p className="text-xs font-semibold">No items added</p>
-        <p className="text-2xs mt-0.5">Scan a barcode or enter a SKU above to add products</p>
+        <p className="text-2xs mt-0.5">
+          Scan a barcode or enter a SKU above to add products
+        </p>
       </div>
     );
   }
@@ -45,11 +63,22 @@ export function BillItemsTable({ items, onQuantityChange, onDiscountChange, onRe
             const disc = item.discount ?? 0;
             const total = subtotal - disc + (item.tax ?? 0);
             return (
-              <tr key={i} className="hover:bg-bg-secondary/10 transition-colors text-xs group">
-                <td className="px-3 py-2.5 text-text-custom/40 font-mono text-2xs">{i + 1}</td>
+              <tr
+                key={i}
+                className="hover:bg-bg-secondary/10 transition-colors text-xs group"
+              >
+                <td className="px-3 py-2.5 text-text-custom/40 font-mono text-2xs">
+                  {i + 1}
+                </td>
                 <td className="px-3 py-2.5">
-                  <p className="font-semibold text-text-custom line-clamp-1">{item.productName}</p>
-                  {item.sku && <p className="text-2xs text-text-custom/50 font-mono">SKU: {item.sku}</p>}
+                  <p className="font-semibold text-text-custom line-clamp-1">
+                    {item.productName}
+                  </p>
+                  {item.sku && (
+                    <p className="text-2xs text-text-custom/50 font-mono">
+                      SKU: {item.sku}
+                    </p>
+                  )}
                 </td>
                 <td className="px-3 py-2.5">
                   <div className="flex items-center justify-center gap-1">
@@ -65,7 +94,9 @@ export function BillItemsTable({ items, onQuantityChange, onDiscountChange, onRe
                       type="number"
                       min={1}
                       value={item.quantity}
-                      onChange={(e) => onQuantityChange(i, parseInt(e.target.value) || 1)}
+                      onChange={(e) =>
+                        onQuantityChange(i, parseInt(e.target.value) || 1)
+                      }
                       className="w-10 text-center border border-border-custom rounded text-xs font-bold py-0.5 focus:outline-none focus:border-primary"
                     />
                     <button
@@ -85,7 +116,9 @@ export function BillItemsTable({ items, onQuantityChange, onDiscountChange, onRe
                     type="number"
                     min={0}
                     value={disc}
-                    onChange={(e) => onDiscountChange(i, parseFloat(e.target.value) || 0)}
+                    onChange={(e) =>
+                      onDiscountChange(i, parseFloat(e.target.value) || 0)
+                    }
                     className="w-20 text-right border border-border-custom rounded text-xs py-0.5 px-1.5 focus:outline-none focus:border-primary font-mono"
                   />
                 </td>

@@ -1,16 +1,17 @@
 "use client";
 import React, {
-  useRef,
   useCallback,
-  useState,
   useEffect,
   useLayoutEffect,
+  useRef,
+  useState,
 } from "react";
 import { createPortal } from "react-dom";
-import { Barcode, Loader2, Search, X, Package } from "lucide-react";
-import { billingService } from "@/services/billing";
+import { Barcode, Loader2, Package, Search, X } from "lucide-react";
+
 import { apiClient } from "@/services/api-client";
 import type { BillItem } from "@/services/billing";
+import { billingService } from "@/services/billing";
 
 interface ProductSuggestion {
   id: string;
@@ -67,7 +68,7 @@ function FloatingPortal({
     >
       {children}
     </div>,
-    document.body
+    document.body,
   );
 }
 
@@ -152,7 +153,7 @@ export function BarcodeScanner({ onProductFound }: Props) {
       setError(null);
       inputRef.current?.focus();
     },
-    [onProductFound]
+    [onProductFound],
   );
 
   /* ── Exact barcode/SKU lookup ──────────────────────────── */
@@ -186,7 +187,7 @@ export function BarcodeScanner({ onProductFound }: Props) {
         setLoading(false);
       }
     },
-    [onProductFound]
+    [onProductFound],
   );
 
   /* ── Keyboard navigation ───────────────────────────────── */

@@ -33,9 +33,6 @@ export default async function Home() {
             redirect("/admin/dashboard");
           } else if (role === "billing user") {
             redirect("/admin/billing");
-          } else {
-            userEmail = payload.email || "Client User";
-            shouldRenderClient = true;
           }
         }
       }

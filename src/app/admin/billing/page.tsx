@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useCallback, useEffect } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   CalendarDays,
   ChevronLeft,
@@ -18,12 +18,13 @@ import {
   User,
   X,
 } from "lucide-react";
-import { Breadcrumb, Button, Card, StatusBadge } from "@/components/admin";
+
+import { Breadcrumb, Button, Card } from "@/components/admin";
 import { BarcodeScanner } from "@/components/admin/BarcodeScanner";
 import { BillItemsTable } from "@/components/admin/BillItemsTable";
 import { BillPrintView } from "@/components/admin/BillPrintView";
-import { billingService, type Bill, type BillItem } from "@/services/billing";
 import { useAppSelector } from "@/redux/hooks";
+import { type Bill, billingService, type BillItem } from "@/services/billing";
 
 type Tab = "new-bill" | "history";
 
@@ -49,14 +50,17 @@ function NewBillPanel() {
   const [showPrint, setShowPrint] = useState(false);
 
   const subtotal = items.reduce(
-    (s, it) => s + it.unitPrice * it.quantity - (it.discount ?? 0) + (it.tax ?? 0),
-    0
+    (s, it) =>
+      s + it.unitPrice * it.quantity - (it.discount ?? 0) + (it.tax ?? 0),
+    0,
   );
   const total = subtotal - billDiscount + billTax;
 
   const handleProductFound = useCallback((item: BillItem) => {
     setItems((prev) => {
-      const existing = prev.findIndex((p) => p.productId && p.productId === item.productId);
+      const existing = prev.findIndex(
+        (p) => p.productId && p.productId === item.productId,
+      );
       if (existing >= 0) {
         const updated = [...prev];
         const cur = updated[existing]!;
@@ -69,11 +73,15 @@ function NewBillPanel() {
 
   const handleQty = (i: number, qty: number) => {
     if (qty < 1) return;
-    setItems((prev) => prev.map((it, idx) => (idx === i ? { ...it, quantity: qty } : it)));
+    setItems((prev) =>
+      prev.map((it, idx) => (idx === i ? { ...it, quantity: qty } : it)),
+    );
   };
 
   const handleDiscount = (i: number, disc: number) => {
-    setItems((prev) => prev.map((it, idx) => (idx === i ? { ...it, discount: disc } : it)));
+    setItems((prev) =>
+      prev.map((it, idx) => (idx === i ? { ...it, discount: disc } : it)),
+    );
   };
 
   const handleRemove = (i: number) => {
@@ -111,7 +119,9 @@ function NewBillPanel() {
       setBillTax(0);
       setNotes("");
     } catch (e: unknown) {
-      alert("Failed to save bill: " + (e instanceof Error ? e.message : String(e)));
+      alert(
+        "Failed to save bill: " + (e instanceof Error ? e.message : String(e)),
+      );
     } finally {
       setSaving(false);
     }
@@ -140,7 +150,8 @@ function NewBillPanel() {
                   onClick={() => setItems([])}
                   className="text-xs font-semibold text-red-500 hover:text-red-600 flex items-center gap-1"
                 >
-                  <X className="w-3 h-3" />Clear All
+                  <X className="w-3 h-3" />
+                  Clear All
                 </button>
               ) : undefined
             }
@@ -161,7 +172,10 @@ function NewBillPanel() {
             <div className="space-y-3">
               <div>
                 <label className="block text-2xs font-bold text-text-custom/60 uppercase tracking-wider mb-1">
-                  Name <span className="text-text-custom/30 normal-case font-normal">(optional)</span>
+                  Name{" "}
+                  <span className="text-text-custom/30 normal-case font-normal">
+                    (optional)
+                  </span>
                 </label>
                 <div className="relative">
                   <User className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-text-custom/40" />
@@ -174,7 +188,9 @@ function NewBillPanel() {
                 </div>
               </div>
               <div>
-                <label className="block text-2xs font-bold text-text-custom/60 uppercase tracking-wider mb-1">Mobile</label>
+                <label className="block text-2xs font-bold text-text-custom/60 uppercase tracking-wider mb-1">
+                  Mobile
+                </label>
                 <input
                   value={customerMobile}
                   onChange={(e) => setCustomerMobile(e.target.value)}
@@ -183,7 +199,9 @@ function NewBillPanel() {
                 />
               </div>
               <div>
-                <label className="block text-2xs font-bold text-text-custom/60 uppercase tracking-wider mb-1">Email</label>
+                <label className="block text-2xs font-bold text-text-custom/60 uppercase tracking-wider mb-1">
+                  Email
+                </label>
                 <input
                   value={customerEmail}
                   onChange={(e) => setCustomerEmail(e.target.value)}
@@ -192,7 +210,9 @@ function NewBillPanel() {
                 />
               </div>
               <div>
-                <label className="block text-2xs font-bold text-text-custom/60 uppercase tracking-wider mb-1">Address</label>
+                <label className="block text-2xs font-bold text-text-custom/60 uppercase tracking-wider mb-1">
+                  Address
+                </label>
                 <textarea
                   value={customerAddress}
                   onChange={(e) => setCustomerAddress(e.target.value)}
@@ -209,7 +229,9 @@ function NewBillPanel() {
             <div className="space-y-4">
               {/* Payment Method */}
               <div>
-                <label className="block text-2xs font-bold text-text-custom/60 uppercase tracking-wider mb-1.5">Payment Method</label>
+                <label className="block text-2xs font-bold text-text-custom/60 uppercase tracking-wider mb-1.5">
+                  Payment Method
+                </label>
                 <div className="grid grid-cols-3 gap-1.5">
                   {["CASH", "CARD", "UPI"].map((m) => (
                     <button
@@ -247,22 +269,30 @@ function NewBillPanel() {
               {/* Adjustments */}
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-2xs font-bold text-text-custom/60 uppercase tracking-wider mb-1">Discount (₹)</label>
+                  <label className="block text-2xs font-bold text-text-custom/60 uppercase tracking-wider mb-1">
+                    Discount (₹)
+                  </label>
                   <input
                     type="number"
                     min={0}
                     value={billDiscount}
-                    onChange={(e) => setBillDiscount(parseFloat(e.target.value) || 0)}
+                    onChange={(e) =>
+                      setBillDiscount(parseFloat(e.target.value) || 0)
+                    }
                     className="w-full h-9 px-3 border border-border-custom rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary bg-white text-right font-mono transition-all"
                   />
                 </div>
                 <div>
-                  <label className="block text-2xs font-bold text-text-custom/60 uppercase tracking-wider mb-1">Tax (₹)</label>
+                  <label className="block text-2xs font-bold text-text-custom/60 uppercase tracking-wider mb-1">
+                    Tax (₹)
+                  </label>
                   <input
                     type="number"
                     min={0}
                     value={billTax}
-                    onChange={(e) => setBillTax(parseFloat(e.target.value) || 0)}
+                    onChange={(e) =>
+                      setBillTax(parseFloat(e.target.value) || 0)
+                    }
                     className="w-full h-9 px-3 border border-border-custom rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary bg-white text-right font-mono transition-all"
                   />
                 </div>
@@ -277,7 +307,9 @@ function NewBillPanel() {
                 {billDiscount > 0 && (
                   <div className="flex justify-between text-emerald-600">
                     <span>Discount</span>
-                    <span className="font-mono">-{formatCurrency(billDiscount)}</span>
+                    <span className="font-mono">
+                      -{formatCurrency(billDiscount)}
+                    </span>
                   </div>
                 )}
                 {billTax > 0 && (
@@ -287,14 +319,21 @@ function NewBillPanel() {
                   </div>
                 )}
                 <div className="border-t border-border-custom/50 pt-2 flex justify-between font-bold text-sm">
-                  <span className="flex items-center gap-1"><IndianRupee className="w-3.5 h-3.5 text-primary" />Total</span>
-                  <span className="font-mono text-primary text-base">{formatCurrency(total)}</span>
+                  <span className="flex items-center gap-1">
+                    <IndianRupee className="w-3.5 h-3.5 text-primary" />
+                    Total
+                  </span>
+                  <span className="font-mono text-primary text-base">
+                    {formatCurrency(total)}
+                  </span>
                 </div>
               </div>
 
               {/* Notes */}
               <div>
-                <label className="block text-2xs font-bold text-text-custom/60 uppercase tracking-wider mb-1">Notes</label>
+                <label className="block text-2xs font-bold text-text-custom/60 uppercase tracking-wider mb-1">
+                  Notes
+                </label>
                 <textarea
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
@@ -309,8 +348,14 @@ function NewBillPanel() {
                 disabled={items.length === 0 || saving}
                 className="w-full flex items-center justify-center gap-2 text-xs py-3"
               >
-                {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <ReceiptText className="w-4 h-4" />}
-                {saving ? "Saving…" : `Generate Bill${items.length > 0 ? ` (${items.length} items)` : ""}`}
+                {saving ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <ReceiptText className="w-4 h-4" />
+                )}
+                {saving
+                  ? "Saving…"
+                  : `Generate Bill${items.length > 0 ? ` (${items.length} items)` : ""}`}
               </Button>
             </div>
           </Card>
@@ -323,7 +368,12 @@ function NewBillPanel() {
 // ─── History Panel ─────────────────────────────────────────────
 function HistoryPanel() {
   const [bills, setBills] = useState<Bill[]>([]);
-  const [meta, setMeta] = useState({ total: 0, page: 1, limit: 20, totalPages: 1 });
+  const [meta, setMeta] = useState({
+    total: 0,
+    page: 1,
+    limit: 20,
+    totalPages: 1,
+  });
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const [dateFrom, setDateFrom] = useState("");
@@ -331,25 +381,38 @@ function HistoryPanel() {
   const [loading, setLoading] = useState(false);
   const [viewBill, setViewBill] = useState<Bill | null>(null);
 
-  const load = useCallback(async (page = 1) => {
-    setLoading(true);
-    try {
-      const params: Parameters<typeof billingService.getBills>[0] = { page, limit: 20 };
-      if (search) params.search = search;
-      if (statusFilter) params.status = statusFilter;
-      if (dateFrom) params.dateFrom = dateFrom;
-      if (dateTo) params.dateTo = dateTo;
-      const res = await billingService.getBills(params);
-      setBills(res.data);
-      setMeta({ total: res.meta.total, page: res.meta.page, limit: res.meta.limit, totalPages: res.meta.totalPages });
-    } catch {
-      setBills([]);
-    } finally {
-      setLoading(false);
-    }
-  }, [search, statusFilter, dateFrom, dateTo]);
+  const load = useCallback(
+    async (page = 1) => {
+      setLoading(true);
+      try {
+        const params: Parameters<typeof billingService.getBills>[0] = {
+          page,
+          limit: 20,
+        };
+        if (search) params.search = search;
+        if (statusFilter) params.status = statusFilter;
+        if (dateFrom) params.dateFrom = dateFrom;
+        if (dateTo) params.dateTo = dateTo;
+        const res = await billingService.getBills(params);
+        setBills(res.data);
+        setMeta({
+          total: res.meta.total,
+          page: res.meta.page,
+          limit: res.meta.limit,
+          totalPages: res.meta.totalPages,
+        });
+      } catch {
+        setBills([]);
+      } finally {
+        setLoading(false);
+      }
+    },
+    [search, statusFilter, dateFrom, dateTo],
+  );
 
-  useEffect(() => { load(1); }, [load]);
+  useEffect(() => {
+    load(1);
+  }, [load]);
 
   const statusColors: Record<string, string> = {
     PAID: "bg-emerald-50 text-emerald-700 border border-emerald-200",
@@ -359,7 +422,9 @@ function HistoryPanel() {
 
   return (
     <>
-      {viewBill && <BillPrintView bill={viewBill} onClose={() => setViewBill(null)} />}
+      {viewBill && (
+        <BillPrintView bill={viewBill} onClose={() => setViewBill(null)} />
+      )}
 
       <Card
         title="Billing History"
@@ -369,7 +434,9 @@ function HistoryPanel() {
             className="p-1.5 rounded-lg hover:bg-bg-secondary text-text-custom/50 hover:text-text-custom transition-all"
             title="Refresh"
           >
-            <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`} />
+            <RefreshCw
+              className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`}
+            />
           </button>
         }
       >
@@ -418,10 +485,16 @@ function HistoryPanel() {
 
           {(search || statusFilter || dateFrom || dateTo) && (
             <button
-              onClick={() => { setSearch(""); setStatusFilter(""); setDateFrom(""); setDateTo(""); }}
+              onClick={() => {
+                setSearch("");
+                setStatusFilter("");
+                setDateFrom("");
+                setDateTo("");
+              }}
               className="h-9 px-3 text-xs font-semibold text-text-custom/60 hover:text-text-custom border border-border-custom rounded-lg hover:bg-bg-secondary transition-all flex items-center gap-1"
             >
-              <X className="w-3 h-3" />Clear
+              <X className="w-3 h-3" />
+              Clear
             </button>
           )}
         </div>
@@ -429,13 +502,16 @@ function HistoryPanel() {
         {/* Table */}
         {loading ? (
           <div className="flex items-center justify-center py-16 gap-2 text-text-custom/50 text-xs">
-            <Loader2 className="w-4 h-4 animate-spin" />Loading bills…
+            <Loader2 className="w-4 h-4 animate-spin" />
+            Loading bills…
           </div>
         ) : bills.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 text-text-custom/40">
             <FileText className="w-10 h-10 mb-3" />
             <p className="text-xs font-semibold">No bills found</p>
-            <p className="text-2xs mt-0.5">Create your first bill in the New Bill tab</p>
+            <p className="text-2xs mt-0.5">
+              Create your first bill in the New Bill tab
+            </p>
           </div>
         ) : (
           <>
@@ -455,30 +531,61 @@ function HistoryPanel() {
                 </thead>
                 <tbody className="divide-y divide-border-custom/30">
                   {bills.map((bill) => (
-                    <tr key={bill.id} className="hover:bg-bg-secondary/10 transition-colors text-xs group">
-                      <td className="px-4 py-3 font-mono font-bold text-text-custom">{bill.billNumber}</td>
+                    <tr
+                      key={bill.id}
+                      className="hover:bg-bg-secondary/10 transition-colors text-xs group"
+                    >
+                      <td className="px-4 py-3 font-mono font-bold text-text-custom">
+                        {bill.billNumber}
+                      </td>
                       <td className="px-4 py-3 text-text-custom/60 whitespace-nowrap">
-                        {new Date(bill.createdAt).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })}
+                        {new Date(bill.createdAt).toLocaleDateString("en-IN", {
+                          day: "2-digit",
+                          month: "short",
+                          year: "numeric",
+                        })}
                         <br />
-                        <span className="text-2xs">{new Date(bill.createdAt).toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" })}</span>
+                        <span className="text-2xs">
+                          {new Date(bill.createdAt).toLocaleTimeString(
+                            "en-IN",
+                            { hour: "2-digit", minute: "2-digit" },
+                          )}
+                        </span>
                       </td>
                       <td className="px-4 py-3">
                         {bill.customerName ? (
                           <div>
-                            <p className="font-semibold text-text-custom">{bill.customerName}</p>
-                            {bill.customerMobile && <p className="text-2xs text-text-custom/50">{bill.customerMobile}</p>}
+                            <p className="font-semibold text-text-custom">
+                              {bill.customerName}
+                            </p>
+                            {bill.customerMobile && (
+                              <p className="text-2xs text-text-custom/50">
+                                {bill.customerMobile}
+                              </p>
+                            )}
                           </div>
                         ) : (
-                          <span className="text-text-custom/30 italic">Walk-in</span>
+                          <span className="text-text-custom/30 italic">
+                            Walk-in
+                          </span>
                         )}
                       </td>
-                      <td className="px-4 py-3 text-text-custom/70">{bill.billItems.length} item{bill.billItems.length !== 1 ? "s" : ""}</td>
-                      <td className="px-4 py-3 text-right font-bold font-mono text-text-custom">{formatCurrency(bill.totalAmount)}</td>
-                      <td className="px-4 py-3">
-                        <span className="px-2 py-0.5 rounded-full text-2xs font-semibold bg-bg-secondary text-text-custom/70">{bill.paymentMethod}</span>
+                      <td className="px-4 py-3 text-text-custom/70">
+                        {bill.billItems.length} item
+                        {bill.billItems.length !== 1 ? "s" : ""}
+                      </td>
+                      <td className="px-4 py-3 text-right font-bold font-mono text-text-custom">
+                        {formatCurrency(bill.totalAmount)}
                       </td>
                       <td className="px-4 py-3">
-                        <span className={`px-2 py-0.5 rounded-full text-2xs font-bold ${statusColors[bill.status] ?? ""}`}>
+                        <span className="px-2 py-0.5 rounded-full text-2xs font-semibold bg-bg-secondary text-text-custom/70">
+                          {bill.paymentMethod}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3">
+                        <span
+                          className={`px-2 py-0.5 rounded-full text-2xs font-bold ${statusColors[bill.status] ?? ""}`}
+                        >
                           {bill.status}
                         </span>
                       </td>
@@ -509,7 +616,9 @@ function HistoryPanel() {
             {/* Pagination */}
             <div className="flex items-center justify-between mt-5 pt-4 border-t border-border-custom/50">
               <p className="text-2xs text-text-custom/50">
-                Showing {(meta.page - 1) * meta.limit + 1}–{Math.min(meta.page * meta.limit, meta.total)} of {meta.total} bills
+                Showing {(meta.page - 1) * meta.limit + 1}–
+                {Math.min(meta.page * meta.limit, meta.total)} of {meta.total}{" "}
+                bills
               </p>
               <div className="flex items-center gap-1.5">
                 <button
@@ -543,8 +652,16 @@ export default function BillingPage() {
   const [tab, setTab] = useState<Tab>("new-bill");
 
   const tabs: { key: Tab; label: string; icon: React.ReactNode }[] = [
-    { key: "new-bill", label: "New Bill", icon: <Plus className="w-3.5 h-3.5" /> },
-    { key: "history", label: "Billing History", icon: <FileText className="w-3.5 h-3.5" /> },
+    {
+      key: "new-bill",
+      label: "New Bill",
+      icon: <Plus className="w-3.5 h-3.5" />,
+    },
+    {
+      key: "history",
+      label: "Billing History",
+      icon: <FileText className="w-3.5 h-3.5" />,
+    },
   ];
 
   return (
@@ -558,7 +675,8 @@ export default function BillingPage() {
             POS Billing
           </h1>
           <p className="text-xs text-text-custom/60 mt-0.5">
-            Create bills by scanning barcodes, manage customer details, and track billing history.
+            Create bills by scanning barcodes, manage customer details, and
+            track billing history.
           </p>
         </div>
       </div>
