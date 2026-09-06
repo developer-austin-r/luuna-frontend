@@ -90,12 +90,6 @@ export const STATIC_MENU_ITEMS = [
     permission: "billing.view",
   },
   {
-    name: "Barcode",
-    href: "/admin/barcode",
-    icon: Barcode,
-    permission: "barcode.view",
-  },
-  {
     name: "Reports",
     href: "/admin/reports",
     icon: FileText,
@@ -118,7 +112,6 @@ function slugToHref(slug: string): string {
     orders: "/admin/orders",
     billing: "/admin/billing",
     "invoice-history": "/admin/billing/invoices",
-    barcode: "/admin/barcode",
     reports: "/admin/reports",
     settings: "/admin/settings",
   };
@@ -189,32 +182,42 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
     return pathname.startsWith(href);
   };
 
-  /** Render a backend menu node (and its children) */
-  const renderMenuNode = (node: MenuNode, depth = 0) => {
+  const getFlatMenus = (menus: MenuNode[]): MenuNode[] => {
+    const result: MenuNode[] = [];
+    const traverse = (node: MenuNode) => {
+      result.push({
+        ...node,
+        children: [],
+      });
+      if (node.children && node.children.length > 0) {
+        node.children.forEach(traverse);
+      }
+    };
+    menus.forEach(traverse);
+    return result;
+  };
+
+  /** Render a backend menu node */
+  const renderMenuNode = (node: MenuNode) => {
     const href = slugToHref(node.slug);
     const icon = getIcon(node.icon);
     const active = isLinkActive(href);
 
     return (
-      <div key={node.id}>
-        <NavItem
-          name={node.name}
-          href={href}
-          icon={icon}
-          isActive={active}
-          onClick={handleLinkClick}
-          depth={depth}
-        />
-        {node.children.length > 0 && (
-          <div className="mt-1 space-y-1">
-            {node.children.map((child) => renderMenuNode(child, depth + 1))}
-          </div>
-        )}
-      </div>
+      <NavItem
+        key={node.id}
+        name={node.name}
+        href={href}
+        icon={icon}
+        isActive={active}
+        onClick={handleLinkClick}
+        depth={0}
+      />
     );
   };
 
   const hasMenus = user?.menus && user.menus.length > 0;
+  const flatMenus = hasMenus ? getFlatMenus(user!.menus) : [];
 
   return (
     <>
@@ -256,7 +259,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
         {/* Navigation Items */}
         <nav className="flex-1 overflow-y-auto px-4 py-6 space-y-1">
           {hasMenus
-            ? user!.menus.map((node) => renderMenuNode(node))
+            ? flatMenus.map((node) => renderMenuNode(node))
             : STATIC_MENU_ITEMS.map((item) => (
                 <NavItem
                   key={item.name}
