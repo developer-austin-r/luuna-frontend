@@ -1,4 +1,7 @@
 export * from "./ActionMenu";
+export * from "./BarcodeScanner";
+export * from "./BillItemsTable";
+export * from "./BillPrintView";
 export * from "./Avatar";
 export * from "./Badge";
 export * from "./Breadcrumb";

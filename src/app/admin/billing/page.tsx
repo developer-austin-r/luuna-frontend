@@ -1,163 +1,550 @@
 "use client";
 
-import React, { useState } from "react";
-import { useForm } from "react-hook-form";
+import React, { useState, useCallback, useEffect } from "react";
 import {
-  AlertCircle,
-  ArrowUpRight,
-  Award,
-  Check,
-  CreditCard,
+  CalendarDays,
+  ChevronLeft,
+  ChevronRight,
   Download,
-  HelpCircle,
-  Save,
-  Shield,
-  Sparkles,
-  TrendingUp,
+  Eye,
+  FileText,
+  Filter,
+  IndianRupee,
+  Loader2,
+  Plus,
+  ReceiptText,
+  RefreshCw,
+  Search,
+  User,
+  X,
 } from "lucide-react";
+import { Breadcrumb, Button, Card, StatusBadge } from "@/components/admin";
+import { BarcodeScanner } from "@/components/admin/BarcodeScanner";
+import { BillItemsTable } from "@/components/admin/BillItemsTable";
+import { BillPrintView } from "@/components/admin/BillPrintView";
+import { billingService, type Bill, type BillItem } from "@/services/billing";
+import { useAppSelector } from "@/redux/hooks";
 
-import {
-  Breadcrumb,
-  Button,
-  Card,
-  Input,
-  Select,
-  StatusBadge,
-} from "@/components/admin";
-import { useAppDispatch } from "@/redux/hooks";
-import { addActivityLog } from "@/redux/slices/admin-slice";
+type Tab = "new-bill" | "history";
 
-interface BillingFormValues {
-  cardholderName: string;
-  cardNumber: string;
-  expiryDate: string;
-  cvv: string;
-  address: string;
-  city: string;
-  postalCode: string;
-  country: string;
+function formatCurrency(n: number | string) {
+  return `₹${Number(n).toFixed(2)}`;
 }
 
+// ─── New Bill Panel ───────────────────────────────────────────
+function NewBillPanel() {
+  const { user } = useAppSelector((s) => s.auth);
+
+  const [items, setItems] = useState<BillItem[]>([]);
+  const [customerName, setCustomerName] = useState("");
+  const [customerMobile, setCustomerMobile] = useState("");
+  const [customerEmail, setCustomerEmail] = useState("");
+  const [customerAddress, setCustomerAddress] = useState("");
+  const [billDiscount, setBillDiscount] = useState(0);
+  const [billTax, setBillTax] = useState(0);
+  const [paymentMethod, setPaymentMethod] = useState("CASH");
+  const [notes, setNotes] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [savedBill, setSavedBill] = useState<Bill | null>(null);
+  const [showPrint, setShowPrint] = useState(false);
+
+  const subtotal = items.reduce(
+    (s, it) => s + it.unitPrice * it.quantity - (it.discount ?? 0) + (it.tax ?? 0),
+    0
+  );
+  const total = subtotal - billDiscount + billTax;
+
+  const handleProductFound = useCallback((item: BillItem) => {
+    setItems((prev) => {
+      const existing = prev.findIndex((p) => p.productId && p.productId === item.productId);
+      if (existing >= 0) {
+        const updated = [...prev];
+        const cur = updated[existing]!;
+        updated[existing] = { ...cur, quantity: cur.quantity + 1 };
+        return updated;
+      }
+      return [...prev, item];
+    });
+  }, []);
+
+  const handleQty = (i: number, qty: number) => {
+    if (qty < 1) return;
+    setItems((prev) => prev.map((it, idx) => (idx === i ? { ...it, quantity: qty } : it)));
+  };
+
+  const handleDiscount = (i: number, disc: number) => {
+    setItems((prev) => prev.map((it, idx) => (idx === i ? { ...it, discount: disc } : it)));
+  };
+
+  const handleRemove = (i: number) => {
+    setItems((prev) => prev.filter((_, idx) => idx !== i));
+  };
+
+  const handleSave = async () => {
+    if (items.length === 0) return;
+    setSaving(true);
+    try {
+      const dto: Parameters<typeof billingService.createBill>[0] = {
+        items,
+        discount: billDiscount,
+        tax: billTax,
+        paymentMethod,
+        status: "PAID",
+      };
+      const name = user?.name ?? user?.email;
+      if (name) dto.billedBy = name;
+      if (customerName) dto.customerName = customerName;
+      if (customerMobile) dto.customerMobile = customerMobile;
+      if (customerEmail) dto.customerEmail = customerEmail;
+      if (customerAddress) dto.customerAddress = customerAddress;
+      if (notes) dto.notes = notes;
+      const bill = await billingService.createBill(dto);
+      setSavedBill(bill);
+      setShowPrint(true);
+      // Reset form
+      setItems([]);
+      setCustomerName("");
+      setCustomerMobile("");
+      setCustomerEmail("");
+      setCustomerAddress("");
+      setBillDiscount(0);
+      setBillTax(0);
+      setNotes("");
+    } catch (e: unknown) {
+      alert("Failed to save bill: " + (e instanceof Error ? e.message : String(e)));
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <>
+      {showPrint && savedBill && (
+        <BillPrintView bill={savedBill} onClose={() => setShowPrint(false)} />
+      )}
+
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+        {/* Left — Scanner + Items */}
+        <div className="xl:col-span-2 space-y-5">
+          <Card title="Scan Products">
+            <div className="pt-2">
+              <BarcodeScanner onProductFound={handleProductFound} />
+            </div>
+          </Card>
+
+          <Card
+            title={`Bill Items ${items.length > 0 ? `(${items.length})` : ""}`}
+            extra={
+              items.length > 0 ? (
+                <button
+                  onClick={() => setItems([])}
+                  className="text-xs font-semibold text-red-500 hover:text-red-600 flex items-center gap-1"
+                >
+                  <X className="w-3 h-3" />Clear All
+                </button>
+              ) : undefined
+            }
+          >
+            <BillItemsTable
+              items={items}
+              onQuantityChange={handleQty}
+              onDiscountChange={handleDiscount}
+              onRemove={handleRemove}
+            />
+          </Card>
+        </div>
+
+        {/* Right — Customer + Totals */}
+        <div className="space-y-5">
+          {/* Customer Details */}
+          <Card title="Customer Details">
+            <div className="space-y-3">
+              <div>
+                <label className="block text-2xs font-bold text-text-custom/60 uppercase tracking-wider mb-1">
+                  Name <span className="text-text-custom/30 normal-case font-normal">(optional)</span>
+                </label>
+                <div className="relative">
+                  <User className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-text-custom/40" />
+                  <input
+                    value={customerName}
+                    onChange={(e) => setCustomerName(e.target.value)}
+                    placeholder="Customer name"
+                    className="w-full h-9 pl-8 pr-3 border border-border-custom rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary bg-white transition-all"
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="block text-2xs font-bold text-text-custom/60 uppercase tracking-wider mb-1">Mobile</label>
+                <input
+                  value={customerMobile}
+                  onChange={(e) => setCustomerMobile(e.target.value)}
+                  placeholder="+91 xxxxxxxxxx"
+                  className="w-full h-9 px-3 border border-border-custom rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary bg-white transition-all"
+                />
+              </div>
+              <div>
+                <label className="block text-2xs font-bold text-text-custom/60 uppercase tracking-wider mb-1">Email</label>
+                <input
+                  value={customerEmail}
+                  onChange={(e) => setCustomerEmail(e.target.value)}
+                  placeholder="customer@email.com"
+                  className="w-full h-9 px-3 border border-border-custom rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary bg-white transition-all"
+                />
+              </div>
+              <div>
+                <label className="block text-2xs font-bold text-text-custom/60 uppercase tracking-wider mb-1">Address</label>
+                <textarea
+                  value={customerAddress}
+                  onChange={(e) => setCustomerAddress(e.target.value)}
+                  placeholder="Billing address (optional)"
+                  rows={2}
+                  className="w-full px-3 py-2 border border-border-custom rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary bg-white resize-none transition-all"
+                />
+              </div>
+            </div>
+          </Card>
+
+          {/* Payment & Totals */}
+          <Card title="Payment Summary">
+            <div className="space-y-4">
+              {/* Payment Method */}
+              <div>
+                <label className="block text-2xs font-bold text-text-custom/60 uppercase tracking-wider mb-1.5">Payment Method</label>
+                <div className="grid grid-cols-3 gap-1.5">
+                  {["CASH", "CARD", "UPI"].map((m) => (
+                    <button
+                      key={m}
+                      type="button"
+                      onClick={() => setPaymentMethod(m)}
+                      className={`py-2 rounded-lg text-2xs font-bold transition-all border ${
+                        paymentMethod === m
+                          ? "bg-primary text-white border-primary shadow-md shadow-primary/20"
+                          : "border-border-custom text-text-custom/60 hover:border-primary/40"
+                      }`}
+                    >
+                      {m}
+                    </button>
+                  ))}
+                </div>
+                <div className="grid grid-cols-2 gap-1.5 mt-1.5">
+                  {["NET_BANKING", "OTHER"].map((m) => (
+                    <button
+                      key={m}
+                      type="button"
+                      onClick={() => setPaymentMethod(m)}
+                      className={`py-2 rounded-lg text-2xs font-bold transition-all border ${
+                        paymentMethod === m
+                          ? "bg-primary text-white border-primary shadow-md shadow-primary/20"
+                          : "border-border-custom text-text-custom/60 hover:border-primary/40"
+                      }`}
+                    >
+                      {m === "NET_BANKING" ? "Net Banking" : "Other"}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Adjustments */}
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-2xs font-bold text-text-custom/60 uppercase tracking-wider mb-1">Discount (₹)</label>
+                  <input
+                    type="number"
+                    min={0}
+                    value={billDiscount}
+                    onChange={(e) => setBillDiscount(parseFloat(e.target.value) || 0)}
+                    className="w-full h-9 px-3 border border-border-custom rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary bg-white text-right font-mono transition-all"
+                  />
+                </div>
+                <div>
+                  <label className="block text-2xs font-bold text-text-custom/60 uppercase tracking-wider mb-1">Tax (₹)</label>
+                  <input
+                    type="number"
+                    min={0}
+                    value={billTax}
+                    onChange={(e) => setBillTax(parseFloat(e.target.value) || 0)}
+                    className="w-full h-9 px-3 border border-border-custom rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary bg-white text-right font-mono transition-all"
+                  />
+                </div>
+              </div>
+
+              {/* Totals Summary */}
+              <div className="bg-bg-secondary/50 rounded-xl p-4 space-y-2 text-xs">
+                <div className="flex justify-between text-text-custom/60">
+                  <span>Subtotal</span>
+                  <span className="font-mono">{formatCurrency(subtotal)}</span>
+                </div>
+                {billDiscount > 0 && (
+                  <div className="flex justify-between text-emerald-600">
+                    <span>Discount</span>
+                    <span className="font-mono">-{formatCurrency(billDiscount)}</span>
+                  </div>
+                )}
+                {billTax > 0 && (
+                  <div className="flex justify-between text-text-custom/60">
+                    <span>Tax</span>
+                    <span className="font-mono">{formatCurrency(billTax)}</span>
+                  </div>
+                )}
+                <div className="border-t border-border-custom/50 pt-2 flex justify-between font-bold text-sm">
+                  <span className="flex items-center gap-1"><IndianRupee className="w-3.5 h-3.5 text-primary" />Total</span>
+                  <span className="font-mono text-primary text-base">{formatCurrency(total)}</span>
+                </div>
+              </div>
+
+              {/* Notes */}
+              <div>
+                <label className="block text-2xs font-bold text-text-custom/60 uppercase tracking-wider mb-1">Notes</label>
+                <textarea
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                  rows={2}
+                  placeholder="Optional bill notes…"
+                  className="w-full px-3 py-2 border border-border-custom rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary bg-white resize-none transition-all"
+                />
+              </div>
+
+              <Button
+                onClick={handleSave}
+                disabled={items.length === 0 || saving}
+                className="w-full flex items-center justify-center gap-2 text-xs py-3"
+              >
+                {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <ReceiptText className="w-4 h-4" />}
+                {saving ? "Saving…" : `Generate Bill${items.length > 0 ? ` (${items.length} items)` : ""}`}
+              </Button>
+            </div>
+          </Card>
+        </div>
+      </div>
+    </>
+  );
+}
+
+// ─── History Panel ─────────────────────────────────────────────
+function HistoryPanel() {
+  const [bills, setBills] = useState<Bill[]>([]);
+  const [meta, setMeta] = useState({ total: 0, page: 1, limit: 20, totalPages: 1 });
+  const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState("");
+  const [dateFrom, setDateFrom] = useState("");
+  const [dateTo, setDateTo] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [viewBill, setViewBill] = useState<Bill | null>(null);
+
+  const load = useCallback(async (page = 1) => {
+    setLoading(true);
+    try {
+      const params: Parameters<typeof billingService.getBills>[0] = { page, limit: 20 };
+      if (search) params.search = search;
+      if (statusFilter) params.status = statusFilter;
+      if (dateFrom) params.dateFrom = dateFrom;
+      if (dateTo) params.dateTo = dateTo;
+      const res = await billingService.getBills(params);
+      setBills(res.data);
+      setMeta({ total: res.meta.total, page: res.meta.page, limit: res.meta.limit, totalPages: res.meta.totalPages });
+    } catch {
+      setBills([]);
+    } finally {
+      setLoading(false);
+    }
+  }, [search, statusFilter, dateFrom, dateTo]);
+
+  useEffect(() => { load(1); }, [load]);
+
+  const statusColors: Record<string, string> = {
+    PAID: "bg-emerald-50 text-emerald-700 border border-emerald-200",
+    DRAFT: "bg-amber-50 text-amber-700 border border-amber-200",
+    CANCELLED: "bg-red-50 text-red-600 border border-red-200",
+  };
+
+  return (
+    <>
+      {viewBill && <BillPrintView bill={viewBill} onClose={() => setViewBill(null)} />}
+
+      <Card
+        title="Billing History"
+        extra={
+          <button
+            onClick={() => load(meta.page)}
+            className="p-1.5 rounded-lg hover:bg-bg-secondary text-text-custom/50 hover:text-text-custom transition-all"
+            title="Refresh"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`} />
+          </button>
+        }
+      >
+        {/* Filters */}
+        <div className="flex flex-wrap gap-3 mb-5">
+          <div className="relative flex-1 min-w-48">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-text-custom/40" />
+            <input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search bill no, customer…"
+              className="w-full h-9 pl-9 pr-3 border border-border-custom rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary bg-white transition-all"
+            />
+          </div>
+
+          <div className="flex items-center gap-1.5">
+            <Filter className="w-3.5 h-3.5 text-text-custom/40" />
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              className="h-9 px-3 border border-border-custom rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary bg-white"
+            >
+              <option value="">All Status</option>
+              <option value="PAID">Paid</option>
+              <option value="DRAFT">Draft</option>
+              <option value="CANCELLED">Cancelled</option>
+            </select>
+          </div>
+
+          <div className="flex items-center gap-1.5">
+            <CalendarDays className="w-3.5 h-3.5 text-text-custom/40" />
+            <input
+              type="date"
+              value={dateFrom}
+              onChange={(e) => setDateFrom(e.target.value)}
+              className="h-9 px-3 border border-border-custom rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary bg-white"
+            />
+            <span className="text-text-custom/40 text-xs">to</span>
+            <input
+              type="date"
+              value={dateTo}
+              onChange={(e) => setDateTo(e.target.value)}
+              className="h-9 px-3 border border-border-custom rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary bg-white"
+            />
+          </div>
+
+          {(search || statusFilter || dateFrom || dateTo) && (
+            <button
+              onClick={() => { setSearch(""); setStatusFilter(""); setDateFrom(""); setDateTo(""); }}
+              className="h-9 px-3 text-xs font-semibold text-text-custom/60 hover:text-text-custom border border-border-custom rounded-lg hover:bg-bg-secondary transition-all flex items-center gap-1"
+            >
+              <X className="w-3 h-3" />Clear
+            </button>
+          )}
+        </div>
+
+        {/* Table */}
+        {loading ? (
+          <div className="flex items-center justify-center py-16 gap-2 text-text-custom/50 text-xs">
+            <Loader2 className="w-4 h-4 animate-spin" />Loading bills…
+          </div>
+        ) : bills.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-16 text-text-custom/40">
+            <FileText className="w-10 h-10 mb-3" />
+            <p className="text-xs font-semibold">No bills found</p>
+            <p className="text-2xs mt-0.5">Create your first bill in the New Bill tab</p>
+          </div>
+        ) : (
+          <>
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="border-b border-border-custom text-3xs font-bold text-text-custom/50 uppercase tracking-wider bg-bg-secondary/30">
+                    <th className="px-4 py-3">Bill No</th>
+                    <th className="px-4 py-3">Date</th>
+                    <th className="px-4 py-3">Customer</th>
+                    <th className="px-4 py-3">Items</th>
+                    <th className="px-4 py-3 text-right">Amount</th>
+                    <th className="px-4 py-3">Payment</th>
+                    <th className="px-4 py-3">Status</th>
+                    <th className="px-4 py-3 text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border-custom/30">
+                  {bills.map((bill) => (
+                    <tr key={bill.id} className="hover:bg-bg-secondary/10 transition-colors text-xs group">
+                      <td className="px-4 py-3 font-mono font-bold text-text-custom">{bill.billNumber}</td>
+                      <td className="px-4 py-3 text-text-custom/60 whitespace-nowrap">
+                        {new Date(bill.createdAt).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })}
+                        <br />
+                        <span className="text-2xs">{new Date(bill.createdAt).toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" })}</span>
+                      </td>
+                      <td className="px-4 py-3">
+                        {bill.customerName ? (
+                          <div>
+                            <p className="font-semibold text-text-custom">{bill.customerName}</p>
+                            {bill.customerMobile && <p className="text-2xs text-text-custom/50">{bill.customerMobile}</p>}
+                          </div>
+                        ) : (
+                          <span className="text-text-custom/30 italic">Walk-in</span>
+                        )}
+                      </td>
+                      <td className="px-4 py-3 text-text-custom/70">{bill.billItems.length} item{bill.billItems.length !== 1 ? "s" : ""}</td>
+                      <td className="px-4 py-3 text-right font-bold font-mono text-text-custom">{formatCurrency(bill.totalAmount)}</td>
+                      <td className="px-4 py-3">
+                        <span className="px-2 py-0.5 rounded-full text-2xs font-semibold bg-bg-secondary text-text-custom/70">{bill.paymentMethod}</span>
+                      </td>
+                      <td className="px-4 py-3">
+                        <span className={`px-2 py-0.5 rounded-full text-2xs font-bold ${statusColors[bill.status] ?? ""}`}>
+                          {bill.status}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 text-right">
+                        <div className="flex items-center justify-end gap-1">
+                          <button
+                            onClick={() => setViewBill(bill)}
+                            title="View & Print"
+                            className="p-1.5 rounded-lg text-text-custom/40 hover:text-primary hover:bg-primary/5 transition-all"
+                          >
+                            <Eye className="w-3.5 h-3.5" />
+                          </button>
+                          <button
+                            onClick={() => setViewBill(bill)}
+                            title="Download"
+                            className="p-1.5 rounded-lg text-text-custom/40 hover:text-primary hover:bg-primary/5 transition-all"
+                          >
+                            <Download className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Pagination */}
+            <div className="flex items-center justify-between mt-5 pt-4 border-t border-border-custom/50">
+              <p className="text-2xs text-text-custom/50">
+                Showing {(meta.page - 1) * meta.limit + 1}–{Math.min(meta.page * meta.limit, meta.total)} of {meta.total} bills
+              </p>
+              <div className="flex items-center gap-1.5">
+                <button
+                  disabled={meta.page <= 1}
+                  onClick={() => load(meta.page - 1)}
+                  className="w-7 h-7 rounded-lg border border-border-custom flex items-center justify-center text-text-custom/60 hover:text-text-custom hover:bg-bg-secondary disabled:opacity-30 transition-all"
+                >
+                  <ChevronLeft className="w-3.5 h-3.5" />
+                </button>
+                <span className="text-xs font-bold text-text-custom px-2">
+                  {meta.page} / {meta.totalPages}
+                </span>
+                <button
+                  disabled={meta.page >= meta.totalPages}
+                  onClick={() => load(meta.page + 1)}
+                  className="w-7 h-7 rounded-lg border border-border-custom flex items-center justify-center text-text-custom/60 hover:text-text-custom hover:bg-bg-secondary disabled:opacity-30 transition-all"
+                >
+                  <ChevronRight className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            </div>
+          </>
+        )}
+      </Card>
+    </>
+  );
+}
+
+// ─── Main Page ─────────────────────────────────────────────────
 export default function BillingPage() {
-  const dispatch = useAppDispatch();
-  const [activeTab, setActiveTab] = useState<
-    "overview" | "payment" | "invoices" | "plans"
-  >("overview");
-  const [selectedPlan, setSelectedPlan] = useState<
-    "starter" | "growth" | "enterprise"
-  >("growth");
-  const [isUpdating, setIsUpdating] = useState(false);
-  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [tab, setTab] = useState<Tab>("new-bill");
 
-  // Credit card real-time visualization states (bound to form inputs)
-  const [cardName, setCardName] = useState("JOHN DOE");
-  const [cardNumber, setCardNumber] = useState("•••• •••• •••• ••••");
-  const [cardExpiry, setCardExpiry] = useState("MM/YY");
-  const [cardCvv, setCardCvv] = useState("•••");
-  const [isCvvFocused, setIsCvvFocused] = useState(false);
-
-  const {
-    register,
-    handleSubmit,
-    setValue,
-    formState: { errors },
-    reset,
-  } = useForm<BillingFormValues>({
-    defaultValues: {
-      cardholderName: "",
-      cardNumber: "",
-      expiryDate: "",
-      cvv: "",
-      address: "123 Luuna Blvd, Suite 100",
-      city: "San Francisco",
-      postalCode: "94103",
-      country: "US",
-    },
-  });
-
-  const onUpdatePayment = (data: BillingFormValues) => {
-    setIsUpdating(true);
-    setSuccessMessage(null);
-
-    // Simulate API call
-    setTimeout(() => {
-      setIsUpdating(false);
-      setSuccessMessage(
-        "Your payment method and billing address have been updated successfully!",
-      );
-      dispatch(
-        addActivityLog({
-          user: "Admin Sarah",
-          action: "Updated company billing details and payment card",
-          module: "Billing",
-          status: "success",
-        }),
-      );
-      reset(data);
-    }, 1500);
-  };
-
-  const handleCardNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value.replace(/\s+/g, "").replace(/[^0-9]/gi, "");
-    const matches = value.match(/\d{4,16}/g);
-    const match = (matches && matches[0]) || "";
-    const parts = [];
-
-    for (let i = 0, len = match.length; i < len; i += 4) {
-      parts.push(match.substring(i, i + 4));
-    }
-
-    const formatted = parts.length > 0 ? parts.join(" ") : value;
-    setValue("cardNumber", formatted);
-    setCardNumber(formatted || "•••• •••• •••• ••••");
-  };
-
-  const handleExpiryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    let value = e.target.value.replace(/\s+/g, "").replace(/[^0-9]/gi, "");
-    if (value.length > 2) {
-      value = value.substring(0, 2) + "/" + value.substring(2, 4);
-    }
-    setValue("expiryDate", value);
-    setCardExpiry(value || "MM/YY");
-  };
-
-  // Mock invoice data
-  const invoices = [
-    {
-      id: "INV-2026-004",
-      date: "2026-08-15",
-      amount: 49.0,
-      status: "paid",
-      method: "Visa •••• 4242",
-    },
-    {
-      id: "INV-2026-003",
-      date: "2026-07-15",
-      amount: 49.0,
-      status: "paid",
-      method: "Visa •••• 4242",
-    },
-    {
-      id: "INV-2026-002",
-      date: "2026-06-15",
-      amount: 49.0,
-      status: "paid",
-      method: "Visa •••• 4242",
-    },
-    {
-      id: "INV-2026-001",
-      date: "2026-05-15",
-      amount: 49.0,
-      status: "paid",
-      method: "Visa •••• 4242",
-    },
-    {
-      id: "INV-2026-000",
-      date: "2026-04-15",
-      amount: 29.0,
-      status: "refunded",
-      method: "Mastercard •••• 8888",
-    },
+  const tabs: { key: Tab; label: string; icon: React.ReactNode }[] = [
+    { key: "new-bill", label: "New Bill", icon: <Plus className="w-3.5 h-3.5" /> },
+    { key: "history", label: "Billing History", icon: <FileText className="w-3.5 h-3.5" /> },
   ];
 
   return (
@@ -166,875 +553,37 @@ export default function BillingPage() {
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
           <Breadcrumb items={[{ label: "Billing", href: "/admin/billing" }]} />
-          <h1 className="text-2xl font-bold text-text-custom mt-1 font-sans">
-            Billing & Subscriptions
+          <h1 className="text-2xl font-bold text-text-custom mt-1 flex items-center gap-2">
+            <ReceiptText className="w-6 h-6 text-primary" />
+            POS Billing
           </h1>
           <p className="text-xs text-text-custom/60 mt-0.5">
-            Manage your subscription plans, payment cards, billing address, and
-            download past invoices.
+            Create bills by scanning barcodes, manage customer details, and track billing history.
           </p>
         </div>
-        <div className="flex gap-2">
-          <Button
-            variant={activeTab === "plans" ? "primary" : "outline"}
-            size="sm"
-            onClick={() => setActiveTab("plans")}
-            className="flex items-center gap-1 text-xs"
+      </div>
+
+      {/* Tabs */}
+      <div className="flex border-b border-border-custom gap-1">
+        {tabs.map((t) => (
+          <button
+            key={t.key}
+            onClick={() => setTab(t.key)}
+            className={`flex items-center gap-2 px-5 py-2.5 text-xs font-semibold border-b-2 transition-all ${
+              tab === t.key
+                ? "border-primary text-primary"
+                : "border-transparent text-text-custom/60 hover:text-text-custom hover:border-border-custom"
+            }`}
           >
-            <Sparkles className="w-3.5 h-3.5" />
-            Upgrade Plan
-          </Button>
-        </div>
+            {t.icon}
+            {t.label}
+          </button>
+        ))}
       </div>
 
-      {/* Navigation Tabs */}
-      <div className="flex border-b border-border-custom gap-2 overflow-x-auto">
-        <button
-          onClick={() => setActiveTab("overview")}
-          className={`px-4 py-2.5 text-xs font-semibold border-b-2 transition-all whitespace-nowrap ${
-            activeTab === "overview"
-              ? "border-primary text-primary"
-              : "border-transparent text-text-custom/60 hover:text-text-custom hover:border-border-custom"
-          }`}
-        >
-          Overview & Utilization
-        </button>
-        <button
-          onClick={() => setActiveTab("payment")}
-          className={`px-4 py-2.5 text-xs font-semibold border-b-2 transition-all whitespace-nowrap ${
-            activeTab === "payment"
-              ? "border-primary text-primary"
-              : "border-transparent text-text-custom/60 hover:text-text-custom hover:border-border-custom"
-          }`}
-        >
-          Payment Methods & Form
-        </button>
-        <button
-          onClick={() => setActiveTab("invoices")}
-          className={`px-4 py-2.5 text-xs font-semibold border-b-2 transition-all whitespace-nowrap ${
-            activeTab === "invoices"
-              ? "border-primary text-primary"
-              : "border-transparent text-text-custom/60 hover:text-text-custom hover:border-border-custom"
-          }`}
-        >
-          Invoice History
-        </button>
-        <button
-          onClick={() => setActiveTab("plans")}
-          className={`px-4 py-2.5 text-xs font-semibold border-b-2 transition-all whitespace-nowrap ${
-            activeTab === "plans"
-              ? "border-primary text-primary"
-              : "border-transparent text-text-custom/60 hover:text-text-custom hover:border-border-custom"
-          }`}
-        >
-          Compare Subscription Plans
-        </button>
-      </div>
-
-      {/* Main Content Sections */}
-      <div className="space-y-6">
-        {/* 1. Overview Tab */}
-        {activeTab === "overview" && (
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Subscription Detail Card */}
-            <Card title="Current Subscription Plan" className="lg:col-span-2">
-              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-6 border-b border-border-custom/50">
-                <div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-lg font-bold text-text-custom">
-                      Growth Professional
-                    </span>
-                    <span className="px-2 py-0.5 text-3xs font-semibold bg-emerald-50 text-emerald-600 border border-emerald-200 rounded-full">
-                      Active
-                    </span>
-                  </div>
-                  <p className="text-xs text-text-custom/50 mt-1">
-                    Your next renewal date is{" "}
-                    <strong className="text-text-custom">
-                      September 15, 2026
-                    </strong>{" "}
-                    for <strong className="text-text-custom">$49.00/mo</strong>.
-                  </p>
-                </div>
-                <div className="flex gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setActiveTab("plans")}
-                  >
-                    Change Plan
-                  </Button>
-                  <Button
-                    variant="primary"
-                    size="sm"
-                    className="flex items-center gap-1"
-                    onClick={() => setActiveTab("payment")}
-                  >
-                    Update Card
-                  </Button>
-                </div>
-              </div>
-
-              {/* Utilisation Metrics */}
-              <div className="py-6 space-y-5">
-                <h4 className="text-xs font-bold text-text-custom uppercase tracking-wider flex items-center gap-1.5">
-                  <TrendingUp className="w-4 h-4 text-primary" />
-                  Monthly Resource Consumption
-                </h4>
-
-                <div className="space-y-3">
-                  {/* API Limits */}
-                  <div>
-                    <div className="flex justify-between text-xs font-semibold mb-1">
-                      <span className="text-text-custom">
-                        API Endpoints Requests
-                      </span>
-                      <span className="text-text-custom/70">
-                        72,500 / 100,000 (72.5%)
-                      </span>
-                    </div>
-                    <div className="w-full bg-bg-secondary h-2.5 rounded-full overflow-hidden">
-                      <div
-                        className="bg-primary h-full rounded-full transition-all duration-500"
-                        style={{ width: "72.5%" }}
-                      />
-                    </div>
-                  </div>
-
-                  {/* Storage limits */}
-                  <div>
-                    <div className="flex justify-between text-xs font-semibold mb-1">
-                      <span className="text-text-custom">
-                        Digital Assets Storage
-                      </span>
-                      <span className="text-text-custom/70">
-                        24.8 GB / 50 GB (49.6%)
-                      </span>
-                    </div>
-                    <div className="w-full bg-bg-secondary h-2.5 rounded-full overflow-hidden">
-                      <div
-                        className="bg-violet-500 h-full rounded-full transition-all duration-500"
-                        style={{ width: "49.6%" }}
-                      />
-                    </div>
-                  </div>
-
-                  {/* Active seats */}
-                  <div>
-                    <div className="flex justify-between text-xs font-semibold mb-1">
-                      <span className="text-text-custom">
-                        Team Member Accounts
-                      </span>
-                      <span className="text-text-custom/70 font-mono">
-                        4 / 10 Users (40.0%)
-                      </span>
-                    </div>
-                    <div className="w-full bg-bg-secondary h-2.5 rounded-full overflow-hidden">
-                      <div
-                        className="bg-emerald-500 h-full rounded-full transition-all duration-500"
-                        style={{ width: "40%" }}
-                      />
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Alert reminder */}
-              <div className="bg-primary/5 border border-primary/10 rounded-xl p-4 flex items-start gap-3">
-                <Award className="w-5 h-5 text-primary shrink-0 mt-0.5" />
-                <div>
-                  <p className="text-xs font-bold text-text-custom">
-                    Enterprise Tier trial is available
-                  </p>
-                  <p className="text-2xs text-text-custom/60 mt-1">
-                    Upgrade to Enterprise to gain access to automated SLA
-                    guarantees, unlimited database integration, customized API
-                    workflows, and 24/7 dedicated telephone support channels.
-                  </p>
-                  <button
-                    className="text-2xs font-semibold text-primary mt-2 hover:underline inline-flex items-center gap-0.5"
-                    onClick={() => setActiveTab("plans")}
-                  >
-                    Learn more about Enterprise
-                    <ArrowUpRight className="w-3 h-3" />
-                  </button>
-                </div>
-              </div>
-            </Card>
-
-            {/* Quick Summary Right Panel */}
-            <div className="space-y-6">
-              {/* Payment Summary */}
-              <Card title="Payment Method">
-                <div className="space-y-4">
-                  <div className="bg-slate-900 rounded-xl p-5 text-white shadow-md relative overflow-hidden h-36 flex flex-col justify-between">
-                    {/* Background decorations */}
-                    <div className="absolute right-0 bottom-0 w-24 h-24 bg-primary/10 rounded-full blur-xl pointer-events-none" />
-                    <div className="absolute top-0 right-10 w-16 h-16 bg-violet-500/10 rounded-full blur-lg pointer-events-none" />
-
-                    <div className="flex justify-between items-start">
-                      <span className="text-xs font-bold tracking-widest text-slate-400">
-                        LUUNA CORP
-                      </span>
-                      <div className="h-6 w-10 relative">
-                        <div className="absolute top-0 left-0 bg-red-500 w-5 h-5 rounded-full opacity-80" />
-                        <div className="absolute top-0 right-0 bg-yellow-500 w-5 h-5 rounded-full opacity-80" />
-                      </div>
-                    </div>
-                    <div>
-                      <p className="text-sm font-mono tracking-widest text-slate-200">
-                        •••• •••• •••• 4242
-                      </p>
-                      <div className="flex justify-between items-end mt-4">
-                        <div>
-                          <p className="text-4xs text-slate-400 uppercase">
-                            Cardholder
-                          </p>
-                          <p className="text-xs font-bold truncate max-w-32">
-                            Sarah Connor
-                          </p>
-                        </div>
-                        <div>
-                          <p className="text-4xs text-slate-400 uppercase">
-                            Expires
-                          </p>
-                          <p className="text-xs font-bold">12/28</p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="space-y-2.5 pt-2">
-                    <div className="flex items-center justify-between text-xs">
-                      <span className="text-text-custom/50">Card Type</span>
-                      <span className="font-semibold text-text-custom">
-                        Visa Classic
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between text-xs">
-                      <span className="text-text-custom/50">Billing Email</span>
-                      <span className="font-semibold text-text-custom">
-                        billing@luunastore.com
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between text-xs">
-                      <span className="text-text-custom/50">Phone</span>
-                      <span className="font-semibold text-text-custom">
-                        +1 (555) 019-2834
-                      </span>
-                    </div>
-                  </div>
-
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="w-full text-xs"
-                    onClick={() => setActiveTab("payment")}
-                  >
-                    Edit Card Details
-                  </Button>
-                </div>
-              </Card>
-
-              {/* Quick Info Help Card */}
-              <Card title="Billing Support">
-                <div className="space-y-4 text-xs">
-                  <div className="flex items-start gap-2.5">
-                    <HelpCircle className="w-4 h-4 text-primary shrink-0 mt-0.5" />
-                    <div>
-                      <p className="font-semibold text-text-custom">
-                        How do invoices work?
-                      </p>
-                      <p className="text-text-custom/60 mt-1">
-                        Invoices are automatically generated on the 15th of each
-                        month and emailed to your billing email address.
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex items-start gap-2.5">
-                    <Shield className="w-4 h-4 text-primary shrink-0 mt-0.5" />
-                    <div>
-                      <p className="font-semibold text-text-custom">
-                        Secure payments encryption
-                      </p>
-                      <p className="text-text-custom/60 mt-1">
-                        All transactions are processed securely through 256-bit
-                        SSL encrypted channels. We do not store card credentials
-                        directly.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </Card>
-            </div>
-          </div>
-        )}
-
-        {/* 2. Payment Methods & Form Tab */}
-        {activeTab === "payment" && (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
-            {/* Form Card */}
-            <Card title="Update Credit Card & Billing Info">
-              {successMessage && (
-                <div className="mb-5 bg-emerald-50 border border-emerald-200 text-emerald-700 px-4 py-3 rounded-xl flex items-start gap-2 text-xs">
-                  <Check className="w-4 h-4 shrink-0 mt-0.5" />
-                  <span>{successMessage}</span>
-                </div>
-              )}
-
-              <form
-                onSubmit={handleSubmit(onUpdatePayment)}
-                className="space-y-4"
-              >
-                <div className="space-y-4">
-                  <h4 className="text-xs font-bold text-text-custom uppercase tracking-wider pb-2 border-b border-border-custom/50">
-                    Card Information
-                  </h4>
-
-                  <Input
-                    label="Cardholder Name"
-                    placeholder="e.g. John Doe"
-                    {...register("cardholderName", {
-                      required: "Name is required",
-                      onChange: (e) =>
-                        setCardName(e.target.value.toUpperCase() || "JOHN DOE"),
-                    })}
-                    error={errors.cardholderName?.message}
-                  />
-
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                    <div className="sm:col-span-2">
-                      <Input
-                        label="Card Number"
-                        placeholder="0000 0000 0000 0000"
-                        maxLength={19}
-                        {...register("cardNumber", {
-                          required: "Card number is required",
-                          minLength: {
-                            value: 15,
-                            message: "Invalid card number",
-                          },
-                          onChange: handleCardNumberChange,
-                        })}
-                        error={errors.cardNumber?.message}
-                      />
-                    </div>
-                    <div>
-                      <Input
-                        label="Expiry Date"
-                        placeholder="MM/YY"
-                        maxLength={5}
-                        {...register("expiryDate", {
-                          required: "Expiry required",
-                          pattern: {
-                            value: /^(0[1-9]|1[0-2])\/?([0-9]{2})$/,
-                            message: "Use MM/YY",
-                          },
-                          onChange: handleExpiryChange,
-                        })}
-                        error={errors.expiryDate?.message}
-                      />
-                    </div>
-                  </div>
-
-                  <div>
-                    <Input
-                      label="CVV / CVC"
-                      type="password"
-                      placeholder="•••"
-                      maxLength={4}
-                      {...register("cvv", {
-                        required: "CVV is required",
-                        minLength: { value: 3, message: "Min 3 digits" },
-                        onChange: (e) => setCardCvv(e.target.value || "•••"),
-                      })}
-                      onFocus={() => setIsCvvFocused(true)}
-                      onBlur={() => setIsCvvFocused(false)}
-                      error={errors.cvv?.message}
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-4 pt-4">
-                  <h4 className="text-xs font-bold text-text-custom uppercase tracking-wider pb-2 border-b border-border-custom/50">
-                    Billing Address
-                  </h4>
-
-                  <Input
-                    label="Street Address"
-                    placeholder="e.g. 123 Main St"
-                    {...register("address", {
-                      required: "Address is required",
-                    })}
-                    error={errors.address?.message}
-                  />
-
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                    <Input
-                      label="City"
-                      placeholder="e.g. San Francisco"
-                      {...register("city", { required: "City is required" })}
-                      error={errors.city?.message}
-                    />
-                    <Input
-                      label="Postal Code"
-                      placeholder="e.g. 94103"
-                      {...register("postalCode", { required: "ZIP required" })}
-                      error={errors.postalCode?.message}
-                    />
-                    <Select
-                      label="Country"
-                      options={[
-                        { value: "US", label: "United States" },
-                        { value: "CA", label: "Canada" },
-                        { value: "GB", label: "United Kingdom" },
-                        { value: "DE", label: "Germany" },
-                        { value: "IN", label: "India" },
-                      ]}
-                      {...register("country")}
-                    />
-                  </div>
-                </div>
-
-                <div className="pt-4 border-t border-border-custom/50 flex justify-end gap-3">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => reset()}
-                    className="text-xs"
-                  >
-                    Reset Form
-                  </Button>
-                  <Button
-                    type="submit"
-                    className="flex items-center gap-1.5 text-xs"
-                    isLoading={isUpdating}
-                  >
-                    <Save className="w-4 h-4" />
-                    Save Changes
-                  </Button>
-                </div>
-              </form>
-            </Card>
-
-            {/* Credit Card Mockup Interactive Display */}
-            <div className="space-y-6 flex flex-col items-center">
-              <span className="text-xs font-bold text-text-custom/50 uppercase tracking-wider self-start">
-                Interactive Preview
-              </span>
-
-              {/* Perspective container to support flipping on CVV focus */}
-              <div className="w-full max-w-sm h-56 [perspective:1000px] cursor-pointer group">
-                <div
-                  className={`relative w-full h-full text-white shadow-2xl rounded-2xl transition-all duration-700 [transform-style:preserve-3d] ${
-                    isCvvFocused ? "[transform:rotateY(180deg)]" : ""
-                  }`}
-                >
-                  {/* FRONT SIDE OF CARD */}
-                  <div className="absolute inset-0 w-full h-full rounded-2xl bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 p-6 flex flex-col justify-between [backface-visibility:hidden] border border-white/10 shadow-lg overflow-hidden">
-                    <div className="absolute top-0 right-0 w-48 h-48 bg-primary/20 rounded-full blur-2xl pointer-events-none" />
-                    <div className="absolute bottom-0 left-0 w-32 h-32 bg-violet-600/10 rounded-full blur-xl pointer-events-none" />
-
-                    <div className="flex justify-between items-start z-10">
-                      <div>
-                        <p className="text-xs font-bold tracking-widest text-indigo-300">
-                          LUUNA SaaS
-                        </p>
-                        <p className="text-4xs text-indigo-400/80">
-                          PREMIUM CUSTOMER
-                        </p>
-                      </div>
-                      <div className="h-7 w-12 relative flex justify-end items-center">
-                        {cardNumber.startsWith("4") ? (
-                          <span className="text-sm font-bold italic tracking-wide text-white">
-                            VISA
-                          </span>
-                        ) : cardNumber.startsWith("5") ? (
-                          <div className="flex">
-                            <div className="w-5 h-5 bg-red-500 rounded-full mr-[-8px] opacity-90" />
-                            <div className="w-5 h-5 bg-yellow-500 rounded-full opacity-90" />
-                          </div>
-                        ) : (
-                          <div className="flex items-center gap-1 text-slate-300">
-                            <CreditCard className="w-4 h-4" />
-                            <span className="text-4xs font-bold">CARD</span>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-
-                    <div className="z-10">
-                      {/* Gold Chip Mock */}
-                      <div className="w-9 h-7 bg-gradient-to-r from-amber-400 via-yellow-200 to-amber-400 rounded-md border border-amber-300/40 mb-3 shadow-inner flex items-center justify-center">
-                        <div className="grid grid-cols-3 gap-0.5 w-6 h-5 opacity-60">
-                          <div className="border border-slate-900/10" />
-                          <div className="border border-slate-900/10" />
-                          <div className="border border-slate-900/10" />
-                          <div className="border border-slate-900/10" />
-                          <div className="border border-slate-900/10" />
-                          <div className="border border-slate-900/10" />
-                        </div>
-                      </div>
-                      <p className="text-base font-mono tracking-widest text-slate-100">
-                        {cardNumber}
-                      </p>
-                    </div>
-
-                    <div className="flex justify-between items-end z-10">
-                      <div>
-                        <p className="text-5xs text-slate-400 uppercase">
-                          Cardholder
-                        </p>
-                        <p className="text-xs font-semibold uppercase truncate max-w-44 font-mono">
-                          {cardName}
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-5xs text-slate-400 uppercase">
-                          Expires
-                        </p>
-                        <p className="text-xs font-semibold font-mono">
-                          {cardExpiry}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* BACK SIDE OF CARD */}
-                  <div className="absolute inset-0 w-full h-full rounded-2xl bg-gradient-to-br from-slate-900 to-indigo-950 p-6 flex flex-col justify-between [transform:rotateY(180deg)] [backface-visibility:hidden] border border-white/10 shadow-lg">
-                    {/* Magnetic Strip */}
-                    <div className="absolute top-6 left-0 w-full h-10 bg-slate-950" />
-
-                    <div className="mt-14 w-full">
-                      <div className="flex items-center justify-between">
-                        <div className="w-10/12 h-8 bg-white/10 rounded px-3 flex items-center justify-end font-mono italic text-slate-300 text-xs">
-                          •••• •••• ••••
-                        </div>
-                        <div className="w-2/12 h-8 bg-amber-100 text-slate-900 font-mono flex items-center justify-center font-bold text-xs rounded-r">
-                          {cardCvv}
-                        </div>
-                      </div>
-                      <p className="text-5xs text-slate-400 uppercase mt-1">
-                        CVV / Security Code
-                      </p>
-                    </div>
-
-                    <div className="text-4xs text-slate-400 leading-3">
-                      This card is property of LUUNA Corp. Use of this card is
-                      governed by the terms of service agreement. Secured
-                      transaction services are routed through standard payment
-                      gateways.
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Instructions */}
-              <div className="bg-slate-50 border border-border-custom rounded-xl p-4 text-xs max-w-sm flex items-start gap-2.5">
-                <AlertCircle className="w-4.5 h-4.5 text-primary shrink-0 mt-0.5" />
-                <div>
-                  <p className="font-semibold text-text-custom">
-                    Interactive Mockup Guide
-                  </p>
-                  <p className="text-text-custom/60 mt-1">
-                    Try entering standard card numbers. Focus the CVV field to
-                    see the credit card rotate in 3D to display its back side.
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* 3. Invoices History Tab */}
-        {activeTab === "invoices" && (
-          <Card title="Past Transactions Invoices">
-            <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse">
-                <thead>
-                  <tr className="border-b border-border-custom text-3xs font-bold text-text-custom/50 uppercase tracking-wider bg-bg-secondary/20">
-                    <th className="px-6 py-3.5">Invoice ID</th>
-                    <th className="px-6 py-3.5">Date Issued</th>
-                    <th className="px-6 py-3.5">Method</th>
-                    <th className="px-6 py-3.5">Amount</th>
-                    <th className="px-6 py-3.5">Status</th>
-                    <th className="px-6 py-3.5 text-right">Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-border-custom/40">
-                  {invoices.map((inv) => (
-                    <tr
-                      key={inv.id}
-                      className="hover:bg-bg-secondary/10 transition-colors text-xs"
-                    >
-                      <td className="px-6 py-3 font-mono font-bold text-text-custom">
-                        {inv.id}
-                      </td>
-                      <td className="px-6 py-3 text-text-custom/70">
-                        {new Date(inv.date).toLocaleDateString("en-US", {
-                          year: "numeric",
-                          month: "short",
-                          day: "numeric",
-                        })}
-                      </td>
-                      <td className="px-6 py-3 text-text-custom/60 font-mono text-2xs">
-                        {inv.method}
-                      </td>
-                      <td className="px-6 py-3 font-bold text-text-custom">
-                        ${inv.amount.toFixed(2)}
-                      </td>
-                      <td className="px-6 py-3">
-                        <StatusBadge status={inv.status} />
-                      </td>
-                      <td className="px-6 py-3 text-right">
-                        <button
-                          onClick={() =>
-                            alert(`Initiated download of ${inv.id}.pdf`)
-                          }
-                          className="p-1.5 rounded-lg text-text-custom/50 hover:text-primary hover:bg-primary/5 transition-colors inline-flex items-center gap-1 cursor-pointer"
-                          title="Download PDF Invoice"
-                        >
-                          <Download className="w-3.5 h-3.5" />
-                          <span className="text-3xs font-semibold">PDF</span>
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </Card>
-        )}
-
-        {/* 4. Compare Subscription Plans Tab */}
-        {activeTab === "plans" && (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {/* Starter Plan */}
-            <div
-              className={`bg-white rounded-2xl border p-6 flex flex-col justify-between transition-all duration-300 ${
-                selectedPlan === "starter"
-                  ? "ring-2 ring-primary border-transparent scale-102 shadow-md"
-                  : "border-border-custom hover:shadow-md"
-              }`}
-            >
-              <div>
-                <div className="flex justify-between items-start">
-                  <div>
-                    <h3 className="text-base font-bold text-text-custom">
-                      Starter Tier
-                    </h3>
-                    <p className="text-3xs text-text-custom/50 mt-0.5">
-                      For small developers & testing
-                    </p>
-                  </div>
-                  {selectedPlan === "starter" && (
-                    <span className="px-2 py-0.5 text-4xs font-semibold bg-primary/10 text-primary rounded-full uppercase">
-                      Current
-                    </span>
-                  )}
-                </div>
-                <div className="my-6">
-                  <div className="flex items-baseline">
-                    <span className="text-3xl font-extrabold text-text-custom">
-                      $0
-                    </span>
-                    <span className="text-xs text-text-custom/50 ml-1">
-                      /mo
-                    </span>
-                  </div>
-                  <p className="text-3xs text-text-custom/40 mt-1">
-                    Free forever with basic limits
-                  </p>
-                </div>
-                <ul className="space-y-2.5 text-xs text-text-custom/70 pt-2 border-t border-border-custom/50">
-                  <li className="flex items-center gap-2">
-                    <Check className="w-4 h-4 text-emerald-500 shrink-0" />
-                    <span>Up to 10,000 monthly API calls</span>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <Check className="w-4 h-4 text-emerald-500 shrink-0" />
-                    <span>2 GB digital asset storage</span>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <Check className="w-4 h-4 text-emerald-500 shrink-0" />
-                    <span>1 team user seat</span>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <Check className="w-4 h-4 text-emerald-500 shrink-0" />
-                    <span>Community email support</span>
-                  </li>
-                </ul>
-              </div>
-              <div className="mt-8">
-                <Button
-                  variant={selectedPlan === "starter" ? "outline" : "secondary"}
-                  className="w-full text-xs"
-                  disabled={selectedPlan === "starter"}
-                  onClick={() => {
-                    setSelectedPlan("starter");
-                    alert("Switched to Starter Plan (Mock)");
-                  }}
-                >
-                  {selectedPlan === "starter"
-                    ? "Your Current Plan"
-                    : "Downgrade to Starter"}
-                </Button>
-              </div>
-            </div>
-
-            {/* Growth Plan (Popular) */}
-            <div
-              className={`bg-white rounded-2xl border p-6 flex flex-col justify-between relative transition-all duration-300 ${
-                selectedPlan === "growth"
-                  ? "ring-2 ring-primary border-transparent scale-102 shadow-lg"
-                  : "border-border-custom hover:shadow-md"
-              }`}
-            >
-              <div className="absolute top-0 right-6 -translate-y-1/2 bg-primary text-white text-4xs font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">
-                Popular Choice
-              </div>
-              <div>
-                <div className="flex justify-between items-start">
-                  <div>
-                    <h3 className="text-base font-bold text-text-custom">
-                      Growth Professional
-                    </h3>
-                    <p className="text-3xs text-text-custom/50 mt-0.5">
-                      For growing retail systems & SaaS
-                    </p>
-                  </div>
-                  {selectedPlan === "growth" && (
-                    <span className="px-2 py-0.5 text-4xs font-semibold bg-primary/10 text-primary rounded-full uppercase">
-                      Current
-                    </span>
-                  )}
-                </div>
-                <div className="my-6">
-                  <div className="flex items-baseline">
-                    <span className="text-3xl font-extrabold text-text-custom">
-                      $49
-                    </span>
-                    <span className="text-xs text-text-custom/50 ml-1">
-                      /mo
-                    </span>
-                  </div>
-                  <p className="text-3xs text-text-custom/40 mt-1">
-                    Billed monthly, cancel anytime
-                  </p>
-                </div>
-                <ul className="space-y-2.5 text-xs text-text-custom/70 pt-2 border-t border-border-custom/50">
-                  <li className="flex items-center gap-2">
-                    <Check className="w-4 h-4 text-emerald-500 shrink-0" />
-                    <span>Up to 100,000 monthly API calls</span>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <Check className="w-4 h-4 text-emerald-500 shrink-0" />
-                    <span>50 GB digital asset storage</span>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <Check className="w-4 h-4 text-emerald-500 shrink-0" />
-                    <span>Up to 10 team seats</span>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <Check className="w-4 h-4 text-emerald-500 shrink-0" />
-                    <span>Standard SLA ticket support</span>
-                  </li>
-                </ul>
-              </div>
-              <div className="mt-8">
-                <Button
-                  variant={selectedPlan === "growth" ? "outline" : "primary"}
-                  className="w-full text-xs"
-                  disabled={selectedPlan === "growth"}
-                  onClick={() => {
-                    setSelectedPlan("growth");
-                    alert("Switched to Growth Plan (Mock)");
-                  }}
-                >
-                  {selectedPlan === "growth"
-                    ? "Your Current Plan"
-                    : "Choose Growth"}
-                </Button>
-              </div>
-            </div>
-
-            {/* Enterprise Plan */}
-            <div
-              className={`bg-white rounded-2xl border p-6 flex flex-col justify-between transition-all duration-300 ${
-                selectedPlan === "enterprise"
-                  ? "ring-2 ring-primary border-transparent scale-102 shadow-md"
-                  : "border-border-custom hover:shadow-md"
-              }`}
-            >
-              <div>
-                <div className="flex justify-between items-start">
-                  <div>
-                    <h3 className="text-base font-bold text-text-custom">
-                      Enterprise Tier
-                    </h3>
-                    <p className="text-3xs text-text-custom/50 mt-0.5">
-                      For corporate organizations
-                    </p>
-                  </div>
-                  {selectedPlan === "enterprise" && (
-                    <span className="px-2 py-0.5 text-4xs font-semibold bg-primary/10 text-primary rounded-full uppercase">
-                      Current
-                    </span>
-                  )}
-                </div>
-                <div className="my-6">
-                  <div className="flex items-baseline">
-                    <span className="text-3xl font-extrabold text-text-custom">
-                      $299
-                    </span>
-                    <span className="text-xs text-text-custom/50 ml-1">
-                      /mo
-                    </span>
-                  </div>
-                  <p className="text-3xs text-text-custom/40 mt-1">
-                    Billed annually ($2,990/year)
-                  </p>
-                </div>
-                <ul className="space-y-2.5 text-xs text-text-custom/70 pt-2 border-t border-border-custom/50">
-                  <li className="flex items-center gap-2">
-                    <Check className="w-4 h-4 text-emerald-500 shrink-0" />
-                    <span>Unlimited monthly API calls</span>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <Check className="w-4 h-4 text-emerald-500 shrink-0" />
-                    <span>500 GB asset storage</span>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <Check className="w-4 h-4 text-emerald-500 shrink-0" />
-                    <span>Unlimited team user seats</span>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <Check className="w-4 h-4 text-emerald-500 shrink-0" />
-                    <span>Dedicated support line (24/7/365)</span>
-                  </li>
-                </ul>
-              </div>
-              <div className="mt-8">
-                <Button
-                  variant={
-                    selectedPlan === "enterprise" ? "outline" : "primary"
-                  }
-                  className="w-full text-xs bg-indigo-600 hover:bg-indigo-700 text-white"
-                  disabled={selectedPlan === "enterprise"}
-                  onClick={() => {
-                    setSelectedPlan("enterprise");
-                    alert("Switched to Enterprise Plan (Mock)");
-                  }}
-                >
-                  {selectedPlan === "enterprise"
-                    ? "Your Current Plan"
-                    : "Upgrade to Enterprise"}
-                </Button>
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
+      {/* Tab Content */}
+      {tab === "new-bill" && <NewBillPanel />}
+      {tab === "history" && <HistoryPanel />}
     </div>
   );
 }
