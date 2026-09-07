@@ -7,66 +7,42 @@ import styles from "./Navbar.module.css";
 export default function Navbar() {
   return (
     <header className={styles.header}>
-      {/* Purple Navbar */}
+      {/* Main Navbar */}
       <nav className={styles.navbar}>
-        {/* Left Menu */}
-        <button
-          type="button"
-          className={styles.menuButton}
-          aria-label="Open menu"
-        >
-          <Menu size={25} />
+        {/* Left - Menu */}
+        <button className={styles.menuButton} aria-label="Menu">
+          <Menu size={30} />
         </button>
 
-        {/* Search + Icons */}
-        <div className={styles.rightSection}>
-          {/* Search Bar */}
-          <div className={styles.searchBox}>
-            <Search size={18} />
+        {/* Search */}
+        <div className={styles.searchBox}>
+          <Search size={20} />
+          <input type="text" placeholder="Find your favorite toy..." />
+        </div>
 
-            <input
-              type="text"
-              placeholder="Find your favorite toy..."
-              aria-label="Search products"
-            />
-          </div>
+        {/* Center Logo */}
+        <div className={styles.logoWrapper}>
+          <img src="/images/luuna.png" alt="LUUNA" className={styles.logo} />
+        </div>
 
-          {/* Wishlist */}
-          <button
-            type="button"
-            className={styles.iconButton}
-            aria-label="Wishlist"
-          >
-            <Heart size={21} />
+        {/* Right Actions */}
+        <div className={styles.actions}>
+          <button aria-label="Wishlist">
+            <Heart size={26} />
           </button>
 
-          {/* Cart */}
-          <button
-            type="button"
-            className={styles.iconButton}
-            aria-label="Shopping cart"
-          >
-            <ShoppingCart size={21} />
+          <button aria-label="Cart">
+            <ShoppingCart size={26} />
           </button>
 
-          {/* Account */}
-          <button
-            type="button"
-            className={styles.iconButton}
-            aria-label="Account"
-          >
-            <UserRound size={21} />
+          <button aria-label="Account">
+            <UserRound size={25} />
           </button>
         </div>
       </nav>
 
-      {/* White space below navbar */}
-      <div className={styles.logoSpace}>
-        {/* Actual LUUNA Logo */}
-        <div className={styles.logoWrapper}>
-          <img src="/images/luuna.png" alt="LUUNA" className={styles.logo} />
-        </div>
-      </div>
+      {/* Pattern / White Space below Navbar */}
+      <div className={styles.logoSpace}></div>
     </header>
   );
 }
