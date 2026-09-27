@@ -151,7 +151,7 @@ export default function ProductsPage() {
 
   // Pagination State
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 5;
+  const itemsPerPage = 25;
 
   // CRUD Delete Dialog
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
@@ -358,14 +358,17 @@ export default function ProductsPage() {
       key: "name",
       label: "Product details",
       render: (_, prod) => (
-        <div className="flex items-center gap-3">
+        <div
+          className="flex items-center gap-3 cursor-pointer group"
+          onClick={() => router.push(`/admin/products/edit/${prod.id}`)}
+        >
           <img
             src={prod.image}
             alt={prod.name}
-            className="w-10 h-10 object-cover rounded-lg border border-border-custom bg-bg-secondary shrink-0"
+            className="w-10 h-10 object-cover rounded-lg border border-border-custom bg-bg-secondary shrink-0 group-hover:border-primary transition-colors"
           />
           <div>
-            <p className="font-bold text-text-custom line-clamp-1">
+            <p className="font-bold text-text-custom line-clamp-1 group-hover:text-primary transition-colors">
               {prod.name}
             </p>
             <p className="text-3xs text-text-custom/50 font-bold uppercase tracking-wider font-mono">

@@ -67,9 +67,9 @@ export function DataTable<T extends { id: string | number }>({
   }
 
   return (
-    <div className="w-full overflow-x-auto bg-white rounded-xl border border-border-custom shadow-xs">
+    <div className="w-full max-h-[calc(100vh-380px)] overflow-auto bg-white rounded-xl border border-border-custom shadow-xs">
       <table className="w-full text-left border-collapse text-xs text-text-custom">
-        <thead>
+        <thead className="sticky top-0 z-10 bg-bg-secondary">
           <tr className="bg-bg-secondary border-b border-border-custom font-semibold text-text-custom/70">
             {columns.map((col) => (
               <th
