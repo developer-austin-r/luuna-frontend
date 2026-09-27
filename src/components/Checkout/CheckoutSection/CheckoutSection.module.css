@@ -1,0 +1,59 @@
+.section {
+  width: 100%;
+
+  padding: 36px 30px 34px;
+
+  background: #ffffff;
+
+  border-radius: 30px;
+
+  box-sizing: border-box;
+}
+
+.heading {
+  display: flex;
+  align-items: center;
+
+  gap: 12px;
+
+  margin-bottom: 30px;
+}
+
+.headingBar {
+  width: 7px;
+  height: 30px;
+
+  background: #160525;
+
+  border-radius: 5px;
+
+  flex-shrink: 0;
+}
+
+.heading h2 {
+  margin: 0;
+
+  font-size: 20px;
+  font-weight: 500;
+
+  color: #17131d;
+}
+
+.content {
+  width: 100%;
+}
+
+@media (max-width: 600px) {
+  .section {
+    padding: 24px 18px;
+    border-radius: 22px;
+  }
+
+  .heading {
+    margin-bottom: 24px;
+  }
+
+  .heading h2 {
+    font-size: 18px;
+  }
+}
