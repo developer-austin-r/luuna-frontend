@@ -2,11 +2,11 @@
 
 export function SocialButtons() {
   const handleGoogleLogin = (): void => {
-    window.location.href = "https://accounts.google.com";
+    window.location.href = `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001"}/auth/oauth/login?connection=google-oauth2`;
   };
 
   const handleAppleLogin = (): void => {
-    window.location.href = "https://appleid.apple.com";
+    window.location.href = `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001"}/auth/oauth/login?connection=apple`;
   };
 
   return (

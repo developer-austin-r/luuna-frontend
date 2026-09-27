@@ -16,7 +16,8 @@ export const Pagination: React.FC<PaginationProps> = ({
   onPageChange,
   className = "",
 }) => {
-  if (totalPages <= 1) return null;
+  // Always show pagination as requested
+  // if (totalPages <= 1) return null;
 
   return (
     <div
