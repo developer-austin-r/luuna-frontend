@@ -69,6 +69,11 @@ export async function authenticate(
         const errorData = await signupResponse.json().catch(() => ({}));
         return { error: errorData.message || "Registration failed." };
       }
+
+      return {
+        success:
+          "Registration successful. Please check your email to verify your account.",
+      };
     } catch (err: any) {
       return {
         error:
