@@ -113,10 +113,11 @@ jobs:
             sudo docker compose -f "$COMPOSE_FILE" --env-file "$ENV_FILE" pull --quiet
 
             echo "Stopping old container..."
-            sudo docker compose -f "$COMPOSE_FILE" --env-file "$ENV_FILE" down
+            sudo docker compose -f "$COMPOSE_FILE" --env-file "$ENV_FILE" down --remove-orphans || true
+            sudo docker rm -f luuna-frontend || true
 
             echo "Starting new container..."
-            sudo docker compose -f "$COMPOSE_FILE" --env-file "$ENV_FILE" up -d
+            sudo docker compose -f "$COMPOSE_FILE" --env-file "$ENV_FILE" up -d --force-recreate --remove-orphans
 
             echo "Removing unused images..."
             sudo docker image prune -f
