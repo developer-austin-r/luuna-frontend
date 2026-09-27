@@ -70,7 +70,10 @@ export async function authenticate(
         return { error: errorData.message || "Registration failed." };
       }
 
-      return { success: "Registration successful. Please check your email to verify your account." };
+      return {
+        success:
+          "Registration successful. Please check your email to verify your account.",
+      };
     } catch (err: any) {
       return {
         error:

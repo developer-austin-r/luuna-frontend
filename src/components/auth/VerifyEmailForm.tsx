@@ -53,7 +53,7 @@ export function VerifyEmailForm() {
           setStatus("error");
           setMessage(
             data.message ||
-            "Email verification failed. The token may be invalid or expired.",
+              "Email verification failed. The token may be invalid or expired.",
           );
           toast.error(data.message || "Verification failed.");
         }
