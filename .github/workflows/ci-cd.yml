@@ -99,9 +99,11 @@ jobs:
             sudo docker network inspect luuna-network >/dev/null 2>&1 \
               || sudo docker network create luuna-network
 
-            echo "Recreating frontend container..."
-            sudo docker rm -f luuna-frontend 2>/dev/null || true
-            $DC up -d --force-recreate --remove-orphans
+            echo "Stopping old container..."
+            $DC down --remove-orphans
+
+            echo "Starting frontend container..."
+            $DC up -d
 
             sudo docker image prune -f
 
