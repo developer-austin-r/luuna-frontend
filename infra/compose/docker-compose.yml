@@ -3,7 +3,7 @@ services:
     image: ghcr.io/developer-austin-r/luuna-frontend:latest
     container_name: luuna-frontend
     env_file:
-      - ../../.env
+      - .env
     ports:
       - "${FRONTEND_PORT:-3000}:3000"
     restart: unless-stopped
