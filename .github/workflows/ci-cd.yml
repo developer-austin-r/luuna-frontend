@@ -109,8 +109,16 @@ jobs:
               -u "${{ github.actor }}" \
               --password-stdin
 
+            # Pull the new image FIRST before tearing down the running container.
+            # If the pull fails the old container keeps serving traffic.
             echo "Pulling latest image..."
             sudo docker compose -f "$COMPOSE_FILE" --env-file "$ENV_FILE" pull --quiet
+
+            # Ensure the external overlay network exists.
+            # docker network create is a no-op if the network already exists.
+            echo "Ensuring luuna-network exists..."
+            sudo docker network inspect luuna-network >/dev/null 2>&1 \
+              || sudo docker network create luuna-network
 
             echo "Stopping old container..."
             sudo docker compose -f "$COMPOSE_FILE" --env-file "$ENV_FILE" down --remove-orphans || true
