@@ -56,7 +56,7 @@ export function LoginForm() {
         {isForgotPassword
           ? "Reset Password"
           : activeTab === "login"
-            ? "Hello! Welcome Back Test"
+            ? "Hello! Welcome Back"
             : "Create Account"}
       </h1>
 
