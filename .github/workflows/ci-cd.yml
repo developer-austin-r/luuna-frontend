@@ -3,7 +3,7 @@ name: Frontend CI/CD Pipeline
 on:
   push:
     branches:
-      - dev
+      - main
 
 jobs:
   build:
