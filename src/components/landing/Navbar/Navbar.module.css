@@ -1,3 +1,7 @@
+/* =========================
+   HEADER
+========================= */
+
 .header {
   width: 100%;
   position: relative;
@@ -9,17 +13,15 @@
 ========================= */
 
 .navbar {
-  position: relative;
-
+  height: 105px;
   width: 100%;
-  height: 72px;
-
-  background: #17002b;
+  background: #140025;
 
   display: flex;
   align-items: center;
 
-  box-sizing: border-box;
+  padding: 0 5%;
+  position: relative;
 }
 
 /* =========================
@@ -27,15 +29,8 @@
 ========================= */
 
 .menuButton {
-  position: absolute;
-  left: 6%;
-
-  width: 42px;
-  height: 42px;
-
   border: none;
   background: transparent;
-
   color: white;
 
   display: flex;
@@ -43,259 +38,263 @@
   justify-content: center;
 
   cursor: pointer;
-
-  padding: 0;
+  padding: 5px;
 }
 
 /* =========================
-   RIGHT SECTION
-========================= */
-
-.rightSection {
-  position: absolute;
-  right: 6%;
-
-  display: flex;
-  align-items: center;
-
-  gap: 12px;
-}
-
-/* =========================
-   SEARCH BAR
+   SEARCH
 ========================= */
 
 .searchBox {
-  width: 260px;
-  height: 38px;
+  width: 390px;
+  height: 50px;
 
-  background: #ffffff;
-
-  border-radius: 5px;
+  background: white;
+  border-radius: 6px;
 
   display: flex;
   align-items: center;
+  gap: 10px;
 
-  gap: 8px;
+  padding: 0 15px;
 
-  padding: 0 12px;
-
-  box-sizing: border-box;
+  margin-left: 55px;
 }
 
 .searchBox svg {
-  color: #555;
-
+  color: #777;
   flex-shrink: 0;
 }
 
 .searchBox input {
   width: 100%;
-  height: 100%;
-
   border: none;
   outline: none;
 
-  background: transparent;
-
-  font-size: 12px;
-
+  font-size: 15px;
   color: #333;
+
+  background: transparent;
 }
 
 .searchBox input::placeholder {
-  color: #777;
+  color: #999;
 }
 
 /* =========================
-   ICONS
-========================= */
-
-.iconButton {
-  width: 32px;
-  height: 38px;
-
-  border: none;
-  background: transparent;
-
-  color: white;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  padding: 0;
-
-  cursor: pointer;
-}
-
-.iconButton:hover {
-  opacity: 0.75;
-}
-
-/* =========================
-   WHITE SPACE
-========================= */
-
-.logoSpace {
-  position: relative;
-
-  width: 100%;
-  height: 86px;
-
-  background: #ffffff;
-}
-
-/* =========================
-   LUUNA LOGO
+   LOGO
 ========================= */
 
 .logoWrapper {
   position: absolute;
 
   left: 50%;
-  top: 0;
+  bottom: -30px;
 
-  transform: translate(-50%, -50%);
+  transform: translateX(-50%);
 
   z-index: 20;
 
   display: flex;
-  align-items: center;
   justify-content: center;
+  align-items: center;
 }
 
 .logo {
-  width: 165px;
+  width: 230px;
   height: auto;
-
   display: block;
-
-  object-fit: contain;
 }
 
 /* =========================
-   TABLET
+   RIGHT ACTIONS
 ========================= */
 
+.actions {
+  margin-left: auto;
+
+  display: flex;
+  align-items: center;
+
+  gap: 22px;
+}
+
+.actions button {
+  border: none;
+  background: transparent;
+
+  color: white;
+
+  padding: 4px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  cursor: pointer;
+}
+
+.actions button:hover {
+  opacity: 0.75;
+}
+
+/* =========================
+   SPACE BELOW NAVBAR
+========================= */
+
+.logoSpace {
+  height: 80px;
+  width: 100%;
+  background-image: url("/images/your-pattern.png");
+  background-size: cover;
+  background-position: center;
+}
+
+/* =========================================
+   TABLET
+========================================= */
+
 @media (max-width: 900px) {
+
   .navbar {
-    height: 68px;
-  }
-
-  .rightSection {
-    right: 4%;
-    gap: 8px;
-  }
-
-  .menuButton {
-    left: 4%;
+    height: 95px;
+    padding: 0 25px;
   }
 
   .searchBox {
-    width: 220px;
+    width: 300px;
+    margin-left: 30px;
+  }
+
+  .logo {
+    width: 200px;
+  }
+
+  .actions {
+    gap: 15px;
+  }
+}
+
+
+/* =========================================
+   MOBILE
+========================================= */
+
+@media (max-width: 600px) {
+
+  .navbar {
+    min-height: 125px;
+    height: auto;
+
+    padding: 12px 15px 15px;
+
+    display: flex;
+    flex-wrap: wrap;
+
+    align-items: center;
+  }
+
+  /* Menu */
+
+  .menuButton {
+    width: 40px;
+    height: 40px;
+  }
+
+  .menuButton svg {
+    width: 27px;
+    height: 27px;
+  }
+
+  /* Logo */
+
+  .logoWrapper {
+    top: 8px;
+    bottom: auto;
+
+    left: 50%;
+
+    transform: translateX(-50%);
   }
 
   .logo {
     width: 145px;
   }
 
-  .logoSpace {
-    height: 78px;
-  }
-}
+  /* Right icons */
 
-
-/* =========================
-   MOBILE RESPONSIVE
-========================= */
-
-@media (max-width: 768px) {
-
-  .navbar {
-    height: auto;
-    min-height: 70px;
-    padding: 10px 16px;
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    position: relative;
-  }
-
-  /* Menu */
-  .menuButton {
-    width: 40px;
-    height: 40px;
-    flex-shrink: 0;
-  }
-
-  /* Logo */
-  .logo {
-    width: 120px;
-    height: auto;
-  }
-
-  .logoWrapper {
-    position: absolute;
-    left: 50%;
-    top: 8px;
-    transform: translateX(-50%);
-  }
-
-  /* Right side icons */
   .actions {
     margin-left: auto;
-    display: flex;
-    align-items: center;
-    gap: 12px;
+
+    gap: 8px;
+
+    z-index: 5;
   }
 
-  /* Search row */
-  .searchContainer {
-    width: 100%;
-    flex: 0 0 100%;
-    order: 10;
-    margin-top: 12px;
+  .actions button {
+    padding: 3px;
   }
+
+  .actions svg {
+    width: 21px;
+    height: 21px;
+  }
+
+  /* Search - FULL WIDTH */
 
   .searchBox {
+    order: 10;
+
     width: 100%;
-    max-width: none;
     height: 44px;
+
+    margin: 12px 0 0;
+
+    padding: 0 13px;
+
+    flex: 0 0 100%;
+
     box-sizing: border-box;
   }
 
   .searchBox input {
-    width: 100%;
-    box-sizing: border-box;
     font-size: 14px;
   }
 
+  /* White space */
+
+  .logoSpace {
+    height: 65px;
+  }
 }
 
 
-/* Small mobile screens */
-@media (max-width: 480px) {
+/* =========================================
+   SMALL MOBILE
+========================================= */
+
+@media (max-width: 380px) {
 
   .navbar {
-    padding: 10px 12px;
+    min-height: 120px;
+    padding-left: 10px;
+    padding-right: 10px;
   }
 
   .logo {
-    width: 105px;
-  }
-
-  .searchContainer {
-    width: 100%;
-    margin-top: 14px;
-  }
-
-  .searchBox {
-    width: 100%;
-    height: 42px;
+    width: 125px;
   }
 
   .actions {
-    gap: 8px;
+    gap: 5px;
+  }
+
+  .actions svg {
+    width: 19px;
+    height: 19px;
+  }
+
+  .searchBox {
+    height: 42px;
   }
 }

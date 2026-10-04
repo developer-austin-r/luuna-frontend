@@ -1,0 +1,406 @@
+.summary {
+  width: 100%;
+  background: #ffffff;
+
+  padding: 32px 36px;
+
+  border-radius: 30px;
+
+  box-sizing: border-box;
+}
+
+.summary h2 {
+  margin: 0;
+
+  font-size: 20px;
+  font-weight: 700;
+
+  color: #171020;
+}
+
+.titleLine {
+  width: 160px;
+  height: 1px;
+
+  margin: 16px 0 18px;
+
+  background: #c8cce0;
+}
+
+
+/* PRODUCT LIST */
+
+.productList {
+  max-height: 220px;
+
+  overflow-y: auto;
+
+  padding-right: 8px;
+  margin-bottom: 20px;
+}
+
+.productList::-webkit-scrollbar {
+  width: 5px;
+}
+
+.productList::-webkit-scrollbar-thumb {
+  background: #c9c9c9;
+  border-radius: 10px;
+}
+
+.product {
+  display: grid;
+
+  grid-template-columns: 66px 1fr auto;
+
+  gap: 12px;
+
+  align-items: center;
+
+  margin-bottom: 10px;
+}
+
+.imagePlaceholder {
+  width: 66px;
+  height: 66px;
+
+  background: #d8d8d8;
+
+  border-radius: 14px;
+}
+
+.productInfo h3 {
+  margin: 0 0 3px;
+
+  font-size: 15px;
+  font-weight: 500;
+
+  color: #17121f;
+}
+
+.productInfo p {
+  margin: 0;
+
+  font-size: 11px;
+
+  color: #666978;
+}
+
+.product > strong {
+  font-size: 14px;
+
+  color: #17121f;
+}
+
+
+/* PROMO */
+
+.promoSection {
+  margin-top: 20px;
+}
+
+.promoSection h3 {
+  margin: 0 0 10px;
+
+  font-size: 14px;
+  font-weight: 700;
+
+  color: #171020;
+}
+
+.promoRow {
+  display: flex;
+  align-items: center;
+
+  gap: 48px;
+}
+
+.promoRow input {
+  flex: 1;
+
+  min-width: 0;
+
+  height: 46px;
+
+  padding: 0 16px;
+
+  border: 1px solid #c8cce0;
+  border-radius: 25px;
+
+  outline: none;
+
+  background: #fafaff;
+
+  box-sizing: border-box;
+}
+
+.promoRow button {
+  width: 92px;
+  height: 46px;
+
+  border: none;
+  border-radius: 25px;
+
+  background: #160525;
+  color: #ffffff;
+
+  font-size: 14px;
+  font-weight: 600;
+
+  cursor: pointer;
+}
+
+
+/* PRICE SECTION */
+
+.priceSection {
+  margin-top: 24px;
+
+  display: flex;
+  flex-direction: column;
+
+  gap: 17px;
+}
+
+.priceRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 14px;
+
+  font-size: 14px;
+
+  color: #17121f;
+}
+
+.priceRow > span {
+  display: flex;
+  align-items: center;
+
+  gap: 4px;
+}
+
+.priceRow > div {
+  display: flex;
+  align-items: center;
+
+  gap: 8px;
+}
+
+.priceRow small {
+  padding: 2px 4px;
+
+  border-radius: 3px;
+
+  background: #160525;
+  color: white;
+
+  font-size: 7px;
+}
+
+.priceRow del {
+  font-size: 12px;
+
+  color: #777785;
+}
+
+.free {
+  color: #9a72cb;
+}
+
+.divider {
+  width: 100%;
+  height: 1px;
+
+  background: #dedee4;
+}
+
+.grandTotal {
+  font-size: 17px;
+  font-weight: 700;
+}
+
+.grandTotal strong {
+  color: #9a72cb;
+}
+
+.savingsLink {
+  width: fit-content;
+
+  color: #9a72cb;
+
+  font-size: 12px;
+
+  text-decoration: underline;
+}
+
+.savingsRow {
+  display: flex;
+  justify-content: space-between;
+
+  gap: 10px;
+
+  font-size: 12px;
+
+  color: #17121f;
+}
+
+.savingsRow strong {
+  color: #9a72cb;
+}
+
+
+/* PLACE ORDER */
+
+.placeOrder {
+  width: 100%;
+  height: 52px;
+
+  margin-top: 28px;
+
+  border: none;
+  border-radius: 28px;
+
+  background: #160525;
+  color: #ffffff;
+
+  font-size: 15px;
+  font-weight: 500;
+
+  cursor: pointer;
+}
+
+.secureText {
+  margin: 14px 0 0;
+
+  text-align: center;
+
+  font-size: 10px;
+
+  color: #666978;
+}
+
+.paymentLogos {
+  margin-top: 14px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 12px;
+
+  font-size: 13px;
+  font-weight: 700;
+
+  color: #304b8d;
+}
+
+
+/* MOBILE */
+
+@media (max-width: 600px) {
+  .summary {
+    padding: 24px 18px;
+
+    border-radius: 22px;
+  }
+
+  .promoRow {
+    gap: 10px;
+  }
+
+  .product {
+    grid-template-columns: 58px 1fr auto;
+  }
+
+  .imagePlaceholder {
+    width: 58px;
+    height: 58px;
+  }
+
+  .priceRow {
+    font-size: 12px;
+  }
+
+  .paymentLogos {
+    flex-wrap: wrap;
+  }
+}
+
+.paymentLogos {
+  margin-top: 14px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 12px;
+
+  flex-wrap: wrap;
+}
+
+.paytmLogo {
+  color: #00baf2;
+
+  font-size: 16px;
+  font-weight: 800;
+}
+
+.phonepeLogo {
+  color: #5f259f;
+
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.gpayLogo {
+  color: #4285f4;
+
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.visaLogo {
+  color: #1a1f71;
+
+  font-size: 17px;
+  font-weight: 900;
+  font-style: italic;
+}
+
+
+/* Mastercard circles */
+
+.mastercardLogo {
+  position: relative;
+
+  width: 34px;
+  height: 20px;
+
+  display: inline-block;
+}
+
+.mastercardLogo i,
+.mastercardLogo b {
+  position: absolute;
+
+  top: 2px;
+
+  width: 17px;
+  height: 17px;
+
+  border-radius: 50%;
+}
+
+.mastercardLogo i {
+  left: 2px;
+
+  background: #eb001b;
+}
+
+.mastercardLogo b {
+  right: 2px;
+
+  background: #f79e1b;
+}
