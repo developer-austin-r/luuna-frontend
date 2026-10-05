@@ -1,9 +1,9 @@
 "use client";
 
 import { useActionState, useState } from "react";
-import toast, { Toaster } from "react-hot-toast";
 import { useSearchParams } from "next/navigation";
 import { Eye, EyeOff, Lock } from "lucide-react";
+import { useToast } from "@/providers/toast-provider";
 
 import { type FormState, resetPasswordAction } from "@/app/actions/auth";
 
@@ -14,15 +14,16 @@ export function ResetPasswordForm() {
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [showConfirmPassword, setShowConfirmPassword] =
     useState<boolean>(false);
+  const { success: toastSuccess, error: toastError } = useToast();
 
   const [state, formAction, isPending] = useActionState<FormState, FormData>(
     async (prevState, payload) => {
       const result = await resetPasswordAction(prevState, payload);
 
       if (result?.error) {
-        toast.error(result.error);
+        toastError(result.error);
       } else if (result?.success) {
-        toast.success(result.success);
+        toastSuccess(result.success);
       }
       return result;
     },
@@ -31,8 +32,6 @@ export function ResetPasswordForm() {
 
   return (
     <div className="glass-card">
-      <Toaster position="top-right" reverseOrder={false} />
-
       <h1 className="login-title">Set New Password</h1>
       <p className="subtitle">Please enter your new password below.</p>
 

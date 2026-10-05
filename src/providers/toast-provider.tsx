@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useCallback, useContext, useState } from "react";
+import React, { createContext, useCallback, useContext, useState, useEffect } from "react";
 import { AlertCircle, CheckCircle, Info, X } from "lucide-react";
 
 export type ToastType = "success" | "error" | "info" | "warning";
@@ -21,6 +21,62 @@ interface ToastContextType {
 }
 
 const ToastContext = createContext<ToastContextType | undefined>(undefined);
+
+function ToastItem({ t, removeToast }: { t: Toast; removeToast: (id: string) => void }) {
+  const [isShowing, setIsShowing] = useState(false);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setIsShowing(true), 10);
+    return () => clearTimeout(timer);
+  }, []);
+
+  useEffect(() => {
+    if (!t.duration) return;
+    const hideTimer = setTimeout(() => {
+      setIsShowing(false);
+    }, t.duration - 300);
+
+    return () => clearTimeout(hideTimer);
+  }, [t.duration]);
+
+  const handleClose = () => {
+    setIsShowing(false);
+    setTimeout(() => {
+      removeToast(t.id);
+    }, 300);
+  };
+
+  let bgColor = "bg-white/95 border-gray-200 text-gray-800";
+  let icon = <Info className="w-5 h-5 text-blue-500" />;
+
+  if (t.type === "success") {
+    bgColor = "bg-emerald-50/95 border-emerald-200 text-emerald-800";
+    icon = <CheckCircle className="w-5 h-5 text-emerald-500" />;
+  } else if (t.type === "error") {
+    bgColor = "bg-rose-50/95 border-rose-200 text-rose-800";
+    icon = <AlertCircle className="w-5 h-5 text-rose-500" />;
+  } else if (t.type === "warning") {
+    bgColor = "bg-amber-50/95 border-amber-200 text-amber-800";
+    icon = <AlertCircle className="w-5 h-5 text-amber-500" />;
+  }
+
+  return (
+    <div
+      className={`flex items-start gap-3 p-4 rounded-xl border shadow-lg backdrop-blur-md pointer-events-auto transition-all duration-300 ease-out transform ${
+        isShowing ? "opacity-100 translate-y-0 scale-100" : "opacity-0 -translate-y-4 scale-95"
+      } ${bgColor}`}
+    >
+      <div className="shrink-0 mt-0.5">{icon}</div>
+      <div className="flex-1 text-sm font-semibold">{t.message}</div>
+      <button
+        onClick={handleClose}
+        className="shrink-0 text-gray-400 hover:text-gray-600 transition-colors cursor-pointer"
+      >
+        <X className="w-4 h-4" />
+      </button>
+    </div>
+  );
+}
 
 export function ToastProvider({ children }: { children: React.ReactNode }) {
   const [toasts, setToasts] = useState<Toast[]>([]);
@@ -61,41 +117,10 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
     <ToastContext.Provider value={{ toast, success, error, info, warning }}>
       {children}
       {/* Toast Container */}
-      <div className="fixed bottom-5 right-5 z-[9999] flex flex-col gap-3 max-w-md w-full pointer-events-none">
-        {toasts.map((t) => {
-          let bgColor = "bg-white/95 border-gray-200 text-gray-800";
-          let icon = <Info className="w-5 h-5 text-blue-500" />;
-
-          if (t.type === "success") {
-            bgColor = "bg-emerald-50/95 border-emerald-200 text-emerald-800";
-            icon = <CheckCircle className="w-5 h-5 text-emerald-500" />;
-          } else if (t.type === "error") {
-            bgColor = "bg-rose-50/95 border-rose-200 text-rose-800";
-            icon = <AlertCircle className="w-5 h-5 text-rose-500" />;
-          } else if (t.type === "warning") {
-            bgColor = "bg-amber-50/95 border-amber-200 text-amber-800";
-            icon = <AlertCircle className="w-5 h-5 text-amber-500" />;
-          } else {
-            bgColor = "bg-blue-50/95 border-blue-200 text-blue-800";
-            icon = <Info className="w-5 h-5 text-blue-500" />;
-          }
-
-          return (
-            <div
-              key={t.id}
-              className={`flex items-start gap-3 p-4 rounded-xl border shadow-lg backdrop-blur-md transition-all duration-300 transform translate-y-0 animate-slide-in pointer-events-auto ${bgColor}`}
-            >
-              <div className="shrink-0 mt-0.5">{icon}</div>
-              <div className="flex-1 text-sm font-semibold">{t.message}</div>
-              <button
-                onClick={() => removeToast(t.id)}
-                className="shrink-0 text-gray-400 hover:text-gray-600 transition-colors cursor-pointer"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-          );
-        })}
+      <div className="fixed top-5 right-5 z-[9999] flex flex-col gap-3 max-w-md w-full pointer-events-none">
+        {toasts.map((t) => (
+          <ToastItem key={t.id} t={t} removeToast={removeToast} />
+        ))}
       </div>
     </ToastContext.Provider>
   );

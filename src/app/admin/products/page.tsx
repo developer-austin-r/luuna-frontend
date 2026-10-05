@@ -35,6 +35,7 @@ import {
 } from "@/redux/slices/admin-slice";
 import { apiClient } from "@/services/api-client";
 import { type Category, type Product } from "@/types/admin";
+import { useToast } from "@/providers/toast-provider";
 
 export default function ProductsPage() {
   const router = useRouter();
@@ -51,19 +52,7 @@ export default function ProductsPage() {
   >([]);
   const [loading, setLoading] = useState(true);
   const [exporting, setExporting] = useState(false);
-
-  // Toast Notification state
-  const [notification, setNotification] = useState<{
-    message: string;
-    type: "success" | "error";
-  } | null>(null);
-
-  const showNotification = (message: string, type: "success" | "error") => {
-    setNotification({ message, type });
-    setTimeout(() => {
-      setNotification(null);
-    }, 4500);
-  };
+  const { success: toastSuccess, error: toastError } = useToast();
 
   const fetchCategories = async () => {
     try {
@@ -159,7 +148,7 @@ export default function ProductsPage() {
 
   const handleArchive = async (prod: Product) => {
     try {
-      await apiClient(`/products/${prod.id}/archive`, {
+      const res = await apiClient<any>(`/products/${prod.id}/archive`, {
         method: "PATCH",
       });
       await fetchProducts();
@@ -171,16 +160,16 @@ export default function ProductsPage() {
           status: "success",
         }),
       );
-      showNotification(`Product "${prod.name}" has been archived.`, "success");
-    } catch (err) {
+      toastSuccess(res.message || `Product "${prod.name}" has been archived.`);
+    } catch (err: any) {
       console.error(err);
-      showNotification("Failed to archive product.", "error");
+      toastError(err.message || "Failed to archive product.");
     }
   };
 
   const handleRestore = async (prod: Product) => {
     try {
-      await apiClient(`/products/${prod.id}/restore`, {
+      const res = await apiClient<any>(`/products/${prod.id}/restore`, {
         method: "PATCH",
       });
       await fetchProducts();
@@ -192,10 +181,10 @@ export default function ProductsPage() {
           status: "success",
         }),
       );
-      showNotification(`Product "${prod.name}" has been restored.`, "success");
-    } catch (err) {
+      toastSuccess(res.message || `Product "${prod.name}" has been restored.`);
+    } catch (err: any) {
       console.error(err);
-      showNotification("Failed to restore product.", "error");
+      toastError(err.message || "Failed to restore product.");
     }
   };
 
@@ -207,7 +196,7 @@ export default function ProductsPage() {
   const confirmDelete = async () => {
     if (selectedProduct) {
       try {
-        await apiClient(`/products/${selectedProduct.id}`, {
+        const res = await apiClient<any>(`/products/${selectedProduct.id}`, {
           method: "DELETE",
         });
         await fetchProducts();
@@ -219,13 +208,12 @@ export default function ProductsPage() {
             status: "success",
           }),
         );
-        showNotification(
-          `Product "${selectedProduct.name}" deleted successfully.`,
-          "success",
+        toastSuccess(
+          res.message || `Product "${selectedProduct.name}" deleted successfully.`
         );
-      } catch (err) {
+      } catch (err: any) {
         console.error(err);
-        showNotification("Failed to delete product.", "error");
+        toastError(err.message || "Failed to delete product.");
       }
     }
     setDeleteDialogOpen(false);
@@ -234,7 +222,7 @@ export default function ProductsPage() {
   const handleExportBarcodes = async () => {
     try {
       setExporting(true);
-      showNotification("Generating barcode PDF. Please wait...", "success");
+      toastSuccess("Generating barcode PDF. Please wait...");
 
       const { jsPDF } = await import("jspdf");
       const { appConfig } = await import("@/config");
@@ -242,7 +230,7 @@ export default function ProductsPage() {
       const productsWithBarcodes = filteredProducts.filter((p) => p.barcode);
 
       if (productsWithBarcodes.length === 0) {
-        showNotification("No products found with barcodes to export.", "error");
+        toastError("No products found with barcodes to export.");
         setExporting(false);
         return;
       }
@@ -327,10 +315,10 @@ export default function ProductsPage() {
       }
 
       doc.save(`barcodes-${new Date().toISOString().slice(0, 10)}.pdf`);
-      showNotification("Barcode PDF exported successfully!", "success");
-    } catch (err) {
+      toastSuccess("Barcode PDF exported successfully!");
+    } catch (err: any) {
       console.error("Export barcodes error:", err);
-      showNotification("Failed to generate PDF. Check console.", "error");
+      toastError(err.message || "Failed to generate PDF. Check console.");
     } finally {
       setExporting(false);
     }
@@ -368,9 +356,14 @@ export default function ProductsPage() {
             className="w-10 h-10 object-cover rounded-lg border border-border-custom bg-bg-secondary shrink-0 group-hover:border-primary transition-colors"
           />
           <div>
-            <p className="font-bold text-text-custom line-clamp-1 group-hover:text-primary transition-colors">
+<p
+  className="font-bold text-text-custom line-clamp-1 cursor-pointer hover:underline group-hover:text-primary transition-colors"
+  onClick={() => router.push(`/admin/products/edit/${prod.id}`)}
+>
+  {prod.name}
+</p>
               {prod.name}
-            </p>
+            
             <p className="text-3xs text-text-custom/50 font-bold uppercase tracking-wider font-mono">
               SKU: {prod.sku}
             </p>
@@ -582,7 +575,6 @@ export default function ProductsPage() {
         </div>
       </Card>
 
-      {/* Delete Dialog */}
       <DeleteDialog
         isOpen={deleteDialogOpen}
         onClose={() => setDeleteDialogOpen(false)}
@@ -590,24 +582,6 @@ export default function ProductsPage() {
         itemName={selectedProduct?.name}
         title="Delete Product Listing"
       />
-
-      {/* Toast Notification */}
-      {notification && (
-        <div
-          className={`fixed top-4 right-4 z-50 flex items-center gap-2.5 px-4 py-3 rounded-xl shadow-xl border animate-in fade-in slide-in-from-top-4 duration-300 ${
-            notification.type === "success"
-              ? "bg-emerald-50 border-emerald-200 text-emerald-800"
-              : "bg-red-50 border-red-200 text-red-800"
-          }`}
-        >
-          {notification.type === "success" ? (
-            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-          ) : (
-            <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
-          )}
-          <span className="text-xs font-semibold">{notification.message}</span>
-        </div>
-      )}
     </div>
   );
 }

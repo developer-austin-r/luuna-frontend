@@ -1,9 +1,9 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import toast, { Toaster } from "react-hot-toast";
 import { useSearchParams } from "next/navigation";
 import { ArrowRight, CheckCircle2, Loader2, XCircle } from "lucide-react";
+import { useToast } from "@/providers/toast-provider";
 
 export function VerifyEmailForm() {
   const searchParams = useSearchParams();
@@ -12,6 +12,7 @@ export function VerifyEmailForm() {
   const [status, setStatus] = useState<"loading" | "success" | "error">(
     "loading",
   );
+  const { success: toastSuccess, error: toastError } = useToast();
   const [message, setMessage] = useState<string>(
     "Verifying your email address...",
   );
@@ -24,7 +25,7 @@ export function VerifyEmailForm() {
       return;
     }
 
-    // Prevent double verification attempts in React strict mode
+    // Prevent double verification attempts
     if (verificationAttempted.current) return;
     verificationAttempted.current = true;
 
@@ -48,21 +49,21 @@ export function VerifyEmailForm() {
           setMessage(
             data.message || "Your email has been verified successfully!",
           );
-          toast.success("Email verified successfully!");
+          toastSuccess(data.message || "Email verified successfully!");
         } else {
           setStatus("error");
           setMessage(
             data.message ||
               "Email verification failed. The token may be invalid or expired.",
           );
-          toast.error(data.message || "Verification failed.");
+          toastError(data.message || "Verification failed.");
         }
       } catch (err: any) {
         setStatus("error");
         setMessage(
           err.message || "An unexpected error occurred during verification.",
         );
-        toast.error("Network or server error.");
+        toastError(err.message || "Network or server error.");
       }
     };
 
@@ -82,7 +83,6 @@ export function VerifyEmailForm() {
         padding: "2.5rem",
       }}
     >
-      <Toaster position="top-right" reverseOrder={false} />
 
       {status === "loading" && (
         <div

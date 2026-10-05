@@ -237,11 +237,14 @@ export default function UsersPage() {
       });
 
       if (!response.ok) {
-        const errorText = await response.text();
-
-        console.error("Create user response:", errorText);
-
-        throw new Error("Failed to create user");
+        let errorMsg = "Failed to create user";
+        try {
+          const errData = await response.json();
+          errorMsg = errData.message || errorMsg;
+        } catch {
+          // ignore
+        }
+        throw new Error(errorMsg);
       }
 
       const result = await response.json();
@@ -257,7 +260,7 @@ export default function UsersPage() {
       // Reset password visibility
       setShowPassword(false);
 
-      toastSuccess(`User "${data.name}" created successfully.`);
+      toastSuccess(result.message || `User "${data.name}" created successfully.`);
     } catch (error) {
       const message =
         error instanceof Error ? error.message : "Failed to create user";
@@ -301,11 +304,14 @@ export default function UsersPage() {
       });
 
       if (!response.ok) {
-        const errorText = await response.text();
-
-        console.error("Update user response:", errorText);
-
-        throw new Error("Failed to update user");
+        let errorMsg = "Failed to update user";
+        try {
+          const errData = await response.json();
+          errorMsg = errData.message || errorMsg;
+        } catch {
+          // ignore
+        }
+        throw new Error(errorMsg);
       }
 
       const result = await response.json();
@@ -324,7 +330,7 @@ export default function UsersPage() {
 
       resetEdit();
 
-      toastSuccess(`User "${data.name}" updated successfully.`);
+      toastSuccess(result.message || `User "${data.name}" updated successfully.`);
     } catch (error) {
       const message =
         error instanceof Error ? error.message : "Failed to update user";
@@ -355,12 +361,22 @@ export default function UsersPage() {
         method: "DELETE",
       });
 
+      let resultData: any = {};
       if (!response.ok) {
-        const errorText = await response.text();
-
-        console.error("Delete user response:", errorText);
-
-        throw new Error("Failed to delete user");
+        let errorMsg = "Failed to delete user";
+        try {
+          const errData = await response.json();
+          errorMsg = errData.message || errorMsg;
+        } catch {
+          // ignore
+        }
+        throw new Error(errorMsg);
+      } else {
+        try {
+          resultData = await response.json();
+        } catch {
+          // ignore
+        }
       }
 
       const deletedUserName = selectedCustomer.name ?? selectedCustomer.email;
@@ -373,7 +389,7 @@ export default function UsersPage() {
 
       setSelectedCustomer(null);
 
-      toastSuccess(`User "${deletedUserName}" deleted successfully.`);
+      toastSuccess(resultData.message || `User "${deletedUserName}" deleted successfully.`);
     } catch (error) {
       const message =
         error instanceof Error ? error.message : "Failed to delete user";

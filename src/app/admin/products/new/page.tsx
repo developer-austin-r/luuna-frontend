@@ -456,7 +456,7 @@ export default function AddProductPage() {
         body: JSON.stringify(payload),
       });
 
-      const msg = `Product listing "${result?.data?.name || data.name}" launched successfully!`;
+      const msg = result.message || `Product listing "${result?.data?.name || data.name}" launched successfully!`;
       setSuccessMsg(msg);
       toastSuccess(msg);
 

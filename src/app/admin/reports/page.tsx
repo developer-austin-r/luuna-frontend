@@ -106,11 +106,11 @@ export default function ReportsPage() {
 
       if (reportData.length === 0) {
         toastSuccess(
-          "No orders found. Empty report sheet generated with column headers.",
+          (res as any).message || "No orders found. Empty report sheet generated with column headers.",
         );
       } else {
         toastSuccess(
-          `Report generated and downloaded successfully with ${reportData.length} records.`,
+          (res as any).message || `Report generated and downloaded successfully with ${reportData.length} records.`,
         );
       }
     } catch (err: any) {
