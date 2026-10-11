@@ -260,7 +260,9 @@ export default function UsersPage() {
       // Reset password visibility
       setShowPassword(false);
 
-      toastSuccess(result.message || `User "${data.name}" created successfully.`);
+      toastSuccess(
+        result.message || `User "${data.name}" created successfully.`,
+      );
     } catch (error) {
       const message =
         error instanceof Error ? error.message : "Failed to create user";
@@ -330,7 +332,9 @@ export default function UsersPage() {
 
       resetEdit();
 
-      toastSuccess(result.message || `User "${data.name}" updated successfully.`);
+      toastSuccess(
+        result.message || `User "${data.name}" updated successfully.`,
+      );
     } catch (error) {
       const message =
         error instanceof Error ? error.message : "Failed to update user";
@@ -389,7 +393,9 @@ export default function UsersPage() {
 
       setSelectedCustomer(null);
 
-      toastSuccess(resultData.message || `User "${deletedUserName}" deleted successfully.`);
+      toastSuccess(
+        resultData.message || `User "${deletedUserName}" deleted successfully.`,
+      );
     } catch (error) {
       const message =
         error instanceof Error ? error.message : "Failed to delete user";

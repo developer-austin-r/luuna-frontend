@@ -144,7 +144,10 @@ export default function CouponsPage() {
             status: "success",
           }),
         );
-        toastSuccess((res as any).message || `Coupon "${payload.code}" created successfully.`);
+        toastSuccess(
+          (res as any).message ||
+            `Coupon "${payload.code}" created successfully.`,
+        );
       } else if (selectedCoupon) {
         const res = await apiClient<{ data: Coupon }>(
           `/coupons/${selectedCoupon.id}`,
@@ -162,7 +165,10 @@ export default function CouponsPage() {
             status: "success",
           }),
         );
-        toastSuccess((res as any).message || `Coupon "${payload.code}" updated successfully.`);
+        toastSuccess(
+          (res as any).message ||
+            `Coupon "${payload.code}" updated successfully.`,
+        );
       }
       setModalOpen(false);
     } catch (err: any) {
@@ -186,7 +192,10 @@ export default function CouponsPage() {
             status: "success",
           }),
         );
-        toastSuccess((res as any).message || `Coupon "${selectedCoupon.code}" deleted successfully.`);
+        toastSuccess(
+          (res as any).message ||
+            `Coupon "${selectedCoupon.code}" deleted successfully.`,
+        );
       } catch (err: any) {
         console.warn(err);
         toastError(err.message || "Failed to delete the coupon.");

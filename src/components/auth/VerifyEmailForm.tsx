@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { ArrowRight, CheckCircle2, Loader2, XCircle } from "lucide-react";
+
 import { useToast } from "@/providers/toast-provider";
 
 export function VerifyEmailForm() {
@@ -83,7 +84,6 @@ export function VerifyEmailForm() {
         padding: "2.5rem",
       }}
     >
-
       {status === "loading" && (
         <div
           style={{

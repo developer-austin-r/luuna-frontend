@@ -3,9 +3,9 @@
 import { useActionState, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { Eye, EyeOff, Lock } from "lucide-react";
-import { useToast } from "@/providers/toast-provider";
 
 import { type FormState, resetPasswordAction } from "@/app/actions/auth";
+import { useToast } from "@/providers/toast-provider";
 
 export function ResetPasswordForm() {
   const searchParams = useSearchParams();

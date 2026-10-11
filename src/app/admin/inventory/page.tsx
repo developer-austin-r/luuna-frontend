@@ -270,7 +270,8 @@ export default function InventoryPage() {
 
       setAdjustmentModalOpen(false);
       toastSuccess(
-        res.message || `Stock levels adjusted successfully for ${selectedItem.productName}.`,
+        res.message ||
+          `Stock levels adjusted successfully for ${selectedItem.productName}.`,
       );
     } catch (err: any) {
       console.error(err);
