@@ -3,9 +3,9 @@
 import { useActionState, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { ArrowLeft, Eye, EyeOff, Lock, Mail, User } from "lucide-react";
-import { useToast } from "@/providers/toast-provider";
 
 import { authenticate, type FormState } from "@/app/actions/auth";
+import { useToast } from "@/providers/toast-provider";
 
 import { SocialButtons } from "./SocialButtons";
 import { type AuthTabType, TabSwitcher } from "./TabSwitcher";

@@ -23,6 +23,8 @@ export interface Bill {
   customerAddress?: string;
   subtotal: number;
   discount: number;
+  discountRate?: number;
+  taxRate?: number;
   tax: number;
   totalAmount: number;
   paymentMethod: string;
@@ -39,6 +41,8 @@ export interface CreateBillDto {
   customerEmail?: string;
   customerAddress?: string;
   discount?: number;
+  discountRate?: number;
+  taxRate?: number;
   tax?: number;
   paymentMethod?: string;
   status?: string;

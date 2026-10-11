@@ -40,11 +40,20 @@ export async function authenticate(
       console.log('Response data:', resData);
 
       if (!forgotResponse.ok) {
-        const err = resData.error || resData.message;
-        return { error: (Array.isArray(err) ? err.join(", ") : err) || "Failed to send reset email." };
+        const errorData = await forgotResponse.json().catch(() => ({}));
+        const err = errorData.error || errorData.message;
+        return {
+          error:
+            (Array.isArray(err) ? err.join(", ") : err) ||
+            "Failed to send reset email.",
+        };
       }
-      
-      return { success: resData.message || "If the account exists, a reset link has been sent." };
+      const successData = await forgotResponse.json().catch(() => ({}));
+      return {
+        success:
+          successData.message ||
+          "If the account exists, a reset link has been sent.",
+      };
     } catch (err: any) {
       console.error('Fetch error:', err);
       return {
@@ -86,12 +95,17 @@ export async function authenticate(
       console.log('Response data:', resData);
 
       if (!signupResponse.ok) {
-        const err = resData.error || resData.message;
-        return { error: (Array.isArray(err) ? err.join(", ") : err) || "Registration failed." };
+        const errorData = await signupResponse.json().catch(() => ({}));
+        const err = errorData.error || errorData.message;
+        return {
+          error:
+            (Array.isArray(err) ? err.join(", ") : err) ||
+            "Registration failed.",
+        };
       }
 
-      return { success: resData.message || "Registration successful." };
-
+      const successData = await signupResponse.json().catch(() => ({}));
+      return { success: successData.message || "Registration successful." };
     } catch (err: any) {
       console.error('Fetch error:', err);
       return {
@@ -126,8 +140,13 @@ export async function authenticate(
     console.log('Response data:', resData);
 
     if (!response.ok) {
-      const err = resData.error || resData.message;
-      return { error: (Array.isArray(err) ? err.join(", ") : err) || "Invalid email or password." };
+      const errorData = await response.json().catch(() => ({}));
+      const err = errorData.error || errorData.message;
+      return {
+        error:
+          (Array.isArray(err) ? err.join(", ") : err) ||
+          "Invalid email or password.",
+      };
     }
 
     const setCookieHeaders = response.headers.getSetCookie();
@@ -243,11 +262,20 @@ export async function resetPasswordAction(
     console.log('Response data:', resData);
 
     if (!response.ok) {
-      const err = resData.error || resData.message;
-      return { error: (Array.isArray(err) ? err.join(", ") : err) || "Failed to reset password." };
+      const errorData = await response.json().catch(() => ({}));
+      const err = errorData.error || errorData.message;
+      return {
+        error:
+          (Array.isArray(err) ? err.join(", ") : err) ||
+          "Failed to reset password.",
+      };
     }
 
-    return { success: resData.message || "Password reset successful! You can now log in." };
+    const successData = await response.json().catch(() => ({}));
+    return {
+      success:
+        successData.message || "Password reset successful! You can now log in.",
+    };
   } catch (err: any) {
     console.error('Fetch error:', err);
     return { error: `Fetch failed: ${err.message || "An unexpected error occurred."}` };

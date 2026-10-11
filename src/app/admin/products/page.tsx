@@ -27,6 +27,7 @@ import {
   Select,
   StatusBadge,
 } from "@/components/admin";
+import { useToast } from "@/providers/toast-provider";
 import { useAppDispatch, useAppSelector } from "@/redux/hooks";
 import {
   addActivityLog,
@@ -35,7 +36,6 @@ import {
 } from "@/redux/slices/admin-slice";
 import { apiClient } from "@/services/api-client";
 import { type Category, type Product } from "@/types/admin";
-import { useToast } from "@/providers/toast-provider";
 
 export default function ProductsPage() {
   const router = useRouter();
@@ -209,7 +209,8 @@ export default function ProductsPage() {
           }),
         );
         toastSuccess(
-          res.message || `Product "${selectedProduct.name}" deleted successfully.`
+          res.message ||
+            `Product "${selectedProduct.name}" deleted successfully.`,
         );
       } catch (err: any) {
         console.error(err);
@@ -356,14 +357,14 @@ export default function ProductsPage() {
             className="w-10 h-10 object-cover rounded-lg border border-border-custom bg-bg-secondary shrink-0 group-hover:border-primary transition-colors"
           />
           <div>
-<p
-  className="font-bold text-text-custom line-clamp-1 cursor-pointer hover:underline group-hover:text-primary transition-colors"
-  onClick={() => router.push(`/admin/products/edit/${prod.id}`)}
->
-  {prod.name}
-</p>
+            <p
+              className="font-bold text-text-custom line-clamp-1 cursor-pointer hover:underline group-hover:text-primary transition-colors"
+              onClick={() => router.push(`/admin/products/edit/${prod.id}`)}
+            >
               {prod.name}
-            
+            </p>
+            {prod.name}
+
             <p className="text-3xs text-text-custom/50 font-bold uppercase tracking-wider font-mono">
               SKU: {prod.sku}
             </p>
