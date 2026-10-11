@@ -240,7 +240,7 @@ export default function InventoryPage() {
         ? selectedItem.id.replace("inv-", "")
         : selectedItem.id;
 
-      await apiClient(`/products/${productId}/inventory`, {
+      const res = await apiClient<any>(`/products/${productId}/inventory`, {
         method: "PUT",
         body: JSON.stringify({
           totalStock: finalStock,
@@ -270,7 +270,7 @@ export default function InventoryPage() {
 
       setAdjustmentModalOpen(false);
       toastSuccess(
-        `Stock levels adjusted successfully for ${selectedItem.productName}.`,
+        res.message || `Stock levels adjusted successfully for ${selectedItem.productName}.`,
       );
     } catch (err: any) {
       console.error(err);

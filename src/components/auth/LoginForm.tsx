@@ -1,9 +1,9 @@
 "use client";
 
 import { useActionState, useState } from "react";
-import toast, { Toaster } from "react-hot-toast";
 import { usePathname, useRouter } from "next/navigation";
 import { ArrowLeft, Eye, EyeOff, Lock, Mail, User } from "lucide-react";
+import { useToast } from "@/providers/toast-provider";
 
 import { authenticate, type FormState } from "@/app/actions/auth";
 
@@ -20,15 +20,16 @@ export function LoginForm() {
   const [showConfirmPassword, setShowConfirmPassword] =
     useState<boolean>(false);
   const [isForgotPassword, setIsForgotPassword] = useState<boolean>(false);
+  const { success: toastSuccess, error: toastError } = useToast();
 
   const [state, formAction, isPending] = useActionState<FormState, FormData>(
     async (prevState, payload) => {
       const result = await authenticate(prevState, payload);
 
       if (result?.error) {
-        toast.error(result.error);
+        toastError(result.error);
       } else if (result?.success) {
-        toast.success(result.success);
+        toastSuccess(result.success);
         if (activeTab === "register") {
           router.push("/login");
         }
@@ -50,8 +51,6 @@ export function LoginForm() {
     <div
       className={`glass-card ${activeTab === "register" ? "register-card" : ""}`}
     >
-      <Toaster position="top-right" reverseOrder={false} />
-
       <h1 className="login-title">
         {isForgotPassword
           ? "Reset Password"

@@ -3,16 +3,11 @@ name: Frontend CI/CD Pipeline
 on:
   push:
     branches:
-      - dev
-
-env:
-  REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }}
+      - main
 
 jobs:
   build:
     runs-on: ubuntu-latest
-
     permissions:
       contents: read
       packages: write
@@ -24,19 +19,13 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v4
         with:
-          # Use the runner's built-in builder instead of booting a separate
-          # BuildKit container from Docker Hub.
           driver: docker
 
       - name: Pull Node base image with retry
         run: |
           for attempt in 1 2 3; do
-            if docker pull node:24-alpine; then
-              exit 0
-            fi
-            if [ "$attempt" -eq 3 ]; then
-              exit 1
-            fi
+            if docker pull node:24-alpine; then exit 0; fi
+            [ "$attempt" -eq 3 ] && exit 1
             sleep $((attempt * 10))
           done
 
@@ -51,6 +40,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: .
+          file: infra/docker/Dockerfile
           push: true
           tags: ghcr.io/${{ github.repository }}:latest
           build-args: |
@@ -62,56 +52,58 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Copy docker-compose.yml to EC2
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          source: "infra/compose/docker-compose.yml"
+          target: "/home/ubuntu/luuna-frontend"
+
       - name: Deploy to EC2
         uses: appleboy/ssh-action@v1.1.0
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_SSH_KEY }}
+          timeout: 10m
+          command_timeout: 15m
           script_stop: true
           script: |
             set -e
 
-            DEPLOY_DIR="/home/ubuntu/luuna-frontend"
+            PROJECT_DIR="/home/ubuntu/luuna-frontend"
+            COMPOSE_FILE="$PROJECT_DIR/infra/compose/docker-compose.yml"
+            ENV_FILE="$PROJECT_DIR/.env"
 
-            mkdir -p "$DEPLOY_DIR"
-            cd "$DEPLOY_DIR"
-
-            # The production environment file is managed directly on EC2.
-            # Never create, copy, or overwrite it from GitHub Actions.
-            ENV_FILE="$DEPLOY_DIR/.env"
-            COMPOSE_FILE="$DEPLOY_DIR/docker-compose.yml"
+            # --project-directory tells Docker Compose that .env in the compose
+            # file resolves to $PROJECT_DIR/.env (not relative to the compose file).
+            DC="sudo docker compose -f $COMPOSE_FILE --project-directory $PROJECT_DIR --env-file $ENV_FILE"
 
             if [ ! -f "$ENV_FILE" ]; then
-              echo "Missing $ENV_FILE. Create it on the server before deploying."
+              echo "ERROR: $ENV_FILE not found. Create it on the server first."
               exit 1
             fi
 
-            if [ ! -f "$COMPOSE_FILE" ]; then
-              echo "Missing $COMPOSE_FILE. Create it on the server before deploying."
-              exit 1
-            fi
-
-            chmod 600 "$ENV_FILE"
-
-            echo "Logging into GHCR..."
             echo "${{ secrets.GHCR_PAT }}" | docker login ghcr.io \
-              -u "${{ github.actor }}" \
-              --password-stdin
+              -u "${{ github.actor }}" --password-stdin
 
-            echo "Pulling latest image..."
-            sudo docker compose --env-file "$ENV_FILE" pull
+            # Ensure shared network exists (owned by backend, joined here as external).
+            sudo docker network inspect luuna-network >/dev/null 2>&1 \
+              || sudo docker network create luuna-network
 
-            echo "Stopping old container..."
-            sudo docker compose --env-file "$ENV_FILE" down
+            echo "Pulling latest frontend image..."
+            $DC pull frontend
 
-            echo "Starting new container..."
-            sudo docker compose --env-file "$ENV_FILE" up -d
+            echo "Recreating frontend container only..."
+            $DC up -d frontend
 
-            echo "Removing unused images..."
             sudo docker image prune -f
 
-            echo "Running containers:"
+            echo "=== Running containers ==="
             sudo docker ps
-
-            echo "Deployment completed successfully."
+            echo "Frontend deployment complete."

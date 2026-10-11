@@ -27,6 +27,7 @@ import { addActivityLog, setCategories } from "@/redux/slices/admin-slice";
 import { apiClient } from "@/services/api-client";
 import { uploadImage } from "@/services/media-upload";
 import { type Category } from "@/types/admin";
+import { useToast } from "@/providers/toast-provider";
 
 interface CategoryFormValues {
   name: string;
@@ -61,18 +62,7 @@ export default function CategoriesPage() {
   // Drag and Drop mock state
   const [isDragging, setIsDragging] = useState(false);
 
-  // Toast Notification state
-  const [notification, setNotification] = useState<{
-    message: string;
-    type: "success" | "error";
-  } | null>(null);
-
-  const showNotification = (message: string, type: "success" | "error") => {
-    setNotification({ message, type });
-    setTimeout(() => {
-      setNotification(null);
-    }, 4500);
-  };
+  const { success: toastSuccess, error: toastError } = useToast();
 
   // Form Hooks
   const {
@@ -205,9 +195,9 @@ export default function CategoriesPage() {
       if (selectedCategoryId === cat.id) {
         setValue("status", nextStatus);
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
-      showNotification("Failed to update category status.", "error");
+      toastError(err.message || "Failed to update category status.");
     }
   };
 
@@ -251,9 +241,8 @@ export default function CategoriesPage() {
           image: "",
         });
 
-        showNotification(
-          `Category "${data.name}" added successfully.`,
-          "success",
+        toastSuccess(
+          result.message || `Category "${data.name}" added successfully.`
         );
       } else if (selectedCategoryId) {
         const payload = {
@@ -264,7 +253,7 @@ export default function CategoriesPage() {
           image: data.image,
           status: data.status === "active",
         };
-        await apiClient(`/products/categories/${selectedCategoryId}`, {
+        const result = await apiClient(`/products/categories/${selectedCategoryId}`, {
           method: "PATCH",
           body: JSON.stringify(payload),
         });
@@ -278,14 +267,13 @@ export default function CategoriesPage() {
             status: "success",
           }),
         );
-        showNotification(
-          `Category "${data.name}" updated successfully.`,
-          "success",
+        toastSuccess(
+          (result as any).message || `Category "${data.name}" updated successfully.`
         );
       }
     } catch (err: any) {
       console.error(err);
-      showNotification(err.message || "Failed to save category.", "error");
+      toastError(err.message || "Failed to save category.");
     }
   };
 
@@ -297,7 +285,7 @@ export default function CategoriesPage() {
   const confirmDelete = async () => {
     if (categoryToDelete) {
       try {
-        await apiClient(`/products/categories/${categoryToDelete.id}`, {
+        const result = await apiClient<any>(`/products/categories/${categoryToDelete.id}`, {
           method: "DELETE",
         });
         await fetchCategories(true);
@@ -307,12 +295,12 @@ export default function CategoriesPage() {
             action: `Removed category: ${categoryToDelete.name}`,
             module: "Categories",
             status: "success",
-          }),
+          })
         );
-        showNotification("Category deleted successfully.", "success");
-      } catch (err) {
+        toastSuccess(result.message || "Category deleted successfully.");
+      } catch (err: any) {
         console.error(err);
-        showNotification("Failed to delete category.", "error");
+        toastError(err.message || "Failed to delete category.");
       }
     }
     setDeleteDialogOpen(false);
@@ -330,15 +318,15 @@ export default function CategoriesPage() {
 
   const uploadCategoryImage = async (file: File) => {
     if (file.size > 10 * 1024 * 1024) {
-      showNotification("Image size must be 10MB or less.", "error");
+      toastError("Image size must be 10MB or less.");
       return;
     }
     try {
       const res = await uploadImage(file);
       setValue("image", res.displayUrl);
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
-      showNotification("Failed to upload category image.", "error");
+      toastError(err.message || "Failed to upload category image.");
     }
   };
 
@@ -711,24 +699,6 @@ export default function CategoriesPage() {
         itemName={categoryToDelete?.name}
         title="Delete Taxonomy Category"
       />
-
-      {/* Toast Notification */}
-      {notification && (
-        <div
-          className={`fixed top-4 right-4 z-50 flex items-center gap-2.5 px-4 py-3 rounded-xl shadow-xl border animate-in fade-in slide-in-from-top-4 duration-300 ${
-            notification.type === "success"
-              ? "bg-emerald-50 border-emerald-200 text-emerald-800"
-              : "bg-red-50 border-red-200 text-red-800"
-          }`}
-        >
-          {notification.type === "success" ? (
-            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-          ) : (
-            <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
-          )}
-          <span className="text-xs font-semibold">{notification.message}</span>
-        </div>
-      )}
     </div>
   );
 }

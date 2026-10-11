@@ -32,9 +32,11 @@ export async function authenticate(
 
       if (!forgotResponse.ok) {
         const errorData = await forgotResponse.json().catch(() => ({}));
-        return { error: errorData.message || "Failed to send reset email." };
+        const err = errorData.error || errorData.message;
+        return { error: (Array.isArray(err) ? err.join(", ") : err) || "Failed to send reset email." };
       }
-      return { success: "If the account exists, a reset link has been sent." };
+      const successData = await forgotResponse.json().catch(() => ({}));
+      return { success: successData.message || "If the account exists, a reset link has been sent." };
     } catch (err: any) {
       return {
         error: err.message || "An unexpected error occurred.",
@@ -67,13 +69,14 @@ export async function authenticate(
 
       if (!signupResponse.ok) {
         const errorData = await signupResponse.json().catch(() => ({}));
-        return { error: errorData.message || "Registration failed." };
+        const err = errorData.error || errorData.message;
+        return { error: (Array.isArray(err) ? err.join(", ") : err) || "Registration failed." };
       }
 
-      return {
-        success:
-          "Registration successful. Please check your email to verify your account.",
-      };
+      
+      const successData = await signupResponse.json().catch(() => ({}));
+      return { success: successData.message || "Registration successful." };
+
     } catch (err: any) {
       return {
         error:
@@ -100,7 +103,8 @@ export async function authenticate(
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
-      return { error: errorData.message || "Invalid email or password." };
+      const err = errorData.error || errorData.message;
+      return { error: (Array.isArray(err) ? err.join(", ") : err) || "Invalid email or password." };
     }
 
     const setCookieHeaders = response.headers.getSetCookie();
@@ -174,7 +178,7 @@ export async function authenticate(
     redirect(redirectUrl);
   }
 
-  return {};
+  return { success: "Login successful!" };
 }
 
 export async function resetPasswordAction(
@@ -207,10 +211,12 @@ export async function resetPasswordAction(
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
-      return { error: errorData.message || "Failed to reset password." };
+      const err = errorData.error || errorData.message;
+      return { error: (Array.isArray(err) ? err.join(", ") : err) || "Failed to reset password." };
     }
 
-    return { success: "Password reset successful! You can now log in." };
+    const successData = await response.json().catch(() => ({}));
+    return { success: successData.message || "Password reset successful! You can now log in." };
   } catch (err: any) {
     return { error: err.message || "An unexpected error occurred." };
   }
