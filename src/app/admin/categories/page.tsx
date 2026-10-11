@@ -22,12 +22,12 @@ import {
   Input,
   Select,
 } from "@/components/admin";
+import { useToast } from "@/providers/toast-provider";
 import { useAppDispatch, useAppSelector } from "@/redux/hooks";
 import { addActivityLog, setCategories } from "@/redux/slices/admin-slice";
 import { apiClient } from "@/services/api-client";
 import { uploadImage } from "@/services/media-upload";
 import { type Category } from "@/types/admin";
-import { useToast } from "@/providers/toast-provider";
 
 interface CategoryFormValues {
   name: string;
@@ -242,7 +242,7 @@ export default function CategoriesPage() {
         });
 
         toastSuccess(
-          result.message || `Category "${data.name}" added successfully.`
+          result.message || `Category "${data.name}" added successfully.`,
         );
       } else if (selectedCategoryId) {
         const payload = {
@@ -253,10 +253,13 @@ export default function CategoriesPage() {
           image: data.image,
           status: data.status === "active",
         };
-        const result = await apiClient(`/products/categories/${selectedCategoryId}`, {
-          method: "PATCH",
-          body: JSON.stringify(payload),
-        });
+        const result = await apiClient(
+          `/products/categories/${selectedCategoryId}`,
+          {
+            method: "PATCH",
+            body: JSON.stringify(payload),
+          },
+        );
         await fetchCategories();
 
         dispatch(
@@ -268,7 +271,8 @@ export default function CategoriesPage() {
           }),
         );
         toastSuccess(
-          (result as any).message || `Category "${data.name}" updated successfully.`
+          (result as any).message ||
+            `Category "${data.name}" updated successfully.`,
         );
       }
     } catch (err: any) {
@@ -285,9 +289,12 @@ export default function CategoriesPage() {
   const confirmDelete = async () => {
     if (categoryToDelete) {
       try {
-        const result = await apiClient<any>(`/products/categories/${categoryToDelete.id}`, {
-          method: "DELETE",
-        });
+        const result = await apiClient<any>(
+          `/products/categories/${categoryToDelete.id}`,
+          {
+            method: "DELETE",
+          },
+        );
         await fetchCategories(true);
         dispatch(
           addActivityLog({
@@ -295,7 +302,7 @@ export default function CategoriesPage() {
             action: `Removed category: ${categoryToDelete.name}`,
             module: "Categories",
             status: "success",
-          })
+          }),
         );
         toastSuccess(result.message || "Category deleted successfully.");
       } catch (err: any) {

@@ -1,6 +1,12 @@
 "use client";
 
-import React, { createContext, useCallback, useContext, useState, useEffect } from "react";
+import React, {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
 import { AlertCircle, CheckCircle, Info, X } from "lucide-react";
 
 export type ToastType = "success" | "error" | "info" | "warning";
@@ -22,7 +28,13 @@ interface ToastContextType {
 
 const ToastContext = createContext<ToastContextType | undefined>(undefined);
 
-function ToastItem({ t, removeToast }: { t: Toast; removeToast: (id: string) => void }) {
+function ToastItem({
+  t,
+  removeToast,
+}: {
+  t: Toast;
+  removeToast: (id: string) => void;
+}) {
   const [isShowing, setIsShowing] = useState(false);
 
   useEffect(() => {
@@ -63,7 +75,9 @@ function ToastItem({ t, removeToast }: { t: Toast; removeToast: (id: string) => 
   return (
     <div
       className={`flex items-start gap-3 p-4 rounded-xl border shadow-lg backdrop-blur-md pointer-events-auto transition-all duration-300 ease-out transform ${
-        isShowing ? "opacity-100 translate-y-0 scale-100" : "opacity-0 -translate-y-4 scale-95"
+        isShowing
+          ? "opacity-100 translate-y-0 scale-100"
+          : "opacity-0 -translate-y-4 scale-95"
       } ${bgColor}`}
     >
       <div className="shrink-0 mt-0.5">{icon}</div>
