@@ -41,8 +41,11 @@ function NewBillPanel() {
   const [customerMobile, setCustomerMobile] = useState("");
   const [customerEmail, setCustomerEmail] = useState("");
   const [customerAddress, setCustomerAddress] = useState("");
-  const [billDiscount, setBillDiscount] = useState(0);
-  const [billTax, setBillTax] = useState(0);
+  const [discountType, setDiscountType] = useState<"PERCENT" | "FLAT">(
+    "PERCENT",
+  );
+  const [discountValue, setDiscountValue] = useState(0);
+  const [taxRate, setTaxRate] = useState<number>(0);
   const [paymentMethod, setPaymentMethod] = useState("CASH");
   const [notes, setNotes] = useState("");
   const [saving, setSaving] = useState(false);
@@ -54,7 +57,20 @@ function NewBillPanel() {
       s + it.unitPrice * it.quantity - (it.discount ?? 0) + (it.tax ?? 0),
     0,
   );
-  const total = subtotal - billDiscount + billTax;
+  const billDiscount =
+    discountType === "PERCENT"
+      ? Number(((subtotal * discountValue) / 100).toFixed(2))
+      : Number(Math.min(subtotal, discountValue).toFixed(2));
+  const discountRate =
+    discountType === "PERCENT"
+      ? discountValue
+      : subtotal > 0
+        ? Number(((billDiscount / subtotal) * 100).toFixed(2))
+        : 0;
+
+  const taxableAmount = Math.max(0, subtotal - billDiscount);
+  const billTax = Number(((taxableAmount * taxRate) / 100).toFixed(2));
+  const total = taxableAmount + billTax;
 
   const handleProductFound = useCallback((item: BillItem) => {
     setItems((prev) => {
@@ -95,12 +111,13 @@ function NewBillPanel() {
       const dto: Parameters<typeof billingService.createBill>[0] = {
         items,
         discount: billDiscount,
+        discountRate,
+        taxRate,
         tax: billTax,
         paymentMethod,
         status: "PAID",
       };
-      const name = user?.name ?? user?.email;
-      if (name) dto.billedBy = name;
+      if (user?.id) dto.billedBy = user.id;
       if (customerName) dto.customerName = customerName;
       if (customerMobile) dto.customerMobile = customerMobile;
       if (customerEmail) dto.customerEmail = customerEmail;
@@ -115,8 +132,9 @@ function NewBillPanel() {
       setCustomerMobile("");
       setCustomerEmail("");
       setCustomerAddress("");
-      setBillDiscount(0);
-      setBillTax(0);
+      setDiscountValue(0);
+      setDiscountType("PERCENT");
+      setTaxRate(0);
       setNotes("");
     } catch (e: unknown) {
       alert(
@@ -269,32 +287,79 @@ function NewBillPanel() {
               {/* Adjustments */}
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-2xs font-bold text-text-custom/60 uppercase tracking-wider mb-1">
-                    Discount (₹)
-                  </label>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="text-2xs font-bold text-text-custom/60 uppercase tracking-wider">
+                      Discount ({discountType === "PERCENT" ? "%" : "₹"})
+                    </label>
+                    <div className="flex items-center gap-0.5 bg-bg-secondary p-0.5 rounded border border-border-custom/50">
+                      <button
+                        type="button"
+                        onClick={() => setDiscountType("PERCENT")}
+                        className={`px-1.5 py-0.5 rounded text-3xs font-bold transition-all ${
+                          discountType === "PERCENT"
+                            ? "bg-primary text-white shadow-xs"
+                            : "text-text-custom/60 hover:text-text-custom"
+                        }`}
+                        title="Percentage discount"
+                      >
+                        %
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setDiscountType("FLAT")}
+                        className={`px-1.5 py-0.5 rounded text-3xs font-bold transition-all ${
+                          discountType === "FLAT"
+                            ? "bg-primary text-white shadow-xs"
+                            : "text-text-custom/60 hover:text-text-custom"
+                        }`}
+                        title="Flat rupee discount"
+                      >
+                        ₹
+                      </button>
+                    </div>
+                  </div>
                   <input
                     type="number"
                     min={0}
-                    value={billDiscount}
+                    max={discountType === "PERCENT" ? 100 : undefined}
+                    step={5}
+                    value={discountValue}
                     onChange={(e) =>
-                      setBillDiscount(parseFloat(e.target.value) || 0)
+                      setDiscountValue(
+                        Math.max(0, parseFloat(e.target.value) || 0),
+                      )
                     }
                     className="w-full h-9 px-3 border border-border-custom rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary bg-white text-right font-mono transition-all"
                   />
+                  {discountType === "PERCENT" && billDiscount > 0 && (
+                    <p className="text-3xs text-emerald-600 font-mono text-right mt-1 font-semibold">
+                      -₹{billDiscount.toFixed(2)} ({discountValue}%)
+                    </p>
+                  )}
                 </div>
                 <div>
                   <label className="block text-2xs font-bold text-text-custom/60 uppercase tracking-wider mb-1">
-                    Tax (₹)
+                    Tax Percentage
                   </label>
-                  <input
-                    type="number"
-                    min={0}
-                    value={billTax}
+                  <select
+                    value={taxRate}
                     onChange={(e) =>
-                      setBillTax(parseFloat(e.target.value) || 0)
+                      setTaxRate(parseFloat(e.target.value) || 0)
                     }
-                    className="w-full h-9 px-3 border border-border-custom rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary bg-white text-right font-mono transition-all"
-                  />
+                    className="w-full h-9 px-3 border border-border-custom rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary bg-white transition-all font-medium"
+                  >
+                    <option value={0}>0%</option>
+                    <option value={5}>5%</option>
+                    <option value={12}>12%</option>
+                    <option value={18}>18%</option>
+                    <option value={28}>28%</option>
+                    <option value={40}>40%</option>
+                  </select>
+                  {taxRate > 0 && billTax > 0 && (
+                    <p className="text-3xs text-text-custom/60 font-mono text-right mt-1 font-semibold">
+                      +₹{billTax.toFixed(2)} ({taxRate}%)
+                    </p>
+                  )}
                 </div>
               </div>
 
@@ -306,7 +371,10 @@ function NewBillPanel() {
                 </div>
                 {billDiscount > 0 && (
                   <div className="flex justify-between text-emerald-600">
-                    <span>Discount</span>
+                    <span>
+                      Discount{" "}
+                      {discountType === "PERCENT" ? `(${discountValue}%)` : ""}
+                    </span>
                     <span className="font-mono">
                       -{formatCurrency(billDiscount)}
                     </span>
@@ -314,7 +382,7 @@ function NewBillPanel() {
                 )}
                 {billTax > 0 && (
                   <div className="flex justify-between text-text-custom/60">
-                    <span>Tax</span>
+                    <span>Tax ({taxRate}%)</span>
                     <span className="font-mono">{formatCurrency(billTax)}</span>
                   </div>
                 )}

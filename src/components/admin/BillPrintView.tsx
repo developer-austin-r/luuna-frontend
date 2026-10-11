@@ -163,13 +163,23 @@ export function BillPrintView({ bill, onClose }: Props) {
             </div>
             {Number(bill.discount) > 0 && (
               <div className="flex justify-between text-emerald-600">
-                <span>Discount</span>
+                <span>
+                  Discount
+                  {bill.discountRate != null && Number(bill.discountRate) > 0
+                    ? ` (${Number(bill.discountRate)}%)`
+                    : ""}
+                </span>
                 <span>-{fmt(bill.discount)}</span>
               </div>
             )}
             {Number(bill.tax) > 0 && (
               <div className="flex justify-between text-text-custom/60">
-                <span>Tax</span>
+                <span>
+                  Tax
+                  {bill.taxRate != null && Number(bill.taxRate) > 0
+                    ? ` (${Number(bill.taxRate)}%)`
+                    : ""}
+                </span>
                 <span>{fmt(bill.tax)}</span>
               </div>
             )}
