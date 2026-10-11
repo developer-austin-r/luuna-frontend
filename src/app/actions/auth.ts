@@ -22,13 +22,22 @@ export async function authenticate(
   if (mode === "forgot") {
     if (!email) return { error: "Please enter your email." };
     try {
-      const forgotResponse = await fetch(`${apiBaseUrl}/auth/forgot-password`, {
+      const url = `${apiBaseUrl.replace(/\/$/, '')}/auth/forgot-password`;
+      const bodyStr = JSON.stringify({ email });
+      console.log('API URL:', url);
+      console.log('Request body:', bodyStr);
+
+      const forgotResponse = await fetch(url, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ email }),
+        body: bodyStr,
       });
+
+      console.log('Response status:', forgotResponse.status);
+      const resData = await forgotResponse.json().catch(() => ({}));
+      console.log('Response data:', resData);
 
       if (!forgotResponse.ok) {
         const errorData = await forgotResponse.json().catch(() => ({}));
@@ -46,8 +55,9 @@ export async function authenticate(
           "If the account exists, a reset link has been sent.",
       };
     } catch (err: any) {
+      console.error('Fetch error:', err);
       return {
-        error: err.message || "An unexpected error occurred.",
+        error: `Fetch failed: ${err.message || "An unexpected error occurred."}`,
       };
     }
   }
@@ -67,13 +77,22 @@ export async function authenticate(
     const name = `${firstName} ${lastName}`.trim();
 
     try {
-      const signupResponse = await fetch(`${apiBaseUrl}/auth/signup`, {
+      const url = `${apiBaseUrl.replace(/\/$/, '')}/auth/signup`;
+      const bodyStr = JSON.stringify({ name, email, password, confirmPassword });
+      console.log('API URL:', url);
+      console.log('Request body:', bodyStr);
+
+      const signupResponse = await fetch(url, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ name, email, password, confirmPassword }),
+        body: bodyStr,
       });
+
+      console.log('Response status:', signupResponse.status);
+      const resData = await signupResponse.json().catch(() => ({}));
+      console.log('Response data:', resData);
 
       if (!signupResponse.ok) {
         const errorData = await signupResponse.json().catch(() => ({}));
@@ -88,9 +107,9 @@ export async function authenticate(
       const successData = await signupResponse.json().catch(() => ({}));
       return { success: successData.message || "Registration successful." };
     } catch (err: any) {
+      console.error('Fetch error:', err);
       return {
-        error:
-          err.message || "An unexpected error occurred during registration.",
+        error: `Fetch failed: ${err.message || "An unexpected error occurred during registration."}`,
       };
     }
   }
@@ -103,13 +122,22 @@ export async function authenticate(
   let redirectUrl = "";
 
   try {
-    const response = await fetch(`${apiBaseUrl}/auth/login`, {
+    const url = `${apiBaseUrl.replace(/\/$/, '')}/auth/login`;
+    const bodyStr = JSON.stringify({ email, password, rememberMe });
+    console.log('API URL:', url);
+    console.log('Request body:', bodyStr);
+
+    const response = await fetch(url, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ email, password, rememberMe }),
+      body: bodyStr,
     });
+
+    console.log('Response status:', response.status);
+    const resData = await response.clone().json().catch(() => ({}));
+    console.log('Response data:', resData);
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
@@ -185,7 +213,8 @@ export async function authenticate(
       redirectUrl = "/";
     }
   } catch (err: any) {
-    return { error: err.message || "An unexpected error occurred." };
+    console.error('Fetch error:', err);
+    return { error: `Fetch failed: ${err.message || "An unexpected error occurred."}` };
   }
 
   if (redirectUrl) {
@@ -215,13 +244,22 @@ export async function resetPasswordAction(
     process.env.NEXT_PUBLIC_API_BASE_URL || "http://127.0.0.1:3001";
 
   try {
-    const response = await fetch(`${apiBaseUrl}/auth/reset-password`, {
+    const url = `${apiBaseUrl.replace(/\/$/, '')}/auth/reset-password`;
+    const bodyStr = JSON.stringify({ token, password, confirmPassword });
+    console.log('API URL:', url);
+    console.log('Request body:', bodyStr);
+
+    const response = await fetch(url, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ token, password, confirmPassword }),
+      body: bodyStr,
     });
+
+    console.log('Response status:', response.status);
+    const resData = await response.json().catch(() => ({}));
+    console.log('Response data:', resData);
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
@@ -239,6 +277,7 @@ export async function resetPasswordAction(
         successData.message || "Password reset successful! You can now log in.",
     };
   } catch (err: any) {
-    return { error: err.message || "An unexpected error occurred." };
+    console.error('Fetch error:', err);
+    return { error: `Fetch failed: ${err.message || "An unexpected error occurred."}` };
   }
 }
