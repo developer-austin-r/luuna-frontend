@@ -3,25 +3,36 @@ import React from "react";
 
 import type { Bill } from "@/services/billing";
 
+export const DEFAULT_BILLING_LOGO_URL =
+  process.env.NEXT_PUBLIC_BILLING_LOGO_URL ||
+  "https://luuna-production-storage.s3.eu-north-1.amazonaws.com/assets/Luuna%20Logo-01.png";
+
 interface Props {
   bill: Bill;
   onClose: () => void;
+  logoUrl?: string;
 }
 
 function fmt(n: number | string) {
   return `₹${Number(n).toFixed(2)}`;
 }
 
-export function BillPrintView({ bill, onClose }: Props) {
+export function BillPrintView({
+  bill,
+  onClose,
+  logoUrl = DEFAULT_BILLING_LOGO_URL,
+}: Props) {
   const handlePrint = () => window.print();
 
   const handleDownload = () => {
     const w = window.open("", "_blank")!;
     w.document.write(`
       <html><head><title>${bill.billNumber}</title>
+      <base href="${typeof window !== "undefined" ? window.location.origin : ""}">
       <style>
         body { font-family: monospace; font-size: 12px; max-width: 320px; margin: 0 auto; padding: 16px; }
-        h1 { font-size: 16px; text-align: center; margin-bottom: 4px; }
+        .logo-wrap { width: 150px; height: 50px; margin: 0 auto 6px auto; overflow: hidden; display: flex; align-items: center; justify-content: center; }
+        .logo-wrap img { width: 150px; height: 150px; object-fit: contain; display: block; }
         .center { text-align: center; }
         .divider { border-top: 1px dashed #000; margin: 8px 0; }
         table { width: 100%; border-collapse: collapse; }
@@ -31,7 +42,9 @@ export function BillPrintView({ bill, onClose }: Props) {
         .total-row td { font-size: 14px; font-weight: bold; }
         @media print { button { display: none; } }
       </style></head><body>
-      <h1>LUUNA</h1>
+      <div class="logo-wrap">
+        <img id="bill-logo" src="${logoUrl}" alt="LUUNA" onerror="this.onerror=null;this.src='/images/luuna.png';" />
+      </div>
       <p class="center">Tax Invoice</p>
       <div class="divider"></div>
       <p>Bill No: <b>${bill.billNumber}</b></p>
@@ -62,9 +75,27 @@ export function BillPrintView({ bill, onClose }: Props) {
       <div class="divider"></div>
       <p class="center">Payment: ${bill.paymentMethod}</p>
       <p class="center">Thank you for shopping!</p>
+      <script>
+        var printed = false;
+        function triggerPrint() {
+          if (printed) return;
+          printed = true;
+          window.focus();
+          window.print();
+        }
+        window.addEventListener('load', function() {
+          var img = document.getElementById('bill-logo');
+          if (img && !img.complete) {
+            img.onload = function() { setTimeout(triggerPrint, 100); };
+            img.onerror = function() { setTimeout(triggerPrint, 100); };
+          } else {
+            setTimeout(triggerPrint, 100);
+          }
+        });
+        setTimeout(triggerPrint, 1000);
+      </script>
       </body></html>`);
     w.document.close();
-    w.print();
   };
 
   return (
@@ -96,8 +127,17 @@ export function BillPrintView({ bill, onClose }: Props) {
 
         {/* Receipt Body */}
         <div className="p-6 overflow-y-auto flex-1 font-mono text-xs space-y-3">
-          <div className="text-center space-y-0.5">
-            <p className="font-bold text-sm">LUUNA</p>
+          <div className="text-center space-y-1">
+            <div className="flex items-center justify-center h-12 w-36 mx-auto overflow-hidden">
+              <img
+                src={logoUrl}
+                alt="LUUNA"
+                className="w-36 h-36 object-contain shrink-0"
+                onError={(e) => {
+                  (e.target as HTMLImageElement).src = "/images/luuna.png";
+                }}
+              />
+            </div>
             <p className="text-text-custom/50 text-2xs">Tax Invoice</p>
           </div>
           <div className="border-t border-dashed border-border-custom pt-3 space-y-1">
