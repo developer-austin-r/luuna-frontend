@@ -27,6 +27,7 @@ import {
   Select,
   StatusBadge,
 } from "@/components/admin";
+import { useToast } from "@/providers/toast-provider";
 import { useAppDispatch, useAppSelector } from "@/redux/hooks";
 import {
   addActivityLog,
@@ -44,6 +45,7 @@ export default function ProductsPage() {
 
   // States
   const [searchTerm, setSearchTerm] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
   const [statuses, setStatuses] = useState<
@@ -51,19 +53,21 @@ export default function ProductsPage() {
   >([]);
   const [loading, setLoading] = useState(true);
   const [exporting, setExporting] = useState(false);
+  const { success: toastSuccess, error: toastError } = useToast();
 
-  // Toast Notification state
-  const [notification, setNotification] = useState<{
-    message: string;
-    type: "success" | "error";
-  } | null>(null);
+  // Pagination State
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalProducts, setTotalProducts] = useState(0);
+  const itemsPerPage = 25;
 
-  const showNotification = (message: string, type: "success" | "error") => {
-    setNotification({ message, type });
-    setTimeout(() => {
-      setNotification(null);
-    }, 4500);
-  };
+  // Debounce search term to avoid redundant API queries
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchTerm);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
 
   const fetchCategories = async () => {
     try {
@@ -98,21 +102,36 @@ export default function ProductsPage() {
   };
 
   const fetchProducts = async (
-    search = searchTerm,
+    page = currentPage,
+    search = debouncedSearch,
     category = categoryFilter,
     status = statusFilter,
   ) => {
     try {
       setLoading(true);
       const params = new URLSearchParams();
-      if (search) params.append("search", search);
+      params.append("page", String(page));
+      params.append("limit", String(itemsPerPage));
+      if (search.trim()) params.append("search", search.trim());
       if (category !== "all") params.append("categoryId", category);
       if (status !== "all") params.append("statusId", status);
-      params.append("limit", "100"); // Use large limit to retrieve products for catalog list
 
       const queryString = params.toString();
-      const url = queryString ? `/products?${queryString}` : "/products";
-      const res = await apiClient<{ data: { data: any[] } }>(url);
+      const url = `/products?${queryString}`;
+      const res = await apiClient<{
+        data: {
+          data: any[];
+          meta?: {
+            total: number;
+            page: number;
+            limit: number;
+            totalPages: number;
+            hasNextPage: boolean;
+            hasPreviousPage: boolean;
+          };
+        };
+      }>(url);
+
       if (res && res.data && Array.isArray(res.data.data)) {
         const mapped: Product[] = res.data.data.map((p: any) => ({
           id: p.id,
@@ -132,6 +151,18 @@ export default function ProductsPage() {
           description: p.description || "",
         }));
         dispatch(setProducts(mapped));
+
+        if (res.data.meta) {
+          const calcTotalPages = Math.max(1, res.data.meta.totalPages || 1);
+          setTotalPages(calcTotalPages);
+          setTotalProducts(res.data.meta.total || 0);
+          if (page > calcTotalPages) {
+            setCurrentPage(1);
+          }
+        } else {
+          setTotalPages(Math.max(1, Math.ceil(mapped.length / itemsPerPage)));
+          setTotalProducts(mapped.length);
+        }
       }
     } catch (err) {
       console.error("Error fetching live products:", err);
@@ -146,12 +177,8 @@ export default function ProductsPage() {
   }, [dispatch]);
 
   useEffect(() => {
-    fetchProducts(searchTerm, categoryFilter, statusFilter);
-  }, [searchTerm, categoryFilter, statusFilter]);
-
-  // Pagination State
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 25;
+    fetchProducts(currentPage, debouncedSearch, categoryFilter, statusFilter);
+  }, [currentPage, debouncedSearch, categoryFilter, statusFilter]);
 
   // CRUD Delete Dialog
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
@@ -159,10 +186,15 @@ export default function ProductsPage() {
 
   const handleArchive = async (prod: Product) => {
     try {
-      await apiClient(`/products/${prod.id}/archive`, {
+      const res = await apiClient<any>(`/products/${prod.id}/archive`, {
         method: "PATCH",
       });
-      await fetchProducts();
+      await fetchProducts(
+        currentPage,
+        debouncedSearch,
+        categoryFilter,
+        statusFilter,
+      );
       dispatch(
         addActivityLog({
           user: "Admin Alex",
@@ -171,19 +203,24 @@ export default function ProductsPage() {
           status: "success",
         }),
       );
-      showNotification(`Product "${prod.name}" has been archived.`, "success");
-    } catch (err) {
+      toastSuccess(res.message || `Product "${prod.name}" has been archived.`);
+    } catch (err: any) {
       console.error(err);
-      showNotification("Failed to archive product.", "error");
+      toastError(err.message || "Failed to archive product.");
     }
   };
 
   const handleRestore = async (prod: Product) => {
     try {
-      await apiClient(`/products/${prod.id}/restore`, {
+      const res = await apiClient<any>(`/products/${prod.id}/restore`, {
         method: "PATCH",
       });
-      await fetchProducts();
+      await fetchProducts(
+        currentPage,
+        debouncedSearch,
+        categoryFilter,
+        statusFilter,
+      );
       dispatch(
         addActivityLog({
           user: "Admin Alex",
@@ -192,10 +229,10 @@ export default function ProductsPage() {
           status: "success",
         }),
       );
-      showNotification(`Product "${prod.name}" has been restored.`, "success");
-    } catch (err) {
+      toastSuccess(res.message || `Product "${prod.name}" has been restored.`);
+    } catch (err: any) {
       console.error(err);
-      showNotification("Failed to restore product.", "error");
+      toastError(err.message || "Failed to restore product.");
     }
   };
 
@@ -207,10 +244,23 @@ export default function ProductsPage() {
   const confirmDelete = async () => {
     if (selectedProduct) {
       try {
-        await apiClient(`/products/${selectedProduct.id}`, {
+        const res = await apiClient<any>(`/products/${selectedProduct.id}`, {
           method: "DELETE",
         });
-        await fetchProducts();
+        const targetPage =
+          products.length === 1 && currentPage > 1
+            ? currentPage - 1
+            : currentPage;
+        if (targetPage !== currentPage) {
+          setCurrentPage(targetPage);
+        } else {
+          await fetchProducts(
+            targetPage,
+            debouncedSearch,
+            categoryFilter,
+            statusFilter,
+          );
+        }
         dispatch(
           addActivityLog({
             user: "Admin Alex",
@@ -219,13 +269,13 @@ export default function ProductsPage() {
             status: "success",
           }),
         );
-        showNotification(
-          `Product "${selectedProduct.name}" deleted successfully.`,
-          "success",
+        toastSuccess(
+          res.message ||
+            `Product "${selectedProduct.name}" deleted successfully.`,
         );
-      } catch (err) {
+      } catch (err: any) {
         console.error(err);
-        showNotification("Failed to delete product.", "error");
+        toastError(err.message || "Failed to delete product.");
       }
     }
     setDeleteDialogOpen(false);
@@ -234,15 +284,28 @@ export default function ProductsPage() {
   const handleExportBarcodes = async () => {
     try {
       setExporting(true);
-      showNotification("Generating barcode PDF. Please wait...", "success");
+      toastSuccess("Generating barcode PDF. Please wait...");
 
       const { jsPDF } = await import("jspdf");
       const { appConfig } = await import("@/config");
 
-      const productsWithBarcodes = filteredProducts.filter((p) => p.barcode);
+      // Fetch matching products for barcode generation (up to 1000)
+      const params = new URLSearchParams();
+      if (debouncedSearch.trim())
+        params.append("search", debouncedSearch.trim());
+      if (categoryFilter !== "all") params.append("categoryId", categoryFilter);
+      if (statusFilter !== "all") params.append("statusId", statusFilter);
+      params.append("limit", "1000");
+
+      const queryString = params.toString();
+      const url = queryString ? `/products?${queryString}` : "/products";
+      const res = await apiClient<{ data: { data: any[] } }>(url);
+      const allMatching = res?.data?.data || [];
+
+      const productsWithBarcodes = allMatching.filter((p: any) => p.barcode);
 
       if (productsWithBarcodes.length === 0) {
-        showNotification("No products found with barcodes to export.", "error");
+        toastError("No products found with barcodes to export.");
         setExporting(false);
         return;
       }
@@ -327,31 +390,14 @@ export default function ProductsPage() {
       }
 
       doc.save(`barcodes-${new Date().toISOString().slice(0, 10)}.pdf`);
-      showNotification("Barcode PDF exported successfully!", "success");
-    } catch (err) {
+      toastSuccess("Barcode PDF exported successfully!");
+    } catch (err: any) {
       console.error("Export barcodes error:", err);
-      showNotification("Failed to generate PDF. Check console.", "error");
+      toastError(err.message || "Failed to generate PDF. Check console.");
     } finally {
       setExporting(false);
     }
   };
-
-  // Filter & Paginate
-  const filteredProducts = products.filter((p) => {
-    const matchSearch =
-      p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      p.sku.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchCategory =
-      categoryFilter === "all" || p.categoryId === categoryFilter;
-    const matchStatus = statusFilter === "all" || p.statusId === statusFilter;
-    return matchSearch && matchCategory && matchStatus;
-  });
-
-  const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
-  const paginatedProducts = filteredProducts.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage,
-  );
 
   const columns: Column<Product>[] = [
     {
@@ -368,9 +414,13 @@ export default function ProductsPage() {
             className="w-10 h-10 object-cover rounded-lg border border-border-custom bg-bg-secondary shrink-0 group-hover:border-primary transition-colors"
           />
           <div>
-            <p className="font-bold text-text-custom line-clamp-1 group-hover:text-primary transition-colors">
+            <p
+              className="font-bold text-text-custom line-clamp-1 cursor-pointer hover:underline group-hover:text-primary transition-colors"
+              onClick={() => router.push(`/admin/products/edit/${prod.id}`)}
+            >
               {prod.name}
             </p>
+
             <p className="text-3xs text-text-custom/50 font-bold uppercase tracking-wider font-mono">
               SKU: {prod.sku}
             </p>
@@ -514,6 +564,7 @@ export default function ProductsPage() {
             <div className="w-full md:w-80">
               <Search
                 placeholder="Search products by title or SKU..."
+                value={searchTerm}
                 onSearchChange={(val) => {
                   setSearchTerm(val);
                   setCurrentPage(1);
@@ -571,18 +622,21 @@ export default function ProductsPage() {
               </span>
             </div>
           ) : (
-            <DataTable columns={columns} data={paginatedProducts} />
+            <DataTable columns={columns} data={products} />
           )}
 
           <Pagination
             currentPage={currentPage}
             totalPages={totalPages}
-            onPageChange={setCurrentPage}
+            totalItems={totalProducts}
+            onPageChange={(page) => {
+              setCurrentPage(page);
+              window.scrollTo({ top: 0, behavior: "smooth" });
+            }}
           />
         </div>
       </Card>
 
-      {/* Delete Dialog */}
       <DeleteDialog
         isOpen={deleteDialogOpen}
         onClose={() => setDeleteDialogOpen(false)}
@@ -590,24 +644,6 @@ export default function ProductsPage() {
         itemName={selectedProduct?.name}
         title="Delete Product Listing"
       />
-
-      {/* Toast Notification */}
-      {notification && (
-        <div
-          className={`fixed top-4 right-4 z-50 flex items-center gap-2.5 px-4 py-3 rounded-xl shadow-xl border animate-in fade-in slide-in-from-top-4 duration-300 ${
-            notification.type === "success"
-              ? "bg-emerald-50 border-emerald-200 text-emerald-800"
-              : "bg-red-50 border-red-200 text-red-800"
-          }`}
-        >
-          {notification.type === "success" ? (
-            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-          ) : (
-            <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
-          )}
-          <span className="text-xs font-semibold">{notification.message}</span>
-        </div>
-      )}
     </div>
   );
 }
