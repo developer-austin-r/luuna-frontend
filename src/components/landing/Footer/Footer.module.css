@@ -4,12 +4,8 @@
   color: #160525;
   background: linear-gradient(
     180deg,
-    #130823 0%,
-    #2a1740 14%,
-    #4c2f68 32%,
-    #755494 56%,
-    #a78cbe 78%,
-    #d9cee5 100%
+    #F3E8FF 0%,
+    #E9D5FF 100%
   );
 
   box-sizing: border-box;
@@ -50,7 +46,7 @@
 
   font-weight: 800;
 
-  color: #9871bd;
+  color: #6B21A8;
 }
 
 .subscribe h3,
