@@ -2,19 +2,33 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import { User, Mail, Phone, MapPin, Calendar, Camera, CheckCircle2, AlertCircle, ChevronLeft } from "lucide-react";
+import {
+  AlertCircle,
+  Calendar,
+  Camera,
+  CheckCircle2,
+  ChevronLeft,
+  Mail,
+  MapPin,
+  Phone,
+  User,
+} from "lucide-react";
+
+import Footer from "@/components/landing/Footer/Footer";
+import LoginOfferBar from "@/components/landing/LoginOfferBar/LoginOfferBar";
+import Navbar from "@/components/landing/Navbar/Navbar";
 import { AccountMenu } from "@/components/profile/AccountMenu/AccountMenu";
+import { ProfileActions } from "@/components/profile/ProfileActions/ProfileActions";
 import { ProfileHeader } from "@/components/profile/ProfileHeader/ProfileHeader";
 import { ProfileInput } from "@/components/profile/ProfileInput/ProfileInput";
 import { ProfileSelect } from "@/components/profile/ProfileSelect/ProfileSelect";
-import { ProfileActions } from "@/components/profile/ProfileActions/ProfileActions";
-import Navbar from "@/components/landing/Navbar/Navbar";
-import Footer from "@/components/landing/Footer/Footer";
-import LoginOfferBar from "@/components/landing/LoginOfferBar/LoginOfferBar";
 
 export default function ProfilePage() {
   const [isSaving, setIsSaving] = useState(false);
-  const [statusMessage, setStatusMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
+  const [statusMessage, setStatusMessage] = useState<{
+    type: "success" | "error";
+    text: string;
+  } | null>(null);
 
   // Define initial data state to support reverting changes on Cancel
   const initialData = {
@@ -27,7 +41,7 @@ export default function ProfilePage() {
     address: "123 Main Street, Apt 4B",
     district: "Manhattan",
     pincode: "10001",
-    state: "NY"
+    state: "NY",
   };
 
   // Profile Data State
@@ -35,9 +49,11 @@ export default function ProfilePage() {
 
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
+  ) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
     if (statusMessage) setStatusMessage(null); // Clear messages on edit
   };
 
@@ -55,18 +71,24 @@ export default function ProfilePage() {
     e.preventDefault();
     setIsSaving(true);
     setStatusMessage(null);
-    
+
     // Simulate API call to user profile endpoint (Endpoint missing, identified as needed)
     setTimeout(() => {
       // Basic client-side validation simulation
       if (!formData.firstName || !formData.lastName || !formData.email) {
         setIsSaving(false);
-        setStatusMessage({ type: 'error', text: "Please fill in all required fields." });
+        setStatusMessage({
+          type: "error",
+          text: "Please fill in all required fields.",
+        });
         return;
       }
 
       setIsSaving(false);
-      setStatusMessage({ type: 'success', text: "Profile updated successfully!" });
+      setStatusMessage({
+        type: "success",
+        text: "Profile updated successfully!",
+      });
     }, 1500);
   };
 
@@ -86,52 +108,54 @@ export default function ProfilePage() {
     <>
       <LoginOfferBar />
       <Navbar />
-      
-
 
       <div className="min-h-screen bg-gradient-to-b from-[#2a1740] via-[#755494] to-[#E9D5FF] pb-16 pt-8 px-4 sm:px-6 lg:px-8">
         <div className="max-w-6xl mx-auto mb-6">
-          <Link href="/" className="inline-flex items-center text-sm font-semibold text-white hover:text-[#E9D5FF] transition-colors">
+          <Link
+            href="/"
+            className="inline-flex items-center text-sm font-semibold text-white hover:text-[#E9D5FF] transition-colors"
+          >
             <ChevronLeft size={16} className="mr-1" />
             Back to Home
           </Link>
         </div>
 
         <div className="max-w-6xl mx-auto flex flex-col md:flex-row gap-6">
-          
           {/* Left Sidebar Navigation */}
           <div className="w-full md:w-72 shrink-0">
-            <h2 className="text-xl font-bold text-white mb-4 px-1 tracking-tight">Manage My Account</h2>
+            <h2 className="text-xl font-bold text-white mb-4 px-1 tracking-tight">
+              Manage My Account
+            </h2>
             <AccountMenu onLogout={handleLogout} />
           </div>
 
           {/* Right Main Content area */}
           <div className="flex-1 bg-white rounded-3xl shadow-2xl p-6 sm:p-8">
             <div className="flex justify-between items-start mb-6">
-              <ProfileHeader 
-                title="Edit Your Profile" 
-                subtitle="Update your personal information and account details" 
+              <ProfileHeader
+                title="Edit Your Profile"
+                subtitle="Update your personal information and account details"
               />
-              
+
               {/* Avatar Section at Top Right */}
               <div className="relative shrink-0 ml-4">
                 <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-gray-50 flex items-center justify-center overflow-hidden border-2 border-white shadow-md">
-                  <img 
-                    src={avatarPreview || "/images/recommendation-toy.png"} 
-                    alt="Profile preview" 
-                    className="w-full h-full object-cover" 
+                  <img
+                    src={avatarPreview || "/images/recommendation-toy.png"}
+                    alt="Profile preview"
+                    className="w-full h-full object-cover"
                   />
                 </div>
-                <label 
-                  htmlFor="avatar-upload" 
+                <label
+                  htmlFor="avatar-upload"
                   className="absolute bottom-1 right-1 p-1.5 bg-[#6B21A8] rounded-full text-white cursor-pointer hover:bg-[#4C1D95] transition-colors shadow-lg border-2 border-white"
                 >
                   <Camera size={14} />
-                  <input 
-                    id="avatar-upload" 
-                    type="file" 
-                    accept="image/*" 
-                    className="hidden" 
+                  <input
+                    id="avatar-upload"
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
                     onChange={handleImageChange}
                   />
                 </label>
@@ -139,22 +163,27 @@ export default function ProfilePage() {
             </div>
 
             {statusMessage && (
-              <div className={`mb-6 p-3 rounded-xl flex items-center gap-3 text-sm font-semibold ${
-                statusMessage.type === 'success' 
-                  ? 'bg-green-50 text-green-700 border border-green-200' 
-                  : 'bg-red-50 text-red-700 border border-red-200'
-              }`}>
-                {statusMessage.type === 'success' ? <CheckCircle2 size={16} /> : <AlertCircle size={16} />}
+              <div
+                className={`mb-6 p-3 rounded-xl flex items-center gap-3 text-sm font-semibold ${
+                  statusMessage.type === "success"
+                    ? "bg-green-50 text-green-700 border border-green-200"
+                    : "bg-red-50 text-red-700 border border-red-200"
+                }`}
+              >
+                {statusMessage.type === "success" ? (
+                  <CheckCircle2 size={16} />
+                ) : (
+                  <AlertCircle size={16} />
+                )}
                 {statusMessage.text}
               </div>
             )}
 
             <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-              
               {/* Row 1: First Name | Last Name */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <ProfileInput 
-                  label="First Name" 
+                <ProfileInput
+                  label="First Name"
                   name="firstName"
                   placeholder="John"
                   value={formData.firstName}
@@ -162,8 +191,8 @@ export default function ProfilePage() {
                   icon={<User size={16} />}
                   required
                 />
-                <ProfileInput 
-                  label="Last Name" 
+                <ProfileInput
+                  label="Last Name"
                   name="lastName"
                   placeholder="Doe"
                   value={formData.lastName}
@@ -175,8 +204,8 @@ export default function ProfilePage() {
 
               {/* Row 2: Mobile Number | Email */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <ProfileInput 
-                  label="Mobile Number" 
+                <ProfileInput
+                  label="Mobile Number"
                   name="mobile"
                   type="tel"
                   placeholder="+1 234 567 890"
@@ -185,8 +214,8 @@ export default function ProfilePage() {
                   icon={<Phone size={16} />}
                   required
                 />
-                <ProfileInput 
-                  label="Email" 
+                <ProfileInput
+                  label="Email"
                   name="email"
                   type="email"
                   placeholder="john.doe@example.com"
@@ -199,16 +228,16 @@ export default function ProfilePage() {
 
               {/* Row 3: Date of birth | Gender */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <ProfileInput 
-                  label="Date of birth" 
+                <ProfileInput
+                  label="Date of birth"
                   name="dob"
                   type="date"
                   value={formData.dob}
                   onChange={handleInputChange}
                   icon={<Calendar size={16} />}
                 />
-                <ProfileSelect 
-                  label="Gender" 
+                <ProfileSelect
+                  label="Gender"
                   name="gender"
                   placeholder="Select gender"
                   value={formData.gender}
@@ -216,15 +245,15 @@ export default function ProfilePage() {
                   options={[
                     { value: "male", label: "Male" },
                     { value: "female", label: "Female" },
-                    { value: "other", label: "Other" }
+                    { value: "other", label: "Other" },
                   ]}
                 />
               </div>
 
               {/* Row 4: Address full width */}
               <div className="grid grid-cols-1 gap-4">
-                <ProfileInput 
-                  label="Address" 
+                <ProfileInput
+                  label="Address"
                   name="address"
                   placeholder="123 Main Street, Apt 4B"
                   value={formData.address}
@@ -235,15 +264,15 @@ export default function ProfilePage() {
 
               {/* Row 5: District | State */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <ProfileInput 
-                  label="District" 
+                <ProfileInput
+                  label="District"
                   name="district"
                   placeholder="E.g. Manhattan"
                   value={formData.district}
                   onChange={handleInputChange}
                 />
-                <ProfileSelect 
-                  label="State" 
+                <ProfileSelect
+                  label="State"
                   name="state"
                   placeholder="Select state"
                   value={formData.state}
@@ -276,15 +305,15 @@ export default function ProfilePage() {
                     { value: "Tripura", label: "Tripura" },
                     { value: "Uttar Pradesh", label: "Uttar Pradesh" },
                     { value: "Uttarakhand", label: "Uttarakhand" },
-                    { value: "West Bengal", label: "West Bengal" }
+                    { value: "West Bengal", label: "West Bengal" },
                   ]}
                 />
               </div>
 
               {/* Row 6: Pincode */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <ProfileInput 
-                  label="Pincode" 
+                <ProfileInput
+                  label="Pincode"
                   name="pincode"
                   placeholder="10001"
                   value={formData.pincode}
@@ -294,16 +323,15 @@ export default function ProfilePage() {
 
               {/* Action Buttons */}
               <div className="pt-2 border-t border-gray-100 mt-2">
-                <ProfileActions 
+                <ProfileActions
                   onCancel={handleCancel}
-                  isSaving={isSaving} 
+                  isSaving={isSaving}
                   cancelLabel="Cancel"
                   saveLabel="Save Changes"
                 />
               </div>
             </form>
           </div>
-          
         </div>
       </div>
       <Footer />

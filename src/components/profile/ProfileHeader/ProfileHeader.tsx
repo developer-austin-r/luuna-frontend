@@ -16,11 +16,7 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
       <h2 className="text-xl font-bold text-gray-900 tracking-tight">
         {title}
       </h2>
-      {subtitle && (
-        <p className="text-sm text-gray-500">
-          {subtitle}
-        </p>
-      )}
+      {subtitle && <p className="text-sm text-gray-500">{subtitle}</p>}
     </div>
   );
 };

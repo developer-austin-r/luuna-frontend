@@ -2,21 +2,29 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import { Lock, CheckCircle2, AlertCircle, ChevronLeft, Eye, EyeOff } from "lucide-react";
-import { AccountMenu } from "@/components/profile/AccountMenu/AccountMenu";
-import { ProfileHeader } from "@/components/profile/ProfileHeader/ProfileHeader";
-import { ProfileActions } from "@/components/profile/ProfileActions/ProfileActions";
-import Navbar from "@/components/landing/Navbar/Navbar";
+import {
+  AlertCircle,
+  CheckCircle2,
+  ChevronLeft,
+  Eye,
+  EyeOff,
+  Lock,
+} from "lucide-react";
+
 import Footer from "@/components/landing/Footer/Footer";
 import LoginOfferBar from "@/components/landing/LoginOfferBar/LoginOfferBar";
+import Navbar from "@/components/landing/Navbar/Navbar";
+import { AccountMenu } from "@/components/profile/AccountMenu/AccountMenu";
+import { ProfileActions } from "@/components/profile/ProfileActions/ProfileActions";
+import { ProfileHeader } from "@/components/profile/ProfileHeader/ProfileHeader";
 
-const PasswordInput = ({ 
-  label, 
-  name, 
-  value, 
-  onChange, 
+const PasswordInput = ({
+  label,
+  name,
+  value,
+  onChange,
   error,
-  placeholder 
+  placeholder,
 }: {
   label: string;
   name: string;
@@ -30,7 +38,10 @@ const PasswordInput = ({
 
   return (
     <div className="flex flex-col w-full">
-      <label htmlFor={inputId} className="block text-xs font-semibold text-gray-700 mb-1.5 ml-1">
+      <label
+        htmlFor={inputId}
+        className="block text-xs font-semibold text-gray-700 mb-1.5 ml-1"
+      >
         {label}
       </label>
       <div className="relative flex items-center w-full">
@@ -55,9 +66,7 @@ const PasswordInput = ({
         </button>
       </div>
       {error && (
-        <span className="text-xs text-red-500 mt-1.5 ml-1 block">
-          {error}
-        </span>
+        <span className="text-xs text-red-500 mt-1.5 ml-1 block">{error}</span>
       )}
     </div>
   );
@@ -65,24 +74,27 @@ const PasswordInput = ({
 
 export default function ChangePasswordPage() {
   const [isSaving, setIsSaving] = useState(false);
-  const [statusMessage, setStatusMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
+  const [statusMessage, setStatusMessage] = useState<{
+    type: "success" | "error";
+    text: string;
+  } | null>(null);
 
   const [formData, setFormData] = useState({
     currentPassword: "",
     newPassword: "",
-    confirmPassword: ""
+    confirmPassword: "",
   });
 
   const [errors, setErrors] = useState({
     currentPassword: "",
     newPassword: "",
-    confirmPassword: ""
+    confirmPassword: "",
   });
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
-    setErrors(prev => ({ ...prev, [name]: "" }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
+    setErrors((prev) => ({ ...prev, [name]: "" }));
     if (statusMessage) setStatusMessage(null);
   };
 
@@ -90,13 +102,13 @@ export default function ChangePasswordPage() {
     if (e) e.preventDefault();
     setIsSaving(true);
     setStatusMessage(null);
-    
+
     // Client-side validation
     let isValid = true;
     const newErrors = {
       currentPassword: "",
       newPassword: "",
-      confirmPassword: ""
+      confirmPassword: "",
     };
 
     if (!formData.currentPassword) {
@@ -129,11 +141,14 @@ export default function ChangePasswordPage() {
       setIsSaving(false);
       // Backend integration note: Real password change submission requires backend API integration.
       // This is purely a frontend validation simulation.
-      setStatusMessage({ type: 'success', text: "Password verified successfully!" });
+      setStatusMessage({
+        type: "success",
+        text: "Password verified successfully!",
+      });
       setFormData({
         currentPassword: "",
         newPassword: "",
-        confirmPassword: ""
+        confirmPassword: "",
       });
     }, 1000);
   };
@@ -142,12 +157,12 @@ export default function ChangePasswordPage() {
     setFormData({
       currentPassword: "",
       newPassword: "",
-      confirmPassword: ""
+      confirmPassword: "",
     });
     setErrors({
       currentPassword: "",
       newPassword: "",
-      confirmPassword: ""
+      confirmPassword: "",
     });
     setStatusMessage(null);
   };
@@ -160,45 +175,57 @@ export default function ChangePasswordPage() {
     <>
       <LoginOfferBar />
       <Navbar />
-      
+
       <div className="min-h-screen bg-gradient-to-b from-[#2a1740] via-[#755494] to-[#E9D5FF] pb-16 pt-8 px-4 sm:px-6 lg:px-8">
         <div className="max-w-6xl mx-auto mb-6">
-          <Link href="/" className="inline-flex items-center text-sm font-semibold text-white hover:text-[#E9D5FF] transition-colors">
+          <Link
+            href="/"
+            className="inline-flex items-center text-sm font-semibold text-white hover:text-[#E9D5FF] transition-colors"
+          >
             <ChevronLeft size={16} className="mr-1" />
             Back to Home
           </Link>
         </div>
 
         <div className="max-w-6xl mx-auto flex flex-col md:flex-row gap-6">
-          
           {/* Left Sidebar Navigation */}
           <div className="w-full md:w-72 shrink-0">
-            <h2 className="text-xl font-bold text-white mb-4 px-1 tracking-tight">Manage My Account</h2>
+            <h2 className="text-xl font-bold text-white mb-4 px-1 tracking-tight">
+              Manage My Account
+            </h2>
             <AccountMenu onLogout={handleLogout} />
           </div>
 
           {/* Right Main Content area */}
           <div className="flex-1 bg-white rounded-3xl shadow-2xl p-6 sm:p-8">
             <div className="mb-6">
-              <ProfileHeader 
-                title="Change Password" 
-                subtitle="Update your password to keep your account secure." 
+              <ProfileHeader
+                title="Change Password"
+                subtitle="Update your password to keep your account secure."
               />
             </div>
 
             {statusMessage && (
-              <div className={`mb-6 p-3 rounded-xl flex items-center gap-3 text-sm font-semibold ${
-                statusMessage.type === 'success' 
-                  ? 'bg-green-50 text-green-700 border border-green-200' 
-                  : 'bg-red-50 text-red-700 border border-red-200'
-              }`}>
-                {statusMessage.type === 'success' ? <CheckCircle2 size={16} /> : <AlertCircle size={16} />}
+              <div
+                className={`mb-6 p-3 rounded-xl flex items-center gap-3 text-sm font-semibold ${
+                  statusMessage.type === "success"
+                    ? "bg-green-50 text-green-700 border border-green-200"
+                    : "bg-red-50 text-red-700 border border-red-200"
+                }`}
+              >
+                {statusMessage.type === "success" ? (
+                  <CheckCircle2 size={16} />
+                ) : (
+                  <AlertCircle size={16} />
+                )}
                 {statusMessage.text}
               </div>
             )}
 
-            <form onSubmit={handleSubmit} className="flex flex-col gap-4 max-w-lg">
-              
+            <form
+              onSubmit={handleSubmit}
+              className="flex flex-col gap-4 max-w-lg"
+            >
               <PasswordInput
                 label="Current Password"
                 name="currentPassword"
@@ -207,7 +234,7 @@ export default function ChangePasswordPage() {
                 onChange={handleInputChange}
                 error={errors.currentPassword}
               />
-              
+
               <PasswordInput
                 label="New Password"
                 name="newPassword"
@@ -216,7 +243,7 @@ export default function ChangePasswordPage() {
                 onChange={handleInputChange}
                 error={errors.newPassword}
               />
-              
+
               <PasswordInput
                 label="Confirm New Password"
                 name="confirmPassword"
@@ -228,17 +255,16 @@ export default function ChangePasswordPage() {
 
               {/* Action Buttons */}
               <div className="pt-4 border-t border-gray-100 mt-4">
-                <ProfileActions 
+                <ProfileActions
                   onCancel={handleCancel}
                   onSave={handleSubmit}
-                  isSaving={isSaving} 
+                  isSaving={isSaving}
                   cancelLabel="Cancel"
                   saveLabel="Save Changes"
                 />
               </div>
             </form>
           </div>
-          
         </div>
       </div>
       <Footer />

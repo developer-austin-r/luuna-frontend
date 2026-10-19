@@ -4,15 +4,15 @@ import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
-  User,
-  Lock,
-  Package,
-  Heart,
-  Ticket,
-  HelpCircle,
-  LogOut,
   ChevronRight,
-  LucideIcon
+  Heart,
+  HelpCircle,
+  Lock,
+  LogOut,
+  type LucideIcon,
+  Package,
+  Ticket,
+  User,
 } from "lucide-react";
 
 export interface MenuItem {
@@ -35,11 +35,16 @@ export interface AccountMenuProps {
   className?: string;
 }
 
-export const AccountMenu: React.FC<AccountMenuProps> = ({ onLogout, className = "" }) => {
+export const AccountMenu: React.FC<AccountMenuProps> = ({
+  onLogout,
+  className = "",
+}) => {
   const pathname = usePathname();
 
   return (
-    <div className={`w-full rounded-2xl border border-gray-100 bg-white shadow-sm overflow-hidden flex flex-col justify-between p-3 pb-8 ${className}`}>
+    <div
+      className={`w-full rounded-2xl border border-gray-100 bg-white shadow-sm overflow-hidden flex flex-col justify-between p-3 pb-8 ${className}`}
+    >
       <ul className="flex flex-col w-full gap-1">
         {MENU_ITEMS.map((item) => {
           const isActive = pathname === item.href;
@@ -59,18 +64,29 @@ export const AccountMenu: React.FC<AccountMenuProps> = ({ onLogout, className = 
                   {Icon && (
                     <Icon
                       size={18}
-                      className={isActive ? "text-[#6B21A8]" : "text-gray-400 group-hover:text-[#6B21A8] transition-colors"}
+                      className={
+                        isActive
+                          ? "text-[#6B21A8]"
+                          : "text-gray-400 group-hover:text-[#6B21A8] transition-colors"
+                      }
                     />
                   )}
                   {item.label}
                 </div>
-                <ChevronRight size={16} className={isActive ? "text-[#6B21A8]" : "text-gray-400 group-hover:text-[#6B21A8] transition-colors"} />
+                <ChevronRight
+                  size={16}
+                  className={
+                    isActive
+                      ? "text-[#6B21A8]"
+                      : "text-gray-400 group-hover:text-[#6B21A8] transition-colors"
+                  }
+                />
               </Link>
             </li>
           );
         })}
       </ul>
-      
+
       {/* Logout Action */}
       <div className="mt-8 px-4">
         <button
@@ -85,4 +101,3 @@ export const AccountMenu: React.FC<AccountMenuProps> = ({ onLogout, className = 
     </div>
   );
 };
-
