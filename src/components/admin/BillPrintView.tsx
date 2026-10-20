@@ -27,19 +27,35 @@ export function BillPrintView({
   const handlePrint = () => window.print();
   const [sendingWA, setSendingWA] = useState(false);
   const [waSent, setWaSent] = useState(false);
+  const [waError, setWaError] = useState<string | null>(null);
 
   const handleSendWhatsApp = async () => {
     if (!bill.customerMobile) return;
     setSendingWA(true);
+    setWaError(null);
     try {
-      await whatsappService.sendBillReceipt(bill.customerMobile, {
-        billNumber: bill.billNumber,
-        customerName: bill.customerName ?? null,
-        totalAmount: bill.totalAmount,
-        paymentMethod: bill.paymentMethod,
-        id: bill.id,
-      });
-      setWaSent(true);
+      const result = await whatsappService.sendBillReceipt(
+        bill.customerMobile,
+        {
+          billNumber: bill.billNumber,
+          customerName: bill.customerName ?? null,
+          totalAmount: bill.totalAmount,
+          paymentMethod: bill.paymentMethod,
+          id: bill.id,
+          createdAt: bill.createdAt,
+        },
+      );
+      if (result.success) {
+        setWaSent(true);
+      } else {
+        setWaError(result.error ?? "WhatsApp could not send this message.");
+      }
+    } catch (error) {
+      setWaError(
+        error instanceof Error
+          ? error.message
+          : "WhatsApp could not send this message.",
+      );
     } finally {
       setSendingWA(false);
     }
@@ -192,8 +208,13 @@ export function BillPrintView({
                     <path d="M12 0C5.373 0 0 5.373 0 12c0 2.126.555 4.126 1.527 5.862L0 24l6.335-1.508A11.94 11.94 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.885 0-3.655-.504-5.18-1.382l-.372-.22-3.762.896.929-3.652-.241-.378A10 10 0 0112 2a10 10 0 110 20z" />
                   </svg>
                 )}
-                {waSent ? "Sent!" : sendingWA ? "Opening…" : "Send WhatsApp"}
+                {waSent ? "Sent!" : sendingWA ? "Sending…" : "Send WhatsApp"}
               </button>
+            )}
+            {waError && (
+              <p role="alert" className="basis-full text-xs text-red-600">
+                {waError}
+              </p>
             )}
             <button
               onClick={onClose}

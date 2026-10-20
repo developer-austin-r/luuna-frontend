@@ -4,7 +4,7 @@ export type WhatsAppChannel = "BILLING" | "ORDER" | "MANUAL";
 
 export interface SendWhatsAppDto {
   phone: string;
-  message: string;
+  templateParameters: string[];
   channel?: WhatsAppChannel;
   entityId?: string;
 }
@@ -13,7 +13,7 @@ export interface WhatsAppSendResult {
   success: boolean;
   phone: string;
   logId: string;
-  url?: string;
+  messageId?: string;
   error?: string;
 }
 
@@ -45,34 +45,11 @@ async function unwrap<T>(path: string, init?: RequestInit): Promise<T> {
 }
 
 /**
- * Build the WhatsApp deep-link message for a bill.
- * Kept here so any feature (billing, orders, etc.) can call it.
- */
-export function buildBillWhatsAppMessage(bill: {
-  billNumber: string;
-  customerName?: string | null;
-  totalAmount: number | string;
-  paymentMethod: string;
-}): string {
-  const name = bill.customerName ? ` ${bill.customerName}` : "";
-  return (
-    `Hello${name}! 🎉\n\n` +
-    `Thank you for shopping with us. Here is your bill summary:\n\n` +
-    `📄 *Bill No:* ${bill.billNumber}\n` +
-    `💰 *Total:* ₹${Number(bill.totalAmount).toFixed(2)}\n` +
-    `💳 *Payment:* ${bill.paymentMethod}\n\n` +
-    `Thank you for your business! 🙏`
-  );
-}
-
-/**
- * Reusable WhatsApp service.
- * Logs the send attempt to the backend and returns a wa.me URL
- * that the frontend opens in a new tab.
+ * Reusable WhatsApp service. The backend sends the configured Meta template.
  */
 export const whatsappService = {
   /**
-   * Log a WhatsApp send and get back the wa.me URL to open.
+   * Send a WhatsApp template message through the backend.
    */
   async send(dto: SendWhatsAppDto): Promise<WhatsAppSendResult> {
     return unwrap<WhatsAppSendResult>("/whatsapp/send", {
@@ -82,8 +59,7 @@ export const whatsappService = {
   },
 
   /**
-   * Convenience wrapper: build bill message → log → open WhatsApp.
-   * Returns false if the phone is missing or the API call fails.
+   * Send a bill receipt using the configured template's three body parameters.
    */
   async sendBillReceipt(
     phone: string,
@@ -93,24 +69,25 @@ export const whatsappService = {
       totalAmount: number | string;
       paymentMethod: string;
       id?: string;
+      createdAt: string;
     },
-  ): Promise<boolean> {
-    if (!phone) return false;
-    try {
-      const message = buildBillWhatsAppMessage(bill);
-      const result = await whatsappService.send({
-        phone,
-        message,
-        channel: "BILLING",
-        entityId: bill.id,
-      });
-      if (result.url) {
-        window.open(result.url, "_blank", "noopener,noreferrer");
-      }
-      return result.success;
-    } catch {
-      return false;
-    }
+  ): Promise<WhatsAppSendResult> {
+    const billDate = new Date(bill.createdAt).toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+      timeZone: "UTC",
+    });
+    return whatsappService.send({
+      phone,
+      templateParameters: [
+        bill.customerName?.trim() || "Customer",
+        bill.billNumber,
+        billDate,
+      ],
+      channel: "BILLING",
+      ...(bill.id ? { entityId: bill.id } : {}),
+    });
   },
 
   /**
