@@ -1,0 +1,173 @@
+.page {
+  width: 100%;
+  min-height: auto;
+
+  background: #130823;
+
+  padding: 0 4% 180px;
+
+  box-sizing: border-box;
+}
+
+.backButton {
+  margin: 0 0 30px;
+  padding: 0;
+
+  border: none;
+  background: transparent;
+
+  color: #ffffff;
+
+  font-size: 28px;
+  font-weight: 700;
+
+  cursor: pointer;
+}
+
+.shippingWrapper {
+  width: min(735px, 100%);
+
+  display: flex;
+  flex-direction: column;
+
+  gap: 45px;
+}
+
+.twoColumn {
+  display: grid;
+
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+
+  column-gap: 24px;
+  row-gap: 24px;
+}
+
+.addressRow {
+  margin-top: 24px;
+}
+
+.locationRow {
+  margin-top: 24px;
+
+  display: grid;
+
+  grid-template-columns:
+    minmax(0, 1.7fr)
+    minmax(140px, 0.8fr)
+    minmax(130px, 0.8fr);
+
+  gap: 14px;
+}
+
+.selectField {
+  width: 100%;
+
+  display: flex;
+  flex-direction: column;
+
+  gap: 8px;
+
+  min-width: 0;
+}
+
+.selectField label {
+  font-size: 14px;
+  font-weight: 500;
+
+  color: #555968;
+}
+
+.selectField select {
+  width: 100%;
+  height: 53px;
+
+  padding: 0 16px;
+
+  border: 1px solid #c8cce0;
+  border-radius: 28px;
+
+  outline: none;
+
+  background: #fafaff;
+
+  color: #17131d;
+
+  font-size: 14px;
+  font-family: inherit;
+
+  box-sizing: border-box;
+}
+
+@media (max-width: 900px) {
+  .page {
+    padding-left: 24px;
+    padding-right: 24px;
+  }
+
+  .shippingWrapper {
+    width: 100%;
+  }
+}
+
+@media (max-width: 600px) {
+  .page {
+    padding: 0 14px 50px;
+  }
+
+  .backButton {
+    font-size: 21px;
+    margin-bottom: 22px;
+  }
+
+  .shippingWrapper {
+    gap: 24px;
+  }
+
+  .twoColumn {
+    grid-template-columns: 1fr;
+    gap: 18px;
+  }
+
+  .addressRow {
+    margin-top: 18px;
+  }
+
+  .locationRow {
+    margin-top: 18px;
+    grid-template-columns: 1fr;
+    gap: 18px;
+  }
+}
+.checkoutLayout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.8fr) minmax(340px, 1fr);
+  gap: 45px;
+  align-items: start;
+}
+
+.leftColumn {
+  display: flex;
+  flex-direction: column;
+  gap: 45px;
+}
+
+.rightColumn {
+  min-width: 0;
+}
+
+@media (max-width: 1000px) {
+  .checkoutLayout {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .page {
+    padding: 0 20px 90px;
+  }
+}
+@media (max-width: 600px) {
+  .page {
+    padding: 0 14px 110px;
+  }
+}

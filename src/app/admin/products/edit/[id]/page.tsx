@@ -230,7 +230,9 @@ export default function EditProductPage() {
   // Mock Upload Simulator
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files) return;
-    const filesArray = Array.from(e.target.files);
+    const filesArray = Array.from(e.target.files).sort((a, b) =>
+      a.name.localeCompare(b.name, undefined, { numeric: true }),
+    );
 
     if (images.length + filesArray.length > 7) {
       alert("You can upload a maximum of 7 images.");
@@ -347,6 +349,45 @@ export default function EditProductPage() {
 
   const removeVideo = () => {
     setVideo(null);
+  };
+
+  const [draggedImgId, setDraggedImgId] = useState<string | null>(null);
+
+  const handleDragStart = (
+    e: React.DragEvent<HTMLDivElement>,
+    imgId: string,
+  ) => {
+    e.dataTransfer.setData("text/plain", imgId);
+    e.dataTransfer.effectAllowed = "move";
+    setDraggedImgId(imgId);
+  };
+
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "move";
+  };
+
+  const handleDrop = (e: React.DragEvent<HTMLDivElement>, targetId: string) => {
+    e.preventDefault();
+    const sourceId = e.dataTransfer.getData("text/plain");
+    if (!sourceId || sourceId === targetId) {
+      setDraggedImgId(null);
+      return;
+    }
+
+    setImages((prev) => {
+      const sourceIndex = prev.findIndex((img) => img.id === sourceId);
+      const targetIndex = prev.findIndex((img) => img.id === targetId);
+      if (sourceIndex === -1 || targetIndex === -1) return prev;
+
+      const newImages = [...prev];
+      const [movedImage] = newImages.splice(sourceIndex, 1);
+      if (movedImage) {
+        newImages.splice(targetIndex, 0, movedImage);
+      }
+      return newImages.map((img, i) => ({ ...img, displayOrder: i }));
+    });
+    setDraggedImgId(null);
   };
 
   const onSubmit = async (data: ProductFormValues) => {
@@ -557,7 +598,15 @@ export default function EditProductPage() {
                     {images.map((img) => (
                       <div
                         key={img.id}
-                        className="relative aspect-square rounded-lg border border-border-custom bg-bg-secondary overflow-hidden group"
+                        draggable
+                        onDragStart={(e) => handleDragStart(e, img.id)}
+                        onDragOver={handleDragOver}
+                        onDrop={(e) => handleDrop(e, img.id)}
+                        className={`relative aspect-square rounded-lg border border-border-custom bg-bg-secondary overflow-hidden group cursor-grab active:cursor-grabbing ${
+                          draggedImgId === img.id
+                            ? "opacity-40 border-primary"
+                            : ""
+                        }`}
                       >
                         {img.uploading ? (
                           <div className="absolute inset-0 bg-white/80 flex flex-col items-center justify-center p-2 text-center">

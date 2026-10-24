@@ -11,6 +11,7 @@ import {
   Card,
   StatusBadge,
 } from "@/components/admin";
+import { appConfig } from "@/config";
 import { useAppSelector } from "@/redux/hooks";
 import { apiClient } from "@/services/api-client";
 
@@ -69,6 +70,7 @@ export default function ViewProductPage() {
             id: p.id,
             name: p.name,
             sku: p.sku,
+            barcode: p.barcode,
             category:
               p.productCategories?.[0]?.category?.name || "Uncategorized",
             price: Number(p.basePrice),
@@ -192,7 +194,7 @@ export default function ViewProductPage() {
       {/* Product Information Breakdown */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left Column: Image Card */}
-        <div>
+        <div className="space-y-4">
           <Card>
             <div className="relative aspect-square rounded-lg overflow-hidden border border-border-custom bg-bg-secondary">
               <img
@@ -205,6 +207,30 @@ export default function ViewProductPage() {
                 }}
               />
             </div>
+          </Card>
+
+          <Card className="flex flex-col items-center justify-center p-4">
+            <h4 className="text-xs font-bold text-text-custom uppercase tracking-wider mb-3 self-start">
+              Product Barcode
+            </h4>
+            {product.barcode ? (
+              <div className="flex flex-col items-center gap-3 w-full">
+                <div className="bg-white p-2.5 rounded-lg border border-border-custom flex items-center justify-center w-full min-h-[90px]">
+                  <img
+                    src={`${appConfig.apiBaseUrl}/products/${product.id}/barcode`}
+                    alt={`Barcode for ${product.name}`}
+                    className="max-h-[70px] max-w-full object-contain"
+                  />
+                </div>
+                <span className="font-mono text-sm font-bold text-text-custom/75 tracking-widest bg-bg-secondary px-3 py-1 rounded border border-border-custom w-full text-center">
+                  {product.barcode}
+                </span>
+              </div>
+            ) : (
+              <span className="text-xs text-text-custom/50">
+                No barcode assigned
+              </span>
+            )}
           </Card>
         </div>
 
