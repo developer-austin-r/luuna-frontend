@@ -24,7 +24,13 @@ import { BarcodeScanner } from "@/components/admin/BarcodeScanner";
 import { BillItemsTable } from "@/components/admin/BillItemsTable";
 import { BillPrintView } from "@/components/admin/BillPrintView";
 import { useAppSelector } from "@/redux/hooks";
-import { type Bill, billingService, type BillItem } from "@/services/billing";
+import {
+  type Bill,
+  billingService,
+  type BillItem,
+  type Invoice,
+  type PaymentMethodOption,
+} from "@/services/billing";
 
 type Tab = "new-bill" | "history";
 
@@ -38,20 +44,35 @@ function NewBillPanel() {
 
   const [items, setItems] = useState<BillItem[]>([]);
   const [customerName, setCustomerName] = useState("");
-  const [customerMobile, setCustomerMobile] = useState("");
   const [customerWhatsApp, setCustomerWhatsApp] = useState("");
-  const [customerEmail, setCustomerEmail] = useState("");
   const [customerAddress, setCustomerAddress] = useState("");
   const [discountType, setDiscountType] = useState<"PERCENT" | "FLAT">(
     "PERCENT",
   );
   const [discountValue, setDiscountValue] = useState(0);
   const [taxRate, setTaxRate] = useState<number>(0);
-  const [paymentMethod, setPaymentMethod] = useState("CASH");
+  const [paymentMethod, setPaymentMethod] = useState("");
+  const [paymentMethods, setPaymentMethods] = useState<PaymentMethodOption[]>(
+    [],
+  );
   const [notes, setNotes] = useState("");
   const [saving, setSaving] = useState(false);
   const [savedBill, setSavedBill] = useState<Bill | null>(null);
+  const [savedInvoice, setSavedInvoice] = useState<Invoice | null>(null);
   const [showPrint, setShowPrint] = useState(false);
+
+  // Load payment methods on mount
+  useEffect(() => {
+    billingService
+      .listPaymentMethods()
+      .then((methods) => {
+        setPaymentMethods(methods);
+        if (methods.length > 0 && !paymentMethod) {
+          setPaymentMethod(methods[0]?.slug?.toUpperCase() ?? "CASH");
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   const subtotal = items.reduce(
     (s, it) =>
@@ -109,35 +130,61 @@ function NewBillPanel() {
     if (items.length === 0) return;
     setSaving(true);
     try {
+      // 1. Create the POS bill record
       const dto: Parameters<typeof billingService.createBill>[0] = {
         items,
         discount: billDiscount,
         discountRate,
         taxRate,
         tax: billTax,
-        paymentMethod,
+        paymentMethod: paymentMethod || "CASH",
         status: "PAID",
       };
       if (user?.id) dto.billedBy = user.id;
       if (customerName) dto.customerName = customerName;
-      if (customerMobile) dto.customerMobile = customerMobile;
-      if (customerEmail) dto.customerEmail = customerEmail;
       if (customerAddress) dto.customerAddress = customerAddress;
       if (notes) dto.notes = notes;
       const bill = await billingService.createBill(dto);
-      // Attach the WhatsApp number to the saved bill so BillPrintView
-      // knows which number to message (falls back to mobile if blank)
+
+      // 2. Generate & upload the PDF invoice to S3
+      const selectedMethod = paymentMethods.find(
+        (m) => m.slug.toUpperCase() === paymentMethod,
+      );
+      const invoice = await billingService.createInvoice({
+        name: customerName || undefined,
+        whatsappNumber: customerWhatsApp || undefined,
+        address: customerAddress || undefined,
+        paymentMethodId: selectedMethod?.id,
+        paymentMethodLabel: selectedMethod?.value,
+        discount: billDiscount,
+        tax: billTax,
+        total,
+        subtotal,
+        notes: notes || undefined,
+        billNumber: bill.billNumber,
+        items: items.map((it) => ({
+          productName: it.productName,
+          sku: it.sku,
+          quantity: it.quantity,
+          unitPrice: it.unitPrice,
+          discount: it.discount,
+          tax: it.tax,
+          total:
+            it.unitPrice * it.quantity - (it.discount ?? 0) + (it.tax ?? 0),
+        })),
+      });
+
+      // Attach WhatsApp for print view
       const enrichedBill: typeof bill = customerWhatsApp
         ? { ...bill, customerMobile: customerWhatsApp }
         : bill;
       setSavedBill(enrichedBill);
+      setSavedInvoice(invoice);
       setShowPrint(true);
       // Reset form
       setItems([]);
       setCustomerName("");
-      setCustomerMobile("");
       setCustomerWhatsApp("");
-      setCustomerEmail("");
       setCustomerAddress("");
       setDiscountValue(0);
       setDiscountType("PERCENT");
@@ -213,17 +260,6 @@ function NewBillPanel() {
                 </div>
               </div>
               <div>
-                <label className="block text-2xs font-bold text-text-custom/60 uppercase tracking-wider mb-1">
-                  Mobile
-                </label>
-                <input
-                  value={customerMobile}
-                  onChange={(e) => setCustomerMobile(e.target.value)}
-                  placeholder="+91 xxxxxxxxxx"
-                  className="w-full h-9 px-3 border border-border-custom rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary bg-white transition-all"
-                />
-              </div>
-              <div>
                 <label className="block text-2xs font-bold text-text-custom/60 uppercase tracking-wider mb-1 flex items-center gap-1.5">
                   <span
                     className="inline-flex items-center justify-center w-3.5 h-3.5 rounded-full"
@@ -245,23 +281,8 @@ function NewBillPanel() {
                 <input
                   value={customerWhatsApp}
                   onChange={(e) => setCustomerWhatsApp(e.target.value)}
-                  onFocus={() => {
-                    if (!customerWhatsApp && customerMobile)
-                      setCustomerWhatsApp(customerMobile);
-                  }}
-                  placeholder="WhatsApp number (defaults to mobile)"
+                  placeholder="WhatsApp number"
                   className="w-full h-9 px-3 border border-[#25D366]/40 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-[#25D366]/30 focus:border-[#25D366] bg-white transition-all"
-                />
-              </div>
-              <div>
-                <label className="block text-2xs font-bold text-text-custom/60 uppercase tracking-wider mb-1">
-                  Email
-                </label>
-                <input
-                  value={customerEmail}
-                  onChange={(e) => setCustomerEmail(e.target.value)}
-                  placeholder="customer@email.com"
-                  className="w-full h-9 px-3 border border-border-custom rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary bg-white transition-all"
                 />
               </div>
               <div>

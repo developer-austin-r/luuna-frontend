@@ -64,6 +64,53 @@ export interface BillsResponse {
   meta: BillsMeta;
 }
 
+// ── Invoice types ─────────────────────────────────────────────
+
+export interface PaymentMethodOption {
+  id: string;
+  slug: string;
+  value: string;
+}
+
+export interface Invoice {
+  id: string;
+  name?: string;
+  whatsappNumber?: string;
+  address?: string;
+  paymentMethodId?: string;
+  discount: number;
+  tax: number;
+  total: number;
+  notes?: string;
+  invoicePath?: string;
+  invoiceUrl?: string;
+  createdAt: string;
+  paymentMethod?: PaymentMethodOption;
+}
+
+export interface CreateInvoiceDto {
+  name?: string;
+  whatsappNumber?: string;
+  address?: string;
+  paymentMethodId?: string;
+  paymentMethodLabel?: string;
+  discount?: number;
+  tax?: number;
+  total: number;
+  subtotal: number;
+  notes?: string;
+  billNumber?: string;
+  items: Array<{
+    productName: string;
+    sku?: string;
+    quantity: number;
+    unitPrice: number;
+    discount?: number;
+    tax?: number;
+    total: number;
+  }>;
+}
+
 // All backend responses are wrapped: { data: <payload> } by ResponseInterceptor
 async function unwrap<T>(path: string, init?: RequestInit): Promise<T> {
   const res = await apiClient<{ data: T }>(path, init);
@@ -103,5 +150,22 @@ export const billingService = {
   /** Exact barcode / SKU lookup — backend wraps in { data: product } */
   async lookupProduct(code: string): Promise<any> {
     return unwrap<any>(`/products/lookup?code=${encodeURIComponent(code)}`);
+  },
+
+  // ── Invoice API ──────────────────────────────────────────────
+
+  async createInvoice(dto: CreateInvoiceDto): Promise<Invoice> {
+    return unwrap<Invoice>("/billing/invoices", {
+      method: "POST",
+      body: JSON.stringify(dto),
+    });
+  },
+
+  async getInvoice(id: string): Promise<Invoice> {
+    return unwrap<Invoice>(`/billing/invoices/${id}`);
+  },
+
+  async listPaymentMethods(): Promise<PaymentMethodOption[]> {
+    return unwrap<PaymentMethodOption[]>("/billing/invoices/payment-methods");
   },
 };
