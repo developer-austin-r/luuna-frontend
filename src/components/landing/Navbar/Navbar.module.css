@@ -143,11 +143,11 @@
 ========================= */
 
 .logoSpace {
-  height: 80px;
+  height: 108px;
   width: 100%;
-  background-image: url("/images/luuna-background-pattern.png");
-  background-size: cover;
+  background-size: 100% 100%;
   background-position: center;
+  background-repeat: no-repeat;
 }
 
 /* =========================================
@@ -155,7 +155,6 @@
 ========================================= */
 
 @media (max-width: 900px) {
-
   .navbar {
     height: 95px;
     padding: 0 25px;
@@ -175,13 +174,11 @@
   }
 }
 
-
 /* =========================================
    MOBILE
 ========================================= */
 
 @media (max-width: 600px) {
-
   .navbar {
     min-height: 125px;
     height: auto;
@@ -268,13 +265,11 @@
   }
 }
 
-
 /* =========================================
    SMALL MOBILE
 ========================================= */
 
 @media (max-width: 380px) {
-
   .navbar {
     min-height: 120px;
     padding-left: 10px;

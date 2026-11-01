@@ -213,10 +213,19 @@ export async function authenticate(
       }
     }
 
+    const redirectTo = (formData.get("redirectTo") as string | null)?.trim();
+
     if (role === "admin") {
       redirectUrl = "/admin/dashboard";
     } else if (role === "billing user") {
       redirectUrl = "/admin/billing";
+    } else if (
+      redirectTo &&
+      redirectTo.startsWith("/") &&
+      !redirectTo.startsWith("//") &&
+      !redirectTo.includes(":")
+    ) {
+      redirectUrl = redirectTo;
     } else {
       redirectUrl = "/";
     }
@@ -291,5 +300,26 @@ export async function resetPasswordAction(
     return {
       error: `Fetch failed: ${err.message || "An unexpected error occurred."}`,
     };
+  }
+}
+
+export async function logoutAction(): Promise<void> {
+  const cookieStore = await cookies();
+  cookieStore.delete("access_token");
+  cookieStore.delete("refresh_token");
+  cookieStore.set("access_token", "", { path: "/", maxAge: 0 });
+  cookieStore.set("refresh_token", "", { path: "/", maxAge: 0 });
+
+  const apiBaseUrl =
+    process.env.NEXT_PUBLIC_API_BASE_URL || "http://127.0.0.1:3001";
+  try {
+    await fetch(`${apiBaseUrl.replace(/\/$/, "")}/auth/logout`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+  } catch {
+    // Ignore backend network error
   }
 }

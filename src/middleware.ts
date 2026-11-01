@@ -2,9 +2,6 @@ import { type NextRequest, NextResponse } from "next/server";
 
 /**
  * Protected route prefixes that require authentication.
- * The middleware checks for the access_token cookie presence.
- * Actual token signature validation happens on the backend — a 401 from
- * the API will cause the frontend to redirect to /login.
  */
 const PROTECTED_PREFIXES = ["/admin"];
 
@@ -15,11 +12,14 @@ const AUTH_ROUTES = ["/login", "/register"];
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
+  const lowerPathname = pathname.toLowerCase();
   const accessToken = request.cookies.get("access_token")?.value;
 
   let isAuthenticated = false;
   let role = "";
-  if (accessToken) {
+
+  // Validate JWT access token structure and expiration
+  if (accessToken && accessToken.trim() !== "") {
     try {
       const parts = accessToken.split(".");
       const payloadPart = parts[1];
@@ -30,48 +30,108 @@ export function middleware(request: NextRequest) {
         const payload = JSON.parse(payloadStr);
 
         const currentTime = Math.floor(Date.now() / 1000);
-        if (payload.exp && payload.exp > currentTime) {
+        if (
+          payload.exp &&
+          typeof payload.exp === "number" &&
+          payload.exp > currentTime
+        ) {
           isAuthenticated = true;
-          role = payload.role?.toLowerCase() || "";
+          role = (payload.role || "")
+            .toString()
+            .toLowerCase()
+            .replace(/[-_]/g, " ")
+            .trim();
         }
       }
-    } catch (e) {
-      // ignore
+    } catch {
+      // Invalid token structure or parsing failure
+      isAuthenticated = false;
     }
   }
 
-  // Redirect unauthenticated users from protected routes to /login.
+  const isAdminRole = role === "admin" || role === "super admin";
+  const isBillingUser = role === "billing user";
+
+  // Helper to clear invalid/expired auth cookies on redirect
+  const clearAuthCookies = (response: NextResponse) => {
+    response.cookies.set("access_token", "", { maxAge: 0, path: "/" });
+    response.cookies.set("refresh_token", "", { maxAge: 0, path: "/" });
+  };
+
+  // 1. Protection for /admin routes
   const isProtectedRoute = PROTECTED_PREFIXES.some((prefix) =>
-    pathname.startsWith(prefix),
+    lowerPathname.startsWith(prefix),
   );
   if (isProtectedRoute) {
     if (!isAuthenticated) {
       const loginUrl = new URL("/login", request.url);
-      return NextResponse.redirect(loginUrl);
+      loginUrl.searchParams.set("redirect", pathname + request.nextUrl.search);
+      const res = NextResponse.redirect(loginUrl);
+      if (accessToken) {
+        clearAuthCookies(res);
+      }
+      return res;
     }
-    // Only admin and billing-user roles can access /admin routes
-    const isAdminRole = role === "admin" || role === "billing user";
-    if (!isAdminRole) {
+
+    // Only admin and billing user roles can access /admin routes
+    if (!isAdminRole && !isBillingUser) {
       return NextResponse.redirect(new URL("/", request.url));
     }
 
-    // Role-based route restrictions inside /admin
-    if (role === "billing user") {
-      const isBillingPath = pathname.startsWith("/admin/billing");
+    // Role-based restrictions inside /admin: billing users can only access /admin/billing
+    if (isBillingUser) {
+      const isBillingPath = lowerPathname.startsWith("/admin/billing");
       if (!isBillingPath) {
         return NextResponse.redirect(new URL("/admin/billing", request.url));
       }
     }
   }
 
-  // Redirect already-authenticated users away from /login.
-  const isAuthRoute = AUTH_ROUTES.some((route) => pathname.startsWith(route));
-  if (isAuthRoute && isAuthenticated) {
-    if (role === "admin") {
+  // 2. Strict access control for /profile and its sub-routes (/profile/*)
+  const isProfileRoute =
+    lowerPathname === "/profile" || lowerPathname.startsWith("/profile/");
+  if (isProfileRoute) {
+    // If not authenticated, redirect to /login with return URL
+    if (!isAuthenticated) {
+      const loginUrl = new URL("/login", request.url);
+      loginUrl.searchParams.set("redirect", pathname + request.nextUrl.search);
+      const res = NextResponse.redirect(loginUrl);
+      if (accessToken) {
+        clearAuthCookies(res);
+      }
+      return res;
+    }
+
+    // Admin/Billing accounts should be routed to their respective dashboards instead of customer profile
+    if (isAdminRole) {
       return NextResponse.redirect(new URL("/admin/dashboard", request.url));
-    } else if (role === "billing user") {
+    }
+    if (isBillingUser) {
+      return NextResponse.redirect(new URL("/admin/billing", request.url));
+    }
+
+    return NextResponse.next();
+  }
+
+  // 3. Redirect already-authenticated users away from auth routes (/login, /register)
+  const isAuthRoute = AUTH_ROUTES.some((route) =>
+    lowerPathname.startsWith(route),
+  );
+  if (isAuthRoute && isAuthenticated) {
+    if (isAdminRole) {
+      return NextResponse.redirect(new URL("/admin/dashboard", request.url));
+    } else if (isBillingUser) {
       return NextResponse.redirect(new URL("/admin/billing", request.url));
     } else {
+      const redirectParam = request.nextUrl.searchParams.get("redirect");
+      if (
+        redirectParam &&
+        redirectParam.startsWith("/") &&
+        !redirectParam.startsWith("//") &&
+        !redirectParam.includes(":")
+      ) {
+        return NextResponse.redirect(new URL(redirectParam, request.url));
+      }
       return NextResponse.redirect(new URL("/", request.url));
     }
   }

@@ -1,9 +1,16 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useRouter } from "next/navigation";
-import { Edit, Eye, ShieldAlert, Trash, UserCheck } from "lucide-react";
+import {
+  Edit,
+  Eye,
+  Loader2,
+  ShieldAlert,
+  Trash,
+  UserCheck,
+} from "lucide-react";
 
 import {
   ActionMenu,
@@ -22,99 +29,194 @@ import {
   Select,
   StatusBadge,
 } from "@/components/admin";
+import { useToast } from "@/providers/toast-provider";
 import { useAppDispatch, useAppSelector } from "@/redux/hooks";
+import {
+  deleteCustomer as deleteCustomerInRedux,
+  setCustomers,
+  updateCustomer as updateCustomerInRedux,
+  updateCustomerStatus as updateCustomerStatusInRedux,
+} from "@/redux/slices/admin-slice";
+import {
+  deleteCustomer,
+  getCustomers,
+  toggleCustomerStatus,
+  updateCustomer,
+} from "@/services/customer";
 import { type Customer } from "@/types/admin";
 
 export default function CustomersPage() {
   const router = useRouter();
   const dispatch = useAppDispatch();
-  const customers = useAppSelector((state) => state.admin.customers);
+  const toast = useToast();
+
+  // Redux & Local list state
+  const reduxCustomers = useAppSelector((state) => state.admin.customers);
+  const [customersList, setCustomersList] = useState<Customer[]>([]);
+  const [loading, setLoading] = useState(true);
 
   // Search & Filters State
   const [searchTerm, setSearchTerm] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
-  const [sortBy, setSortBy] = useState<keyof Customer>("name");
-  const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
+  const [sortBy, setSortBy] = useState<keyof Customer>("dateJoined");
+  const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
 
   // Pagination State
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 5;
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalItems, setTotalItems] = useState(0);
+  const itemsPerPage = 10;
 
-  // CRUD & Modals State
+  // Modals & Action State
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(
     null,
   );
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // React Hook Form
+  // React Hook Form for Edit
   const {
     register,
     handleSubmit,
     reset,
     formState: { errors },
-  } = useForm<Customer>();
+  } = useForm<{
+    name: string;
+    email: string;
+    phone?: string;
+    status: "active" | "suspended";
+  }>();
 
+  // Debounce search input
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedSearch(searchTerm);
+      setCurrentPage(1);
+    }, 350);
+    return () => clearTimeout(handler);
+  }, [searchTerm]);
+
+  // Fetch Customers from backend API
+  const fetchCustomersList = useCallback(async () => {
+    setLoading(true);
+    try {
+      const res = await getCustomers({
+        page: currentPage,
+        limit: itemsPerPage,
+        search: debouncedSearch,
+        status: statusFilter,
+        sortBy: sortBy as string,
+        sortDir,
+      });
+
+      if (res) {
+        const list = Array.isArray(res.data) ? res.data : [];
+        setCustomersList(list);
+        dispatch(setCustomers(list));
+        setTotalPages(res.pagination?.totalPages || 1);
+        setTotalItems(res.pagination?.total || list.length);
+      }
+    } catch (err: any) {
+      console.error("Failed to fetch customers:", err);
+      toast.error(err.message || "Failed to load customers from server.");
+    } finally {
+      setLoading(false);
+    }
+  }, [
+    currentPage,
+    debouncedSearch,
+    statusFilter,
+    sortBy,
+    sortDir,
+    dispatch,
+    toast,
+  ]);
+
+  useEffect(() => {
+    fetchCustomersList();
+  }, [fetchCustomersList]);
+
+  // Open Edit Modal
   const handleEditClick = (cust: Customer) => {
     setSelectedCustomer(cust);
-    reset(cust);
+    reset({
+      name: cust.name,
+      email: cust.email,
+      phone: cust.phone || "",
+      status: cust.status,
+    });
     setEditModalOpen(true);
   };
 
+  // Submit Edit Form
+  const onSubmitEdit = async (data: {
+    name: string;
+    email: string;
+    phone?: string;
+    status: "active" | "suspended";
+  }) => {
+    if (!selectedCustomer) return;
+    setIsSubmitting(true);
+    try {
+      const updated = await updateCustomer(selectedCustomer.id, data);
+      dispatch(updateCustomerInRedux(updated));
+      toast.success(`Customer "${updated.name}" updated successfully.`);
+      setEditModalOpen(false);
+      fetchCustomersList();
+    } catch (err: any) {
+      console.error("Error updating customer:", err);
+      toast.error(err.message || "Failed to update customer.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // Toggle Account Status (Active / Suspended)
+  const handleToggleDisableStatus = async (cust: Customer) => {
+    const nextStatus = cust.status === "active" ? "suspended" : "active";
+    try {
+      const res = await toggleCustomerStatus(cust.id, nextStatus);
+      dispatch(
+        updateCustomerStatusInRedux({
+          id: cust.id,
+          status: nextStatus,
+        }),
+      );
+      toast.success(res.message || `Customer status set to ${nextStatus}.`);
+      fetchCustomersList();
+    } catch (err: any) {
+      console.error("Error updating customer status:", err);
+      toast.error(err.message || "Failed to change customer status.");
+    }
+  };
+
+  // Open Delete Modal
   const handleDeleteClick = (cust: Customer) => {
     setSelectedCustomer(cust);
     setDeleteDialogOpen(true);
   };
 
-  const handleToggleDisableStatus = (cust: Customer) => {
-    alert(
-      `Status updated: Customer "${cust.name}" is now ${cust.status === "active" ? "suspended" : "activated"}.`,
-    );
+  // Confirm Delete
+  const confirmDelete = async () => {
+    if (!selectedCustomer) return;
+    try {
+      const res = await deleteCustomer(selectedCustomer.id);
+      dispatch(deleteCustomerInRedux(selectedCustomer.id));
+      toast.success(res.message || "Customer deleted successfully.");
+      setDeleteDialogOpen(false);
+      fetchCustomersList();
+    } catch (err: any) {
+      console.error("Error deleting customer:", err);
+      toast.error(err.message || "Failed to delete customer.");
+    }
   };
-
-  const onSubmitEdit = (data: Customer) => {
-    alert(`Profile updated successfully for customer: ${data.name}`);
-    setEditModalOpen(false);
-  };
-
-  const confirmDelete = () => {
-    alert(`Deleted Customer: ${selectedCustomer?.name}`);
-    setDeleteDialogOpen(false);
-  };
-
-  // Filter, Sort & Paginate
-  const filteredCustomers = customers
-    .filter((c) => {
-      const matchSearch =
-        c.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        c.email.toLowerCase().includes(searchTerm.toLowerCase());
-      const matchStatus = statusFilter === "all" || c.status === statusFilter;
-      return matchSearch && matchStatus;
-    })
-    .sort((a, b) => {
-      const valA = a[sortBy] ?? "";
-      const valB = b[sortBy] ?? "";
-
-      if (typeof valA === "string") {
-        return sortDir === "asc"
-          ? valA.localeCompare(valB as string)
-          : (valB as string).localeCompare(valA);
-      } else {
-        return sortDir === "asc"
-          ? (valA as number) - (valB as number)
-          : (valB as number) - (valA as number);
-      }
-    });
-
-  const totalPages = Math.ceil(filteredCustomers.length / itemsPerPage);
-  const paginatedCustomers = filteredCustomers.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage,
-  );
 
   const handleSort = (key: keyof Customer, direction: "asc" | "desc") => {
     setSortBy(key);
     setSortDir(direction);
+    setCurrentPage(1);
   };
 
   const columns: Column<Customer>[] = [
@@ -155,7 +257,7 @@ export default function CustomersPage() {
       label: "Total Spent",
       render: (val) => (
         <span className="font-bold text-text-custom">
-          ${Number(val).toFixed(2)}
+          ${Number(val || 0).toFixed(2)}
         </span>
       ),
     },
@@ -164,7 +266,7 @@ export default function CustomersPage() {
       label: "Joined Date",
       render: (val) => (
         <span suppressHydrationWarning>
-          {new Date(val).toLocaleDateString()}
+          {val ? new Date(val).toLocaleDateString() : "—"}
         </span>
       ),
     },
@@ -218,6 +320,9 @@ export default function CustomersPage() {
           <h1 className="text-2xl font-bold text-text-custom mt-1">
             Customer Accounts
           </h1>
+          <p className="text-xs text-text-custom/60 mt-0.5">
+            Total {totalItems} customer{totalItems === 1 ? "" : "s"} registered
+          </p>
         </div>
       </div>
 
@@ -227,10 +332,10 @@ export default function CustomersPage() {
           <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
             <div className="w-full md:w-80">
               <Search
-                placeholder="Search customers by name or email..."
+                placeholder="Search customers by name, email, or phone..."
+                value={searchTerm}
                 onSearchChange={(val) => {
                   setSearchTerm(val);
-                  setCurrentPage(1);
                 }}
               />
             </div>
@@ -259,17 +364,39 @@ export default function CustomersPage() {
             </div>
           </div>
 
-          <DataTable
-            columns={columns}
-            data={paginatedCustomers}
-            onSort={handleSort}
-          />
+          {loading ? (
+            <div className="py-16 flex flex-col items-center justify-center space-y-3">
+              <Loader2 className="w-8 h-8 animate-spin text-primary" />
+              <p className="text-sm font-medium text-text-custom/60">
+                Loading customers...
+              </p>
+            </div>
+          ) : customersList.length === 0 ? (
+            <div className="py-16 text-center">
+              <p className="text-base font-semibold text-text-custom">
+                No customer accounts found
+              </p>
+              <p className="text-xs text-text-custom/50 mt-1">
+                {searchTerm || statusFilter !== "all"
+                  ? "Try adjusting your search criteria or clearing filters."
+                  : "Normal users who register or place orders will appear here automatically."}
+              </p>
+            </div>
+          ) : (
+            <>
+              <DataTable
+                columns={columns}
+                data={customersList}
+                onSort={handleSort}
+              />
 
-          <Pagination
-            currentPage={currentPage}
-            totalPages={totalPages}
-            onPageChange={setCurrentPage}
-          />
+              <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={setCurrentPage}
+              />
+            </>
+          )}
         </div>
       </Card>
 
@@ -280,16 +407,27 @@ export default function CustomersPage() {
         title="Edit Customer Profile"
         footer={
           <>
-            <Button variant="outline" onClick={() => setEditModalOpen(false)}>
+            <Button
+              variant="outline"
+              onClick={() => setEditModalOpen(false)}
+              disabled={isSubmitting}
+            >
               Cancel
             </Button>
             <Button
               variant="primary"
+              disabled={isSubmitting}
               onClick={() => {
                 void handleSubmit(onSubmitEdit)();
               }}
             >
-              Save Changes
+              {isSubmitting ? (
+                <span className="flex items-center gap-2">
+                  <Loader2 className="w-4 h-4 animate-spin" /> Saving...
+                </span>
+              ) : (
+                "Save Changes"
+              )}
             </Button>
           </>
         }

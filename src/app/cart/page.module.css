@@ -23,7 +23,6 @@
   font-weight: 600;
 }
 
-
 /* MAIN CART AREA */
 
 .cartLayout {
@@ -39,7 +38,6 @@
 
   align-items: start;
 }
-
 
 /* CART LIST */
 
@@ -70,7 +68,6 @@
   border-radius: 10px;
 }
 
-
 /* PRODUCT ROW */
 
 .productRow {
@@ -87,7 +84,6 @@
 .productRow::-webkit-scrollbar {
   display: none;
 }
-
 
 /* TABLET */
 
@@ -106,7 +102,6 @@
     padding-right: 0;
   }
 }
-
 
 /* MOBILE */
 
@@ -135,4 +130,3 @@
     gap: 16px;
   }
 }
-
