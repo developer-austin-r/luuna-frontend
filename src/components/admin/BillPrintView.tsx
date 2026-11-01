@@ -11,6 +11,7 @@ export const DEFAULT_BILLING_LOGO_URL = `${process.env.NEXT_PUBLIC_BILLING_LOGO_
 
 interface Props {
   bill: Bill;
+  invoiceUrl?: string;
   onClose: () => void;
   logoUrl?: string;
 }
@@ -21,6 +22,7 @@ function fmt(n: number | string) {
 
 export function BillPrintView({
   bill,
+  invoiceUrl,
   onClose,
   logoUrl = DEFAULT_BILLING_LOGO_URL,
 }: Props) {
@@ -30,26 +32,24 @@ export function BillPrintView({
   const [waError, setWaError] = useState<string | null>(null);
 
   const handleSendWhatsApp = async () => {
-    if (!bill.customerMobile) return;
-    setSendingWA(true);
+    if (!bill.customerMobile || !invoiceUrl) return;
     setWaError(null);
+    let phone = bill.customerMobile.replace(/\D/g, "");
+    if (phone.length === 10) phone = `91${phone}`;
+    if (phone.length < 11 || phone.length > 15) {
+      setWaError("Enter a valid WhatsApp number with its country code.");
+      return;
+    }
+    setSendingWA(true);
     try {
-      const result = await whatsappService.sendBillReceipt(
-        bill.customerMobile,
-        {
-          billNumber: bill.billNumber,
-          customerName: bill.customerName ?? null,
-          totalAmount: bill.totalAmount,
-          paymentMethod: bill.paymentMethod,
-          id: bill.id,
-          createdAt: bill.createdAt,
-        },
-      );
-      if (result.success) {
-        setWaSent(true);
-      } else {
-        setWaError(result.error ?? "WhatsApp could not send this message.");
-      }
+      const result = await whatsappService.sendInvoice({
+        phone,
+        customerName: bill.customerName?.trim() || "Customer",
+        invoiceUrl,
+        entityId: bill.id,
+      });
+      if (result.success) setWaSent(true);
+      else setWaError(result.error ?? "WhatsApp could not send this message.");
     } catch (error) {
       setWaError(
         error instanceof Error
@@ -156,48 +156,18 @@ export function BillPrintView({
             {bill.customerMobile && (
               <button
                 onClick={handleSendWhatsApp}
-                disabled={sendingWA || waSent}
-                title={`Send bill to ${bill.customerMobile} on WhatsApp`}
-                className={`px-3 py-1.5 text-xs font-semibold rounded-lg flex items-center gap-1.5 transition-all ${
-                  waSent
-                    ? "bg-emerald-50 text-emerald-700 border border-emerald-300"
-                    : "bg-[#25D366] hover:bg-[#1ebe5d] text-white"
-                } disabled:opacity-60`}
+                disabled={!invoiceUrl || sendingWA || waSent}
+                title={
+                  invoiceUrl
+                    ? `Share invoice with ${bill.customerMobile} on WhatsApp`
+                    : "Invoice link is unavailable"
+                }
+                className={`px-3 py-1.5 text-xs font-semibold rounded-lg flex items-center gap-1.5 transition-all ${waSent ? "bg-emerald-50 text-emerald-700 border border-emerald-300" : "bg-[#25D366] hover:bg-[#1ebe5d] text-white"} disabled:opacity-60`}
               >
                 {sendingWA ? (
-                  <svg
-                    className="w-3.5 h-3.5 animate-spin"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                  >
-                    <circle
-                      className="opacity-25"
-                      cx="12"
-                      cy="12"
-                      r="10"
-                      stroke="currentColor"
-                      strokeWidth="4"
-                    />
-                    <path
-                      className="opacity-75"
-                      fill="currentColor"
-                      d="M4 12a8 8 0 018-8v8z"
-                    />
-                  </svg>
+                  "Sending…"
                 ) : waSent ? (
-                  <svg
-                    className="w-3.5 h-3.5"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2.5}
-                      d="M5 13l4 4L19 7"
-                    />
-                  </svg>
+                  "Sent!"
                 ) : (
                   <svg
                     className="w-3.5 h-3.5"
@@ -208,7 +178,7 @@ export function BillPrintView({
                     <path d="M12 0C5.373 0 0 5.373 0 12c0 2.126.555 4.126 1.527 5.862L0 24l6.335-1.508A11.94 11.94 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.885 0-3.655-.504-5.18-1.382l-.372-.22-3.762.896.929-3.652-.241-.378A10 10 0 0112 2a10 10 0 110 20z" />
                   </svg>
                 )}
-                {waSent ? "Sent!" : sendingWA ? "Sending…" : "Send WhatsApp"}
+                {!sendingWA && !waSent && "Send WhatsApp"}
               </button>
             )}
             {waError && (

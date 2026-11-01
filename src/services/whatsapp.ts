@@ -58,6 +58,19 @@ export const whatsappService = {
     });
   },
 
+  /** Send an invoice link through the business WhatsApp Cloud API. */
+  async sendInvoice(dto: {
+    phone: string;
+    customerName: string;
+    invoiceUrl: string;
+    entityId?: string;
+  }): Promise<WhatsAppSendResult> {
+    return unwrap<WhatsAppSendResult>("/whatsapp/send-invoice", {
+      method: "POST",
+      body: JSON.stringify(dto),
+    });
+  },
+
   /**
    * Send a bill receipt using the configured template's three body parameters.
    */

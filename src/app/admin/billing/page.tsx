@@ -44,6 +44,7 @@ function NewBillPanel() {
 
   const [items, setItems] = useState<BillItem[]>([]);
   const [customerName, setCustomerName] = useState("");
+  const [customerNameError, setCustomerNameError] = useState(false);
   const [customerWhatsApp, setCustomerWhatsApp] = useState("");
   const [customerAddress, setCustomerAddress] = useState("");
   const [discountType, setDiscountType] = useState<"PERCENT" | "FLAT">(
@@ -128,6 +129,11 @@ function NewBillPanel() {
 
   const handleSave = async () => {
     if (items.length === 0) return;
+    if (!customerName.trim()) {
+      setCustomerNameError(true);
+      return;
+    }
+    setCustomerNameError(false);
     setSaving(true);
     try {
       // 1. Create the POS bill record
@@ -141,7 +147,7 @@ function NewBillPanel() {
         status: "PAID",
       };
       if (user?.id) dto.billedBy = user.id;
-      if (customerName) dto.customerName = customerName;
+      dto.customerName = customerName.trim();
       if (customerAddress) dto.customerAddress = customerAddress;
       if (notes) dto.notes = notes;
       const bill = await billingService.createBill(dto);
@@ -151,24 +157,26 @@ function NewBillPanel() {
         (m) => m.slug.toUpperCase() === paymentMethod,
       );
       const invoice = await billingService.createInvoice({
-        name: customerName || undefined,
-        whatsappNumber: customerWhatsApp || undefined,
-        address: customerAddress || undefined,
-        paymentMethodId: selectedMethod?.id,
-        paymentMethodLabel: selectedMethod?.value,
+        name: customerName.trim(),
+        ...(customerWhatsApp ? { whatsappNumber: customerWhatsApp } : {}),
+        ...(customerAddress ? { address: customerAddress } : {}),
+        ...(selectedMethod?.id ? { paymentMethodId: selectedMethod.id } : {}),
+        ...(selectedMethod?.value
+          ? { paymentMethodLabel: selectedMethod.value }
+          : {}),
         discount: billDiscount,
         tax: billTax,
         total,
         subtotal,
-        notes: notes || undefined,
+        ...(notes ? { notes } : {}),
         billNumber: bill.billNumber,
         items: items.map((it) => ({
           productName: it.productName,
-          sku: it.sku,
+          ...(it.sku ? { sku: it.sku } : {}),
           quantity: it.quantity,
           unitPrice: it.unitPrice,
-          discount: it.discount,
-          tax: it.tax,
+          ...(it.discount !== undefined ? { discount: it.discount } : {}),
+          ...(it.tax !== undefined ? { tax: it.tax } : {}),
           total:
             it.unitPrice * it.quantity - (it.discount ?? 0) + (it.tax ?? 0),
         })),
@@ -202,7 +210,13 @@ function NewBillPanel() {
   return (
     <>
       {showPrint && savedBill && (
-        <BillPrintView bill={savedBill} onClose={() => setShowPrint(false)} />
+        <BillPrintView
+          bill={savedBill}
+          {...(savedInvoice?.invoiceUrl
+            ? { invoiceUrl: savedInvoice.invoiceUrl }
+            : {})}
+          onClose={() => setShowPrint(false)}
+        />
       )}
 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
@@ -244,20 +258,37 @@ function NewBillPanel() {
             <div className="space-y-3">
               <div>
                 <label className="block text-2xs font-bold text-text-custom/60 uppercase tracking-wider mb-1">
-                  Name{" "}
+                  Name <span className="text-red-500">*</span>
                   <span className="text-text-custom/30 normal-case font-normal">
-                    (optional)
+                    (required)
                   </span>
                 </label>
                 <div className="relative">
                   <User className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-text-custom/40" />
                   <input
+                    required
                     value={customerName}
-                    onChange={(e) => setCustomerName(e.target.value)}
+                    onChange={(e) => {
+                      setCustomerName(e.target.value);
+                      if (e.target.value.trim()) setCustomerNameError(false);
+                    }}
                     placeholder="Customer name"
-                    className="w-full h-9 pl-8 pr-3 border border-border-custom rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary bg-white transition-all"
+                    aria-invalid={customerNameError}
+                    aria-describedby={
+                      customerNameError ? "customer-name-error" : undefined
+                    }
+                    className={`w-full h-9 pl-8 pr-3 border rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary bg-white transition-all ${customerNameError ? "border-red-500" : "border-border-custom"}`}
                   />
                 </div>
+                {customerNameError && (
+                  <p
+                    id="customer-name-error"
+                    role="alert"
+                    className="mt-1 text-xs text-red-600"
+                  >
+                    Customer name is required.
+                  </p>
+                )}
               </div>
               <div>
                 <label className="block text-2xs font-bold text-text-custom/60 uppercase tracking-wider mb-1 flex items-center gap-1.5">
