@@ -24,7 +24,13 @@ import { BarcodeScanner } from "@/components/admin/BarcodeScanner";
 import { BillItemsTable } from "@/components/admin/BillItemsTable";
 import { BillPrintView } from "@/components/admin/BillPrintView";
 import { useAppSelector } from "@/redux/hooks";
-import { type Bill, billingService, type BillItem } from "@/services/billing";
+import {
+  type Bill,
+  billingService,
+  type BillItem,
+  type Invoice,
+  type PaymentMethodOption,
+} from "@/services/billing";
 
 type Tab = "new-bill" | "history";
 
@@ -38,19 +44,36 @@ function NewBillPanel() {
 
   const [items, setItems] = useState<BillItem[]>([]);
   const [customerName, setCustomerName] = useState("");
-  const [customerMobile, setCustomerMobile] = useState("");
-  const [customerEmail, setCustomerEmail] = useState("");
+  const [customerNameError, setCustomerNameError] = useState(false);
+  const [customerWhatsApp, setCustomerWhatsApp] = useState("");
   const [customerAddress, setCustomerAddress] = useState("");
   const [discountType, setDiscountType] = useState<"PERCENT" | "FLAT">(
     "PERCENT",
   );
   const [discountValue, setDiscountValue] = useState(0);
   const [taxRate, setTaxRate] = useState<number>(0);
-  const [paymentMethod, setPaymentMethod] = useState("CASH");
+  const [paymentMethod, setPaymentMethod] = useState("");
+  const [paymentMethods, setPaymentMethods] = useState<PaymentMethodOption[]>(
+    [],
+  );
   const [notes, setNotes] = useState("");
   const [saving, setSaving] = useState(false);
   const [savedBill, setSavedBill] = useState<Bill | null>(null);
+  const [savedInvoice, setSavedInvoice] = useState<Invoice | null>(null);
   const [showPrint, setShowPrint] = useState(false);
+
+  // Load payment methods on mount
+  useEffect(() => {
+    billingService
+      .listPaymentMethods()
+      .then((methods) => {
+        setPaymentMethods(methods);
+        if (methods.length > 0 && !paymentMethod) {
+          setPaymentMethod(methods[0]?.slug?.toUpperCase() ?? "CASH");
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   const subtotal = items.reduce(
     (s, it) =>
@@ -106,31 +129,70 @@ function NewBillPanel() {
 
   const handleSave = async () => {
     if (items.length === 0) return;
+    if (!customerName.trim()) {
+      setCustomerNameError(true);
+      return;
+    }
+    setCustomerNameError(false);
     setSaving(true);
     try {
+      // 1. Create the POS bill record
       const dto: Parameters<typeof billingService.createBill>[0] = {
         items,
         discount: billDiscount,
         discountRate,
         taxRate,
         tax: billTax,
-        paymentMethod,
+        paymentMethod: paymentMethod || "CASH",
         status: "PAID",
       };
       if (user?.id) dto.billedBy = user.id;
-      if (customerName) dto.customerName = customerName;
-      if (customerMobile) dto.customerMobile = customerMobile;
-      if (customerEmail) dto.customerEmail = customerEmail;
+      dto.customerName = customerName.trim();
       if (customerAddress) dto.customerAddress = customerAddress;
       if (notes) dto.notes = notes;
       const bill = await billingService.createBill(dto);
-      setSavedBill(bill);
+
+      // 2. Generate & upload the PDF invoice to S3
+      const selectedMethod = paymentMethods.find(
+        (m) => m.slug.toUpperCase() === paymentMethod,
+      );
+      const invoice = await billingService.createInvoice({
+        name: customerName.trim(),
+        ...(customerWhatsApp ? { whatsappNumber: customerWhatsApp } : {}),
+        ...(customerAddress ? { address: customerAddress } : {}),
+        ...(selectedMethod?.id ? { paymentMethodId: selectedMethod.id } : {}),
+        ...(selectedMethod?.value
+          ? { paymentMethodLabel: selectedMethod.value }
+          : {}),
+        discount: billDiscount,
+        tax: billTax,
+        total,
+        subtotal,
+        ...(notes ? { notes } : {}),
+        billNumber: bill.billNumber,
+        items: items.map((it) => ({
+          productName: it.productName,
+          ...(it.sku ? { sku: it.sku } : {}),
+          quantity: it.quantity,
+          unitPrice: it.unitPrice,
+          ...(it.discount !== undefined ? { discount: it.discount } : {}),
+          ...(it.tax !== undefined ? { tax: it.tax } : {}),
+          total:
+            it.unitPrice * it.quantity - (it.discount ?? 0) + (it.tax ?? 0),
+        })),
+      });
+
+      // Attach WhatsApp for print view
+      const enrichedBill: typeof bill = customerWhatsApp
+        ? { ...bill, customerMobile: customerWhatsApp }
+        : bill;
+      setSavedBill(enrichedBill);
+      setSavedInvoice(invoice);
       setShowPrint(true);
       // Reset form
       setItems([]);
       setCustomerName("");
-      setCustomerMobile("");
-      setCustomerEmail("");
+      setCustomerWhatsApp("");
       setCustomerAddress("");
       setDiscountValue(0);
       setDiscountType("PERCENT");
@@ -148,7 +210,13 @@ function NewBillPanel() {
   return (
     <>
       {showPrint && savedBill && (
-        <BillPrintView bill={savedBill} onClose={() => setShowPrint(false)} />
+        <BillPrintView
+          bill={savedBill}
+          {...(savedInvoice?.invoiceUrl
+            ? { invoiceUrl: savedInvoice.invoiceUrl }
+            : {})}
+          onClose={() => setShowPrint(false)}
+        />
       )}
 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
@@ -190,41 +258,62 @@ function NewBillPanel() {
             <div className="space-y-3">
               <div>
                 <label className="block text-2xs font-bold text-text-custom/60 uppercase tracking-wider mb-1">
-                  Name{" "}
+                  Name <span className="text-red-500">*</span>
                   <span className="text-text-custom/30 normal-case font-normal">
-                    (optional)
+                    (required)
                   </span>
                 </label>
                 <div className="relative">
                   <User className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-text-custom/40" />
                   <input
+                    required
                     value={customerName}
-                    onChange={(e) => setCustomerName(e.target.value)}
+                    onChange={(e) => {
+                      setCustomerName(e.target.value);
+                      if (e.target.value.trim()) setCustomerNameError(false);
+                    }}
                     placeholder="Customer name"
-                    className="w-full h-9 pl-8 pr-3 border border-border-custom rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary bg-white transition-all"
+                    aria-invalid={customerNameError}
+                    aria-describedby={
+                      customerNameError ? "customer-name-error" : undefined
+                    }
+                    className={`w-full h-9 pl-8 pr-3 border rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary bg-white transition-all ${customerNameError ? "border-red-500" : "border-border-custom"}`}
                   />
                 </div>
+                {customerNameError && (
+                  <p
+                    id="customer-name-error"
+                    role="alert"
+                    className="mt-1 text-xs text-red-600"
+                  >
+                    Customer name is required.
+                  </p>
+                )}
               </div>
               <div>
-                <label className="block text-2xs font-bold text-text-custom/60 uppercase tracking-wider mb-1">
-                  Mobile
+                <label className="block text-2xs font-bold text-text-custom/60 uppercase tracking-wider mb-1 flex items-center gap-1.5">
+                  <span
+                    className="inline-flex items-center justify-center w-3.5 h-3.5 rounded-full"
+                    style={{ backgroundColor: "#25D366" }}
+                  >
+                    <svg
+                      className="w-2 h-2 text-white"
+                      fill="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z" />
+                    </svg>
+                  </span>
+                  WhatsApp{" "}
+                  <span className="text-text-custom/30 normal-case font-normal">
+                    (optional)
+                  </span>
                 </label>
                 <input
-                  value={customerMobile}
-                  onChange={(e) => setCustomerMobile(e.target.value)}
-                  placeholder="+91 xxxxxxxxxx"
-                  className="w-full h-9 px-3 border border-border-custom rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary bg-white transition-all"
-                />
-              </div>
-              <div>
-                <label className="block text-2xs font-bold text-text-custom/60 uppercase tracking-wider mb-1">
-                  Email
-                </label>
-                <input
-                  value={customerEmail}
-                  onChange={(e) => setCustomerEmail(e.target.value)}
-                  placeholder="customer@email.com"
-                  className="w-full h-9 px-3 border border-border-custom rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary bg-white transition-all"
+                  value={customerWhatsApp}
+                  onChange={(e) => setCustomerWhatsApp(e.target.value)}
+                  placeholder="WhatsApp number"
+                  className="w-full h-9 px-3 border border-[#25D366]/40 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-[#25D366]/30 focus:border-[#25D366] bg-white transition-all"
                 />
               </div>
               <div>

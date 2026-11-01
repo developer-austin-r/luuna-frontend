@@ -1,103 +1,178 @@
+/* Modern Luuna Auth Styling - Matches Reference Design */
+
 .login-wrapper {
-  height: 100vh;
-  width: 100vw;
-  overflow: hidden;
+  min-height: 100vh;
+  min-height: 100dvh;
+  width: 100%;
   display: flex;
-  justify-content: center;
-  align-items: center;
+  justify-content: flex-end;
+  align-items: stretch;
   background-image: url("/Login (1).png");
   background-size: cover;
-  background-position: center;
+  background-position: left center;
   background-repeat: no-repeat;
-  padding: 0.75rem;
+  background-attachment: fixed;
+  overflow-x: hidden;
+  box-sizing: border-box;
+  position: relative;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.login-wrapper::-webkit-scrollbar {
+  display: none;
+}
+
+/* Right dark container on desktop & laptop with rounded-left curve */
+.login-panel {
+  width: 52%;
+  min-height: 100vh;
+  min-height: 100dvh;
+  background: #0d0815;
+  border-top-left-radius: 48px;
+  border-bottom-left-radius: 48px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 1.75rem 2rem;
+  box-sizing: border-box;
+  position: relative;
+  z-index: 2;
+  overflow-y: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  box-shadow: -15px 0 45px rgba(0, 0, 0, 0.5);
+}
+
+.login-panel::-webkit-scrollbar {
+  display: none;
+}
+
+.auth-card-container {
+  width: 100%;
+  max-width: 440px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: auto 0;
   box-sizing: border-box;
 }
 
+/* Title above the card */
+.login-header-title {
+  color: #ffffff;
+  font-size: 1.85rem;
+  font-weight: 700;
+  margin: 0 0 1.25rem 0;
+  text-align: center;
+  letter-spacing: -0.015em;
+  font-family: inherit;
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.4);
+}
+
+/* Glassmorphic Auth Card */
 .glass-card {
   width: 100%;
-  max-width: 380px;
-  background: rgba(255, 255, 255, 0.08);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  border-radius: 20px;
-  padding: 1.25rem 1.5rem;
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4);
+  background: rgba(35, 27, 49, 0.72);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1.5px solid rgba(255, 255, 255, 0.14);
+  border-radius: 26px;
+  padding: 1.85rem 2rem;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.45);
   color: #ffffff;
   display: flex;
   flex-direction: column;
-  transition: all 0.2s ease-in-out;
+  box-sizing: border-box;
+  transition: all 0.3s ease;
 }
 
-.login-title {
-  color: #ffffff;
-  font-size: 1.3rem;
-  font-weight: 700;
-  margin-bottom: 0.6rem;
-  text-align: center;
-}
-
+/* Standalone Pill Switcher (Login / Register) */
 .tab-container {
   display: flex;
-  background: rgba(0, 0, 0, 0.25);
-  padding: 3px;
-  border-radius: 25px;
-  margin-bottom: 0.5rem;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  justify-content: center;
+  align-items: center;
+  gap: 1.15rem;
+  margin-bottom: 1rem;
+  width: 100%;
 }
 
 .tab-btn {
   flex: 1;
-  padding: 0.4rem;
-  border: none;
-  background: transparent;
-  color: rgba(255, 255, 255, 0.7);
-  font-size: 0.8rem;
+  max-width: 140px;
+  padding: 0.5rem 1.4rem;
+  font-size: 0.9rem;
   font-weight: 600;
-  border-radius: 20px;
+  border-radius: 9999px;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.25s ease;
+  text-align: center;
+  background: transparent;
+  color: #ffffff;
+  border: 1.5px solid rgba(255, 255, 255, 0.65);
+  outline: none;
+}
+
+.tab-btn:hover {
+  border-color: #ffffff;
+  background: rgba(255, 255, 255, 0.08);
 }
 
 .tab-btn.active {
-  background: #ffffff;
-  color: #000000;
+  background: #825fa7;
+  border-color: #825fa7;
+  color: #ffffff;
+  box-shadow: 0 4px 16px rgba(130, 95, 167, 0.45);
 }
 
 .subtitle {
   text-align: center;
-  color: rgba(255, 255, 255, 0.8);
-  font-size: 0.72rem;
-  margin-bottom: 0.6rem;
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 0.82rem;
+  line-height: 1.4;
+  margin: 0 0 1.15rem 0;
 }
 
 .error-banner {
-  color: #ff6b6b;
-  font-size: 0.72rem;
-  margin-bottom: 0.4rem;
+  color: #fca5a5;
+  background: rgba(239, 68, 68, 0.15);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  padding: 0.45rem 0.7rem;
+  border-radius: 8px;
+  font-size: 0.78rem;
+  margin-bottom: 0.75rem;
   text-align: center;
 }
 
+/* Form Layout */
 .form-body {
   display: flex;
   flex-direction: column;
+  width: 100%;
 }
 
 .name-row {
   display: flex;
-  gap: 0.5rem;
+  gap: 0.65rem;
+  width: 100%;
+}
+
+.name-row .form-group {
+  flex: 1;
+  min-width: 0;
 }
 
 .form-group {
   display: flex;
   flex-direction: column;
-  gap: 0.15rem;
-  margin-bottom: 0.5rem;
-  flex: 1;
+  gap: 0.35rem;
+  margin-bottom: 0.85rem;
+  width: 100%;
 }
 
 .form-group label {
-  font-size: 0.72rem;
+  font-size: 0.82rem;
   color: #ffffff;
   font-weight: 500;
 }
@@ -106,110 +181,175 @@
   position: relative;
   display: flex;
   align-items: center;
+  width: 100%;
 }
 
-.input-icon {
-  position: absolute;
-  left: 9px;
-  color: #666;
-}
-
+/* Slightly reduced input box height for sleek appearance */
 .form-input {
   width: 100%;
-  padding: 0.5rem 0.75rem 0.5rem 2.1rem;
+  height: 38px;
+  padding: 0 0.85rem;
   border-radius: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  border: 1px solid transparent;
   background: #ffffff;
-  color: #000000;
-  font-size: 0.8rem;
+  color: #1a1a24;
+  font-size: 0.85rem;
   outline: none;
   box-sizing: border-box;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.input-wrapper .form-input {
+  padding-right: 2.35rem;
+}
+
+.form-input:focus {
+  border-color: #825fa7;
+  box-shadow: 0 0 0 3px rgba(130, 95, 167, 0.25);
 }
 
 .form-input::placeholder {
-  color: #888888;
+  color: #8e8e98;
+  font-size: 0.82rem;
 }
 
 .eye-btn {
   position: absolute;
-  right: 9px;
+  right: 8px;
   background: none;
   border: none;
   cursor: pointer;
-  color: #666;
+  color: #71717a;
   display: flex;
   align-items: center;
+  justify-content: center;
+  padding: 4px;
+  border-radius: 50%;
+  transition:
+    color 0.2s ease,
+    background 0.2s ease;
 }
 
+.eye-btn:hover {
+  color: #18181b;
+  background: rgba(0, 0, 0, 0.05);
+}
+
+/* Remember me & Forgot Password */
 .options-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-size: 0.7rem;
-  margin-bottom: 0.6rem;
+  font-size: 0.82rem;
+  margin: 0.15rem 0 1rem 0;
   color: rgba(255, 255, 255, 0.9);
 }
 
 .remember-label {
   display: flex;
   align-items: center;
-  gap: 0.35rem;
+  gap: 0.45rem;
   cursor: pointer;
+  user-select: none;
+  font-size: 0.82rem;
+}
+
+.remember-label input[type="checkbox"] {
+  width: 15px;
+  height: 15px;
+  accent-color: #825fa7;
+  cursor: pointer;
+  border-radius: 3px;
 }
 
 .forgot-link {
-  color: #ffffff;
+  color: rgba(255, 255, 255, 0.9);
   text-decoration: none;
+  font-size: 0.82rem;
+  font-weight: 500;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  transition:
+    color 0.2s ease,
+    text-decoration 0.2s ease;
 }
 
+.forgot-link:hover {
+  color: #ffffff;
+  text-decoration: underline;
+}
+
+/* Primary Purple Button */
 .btn-primary {
   width: 100%;
-  padding: 0.55rem;
-  background: #ffffff;
-  color: #000000;
+  height: 38px;
+  background: #825fa7;
+  color: #ffffff;
   border: none;
   border-radius: 8px;
-  font-size: 0.85rem;
-  font-weight: 700;
+  font-size: 0.9rem;
+  font-weight: 600;
   cursor: pointer;
-  transition: opacity 0.2s ease;
+  transition:
+    background-color 0.2s ease,
+    transform 0.15s ease,
+    box-shadow 0.2s ease;
+  box-shadow: 0 4px 12px rgba(130, 95, 167, 0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.btn-primary:hover {
-  opacity: 0.9;
+.btn-primary:hover:not(:disabled) {
+  background: #8e68b5;
+  box-shadow: 0 6px 16px rgba(130, 95, 167, 0.45);
 }
 
+.btn-primary:active:not(:disabled) {
+  transform: scale(0.99);
+}
+
+.btn-primary:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+/* Divider */
 .divider {
   display: flex;
   align-items: center;
   text-align: center;
-  margin: 0.45rem 0;
-  color: rgba(255, 255, 255, 0.6);
-  font-size: 0.68rem;
+  margin: 0.85rem 0;
+  color: rgba(255, 255, 255, 0.65);
+  font-size: 0.78rem;
 }
 
 .divider::before,
 .divider::after {
   content: "";
   flex: 1;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.18);
 }
 
 .divider span {
-  padding: 0 6px;
+  padding: 0 10px;
 }
 
+/* Social Login */
 .social-login {
   display: flex;
   justify-content: center;
-  gap: 0.6rem;
-  margin-bottom: 0.45rem;
+  gap: 1.15rem;
+  margin-bottom: 0.85rem;
 }
 
 .social-btn {
-  flex: 1;
-  max-width: 90px;
-  height: 32px;
+  width: 68px;
+  height: 36px;
   background: #ffffff;
   border: none;
   border-radius: 8px;
@@ -217,12 +357,23 @@
   align-items: center;
   justify-content: center;
   cursor: pointer;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
 }
 
+.social-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+}
+
+/* Card Footer */
 .card-footer {
   text-align: center;
-  font-size: 0.72rem;
+  font-size: 0.82rem;
   color: rgba(255, 255, 255, 0.85);
+  margin-top: 0.15rem;
 }
 
 .toggle-link {
@@ -232,55 +383,298 @@
   border: none;
   text-decoration: underline;
   cursor: pointer;
-  margin-left: 2px;
-  font-size: 0.72rem;
+  margin-left: 4px;
+  font-size: 0.82rem;
+  transition: opacity 0.2s ease;
 }
 
+.toggle-link:hover {
+  opacity: 0.85;
+}
+
+/* Compact Register Card - Prevents Scrolling */
 .glass-card.register-card {
-  padding: 0.85rem 1.25rem;
-}
-
-.glass-card.register-card .login-title {
-  font-size: 1.15rem;
-  margin-bottom: 0.35rem;
+  padding: 1.35rem 1.75rem;
 }
 
 .glass-card.register-card .tab-container {
-  margin-bottom: 0.35rem;
+  margin-bottom: 0.65rem;
 }
 
 .glass-card.register-card .subtitle {
-  font-size: 0.68rem;
-  margin-bottom: 0.35rem;
+  margin-bottom: 0.75rem;
 }
 
 .glass-card.register-card .form-group {
-  margin-bottom: 0.3rem;
-}
-
-.glass-card.register-card .form-group label {
-  font-size: 0.68rem;
-}
-
-.glass-card.register-card .form-input {
-  padding: 0.38rem 0.6rem 0.38rem 1.9rem;
-  font-size: 0.75rem;
-}
-
-.glass-card.register-card .input-icon {
-  left: 7px;
-}
-
-.glass-card.register-card .btn-primary {
-  padding: 0.45rem;
-  font-size: 0.8rem;
-  margin-top: 0.15rem;
+  margin-bottom: 0.55rem;
 }
 
 .glass-card.register-card .divider {
-  margin: 0.3rem 0;
+  margin: 0.65rem 0;
 }
 
-.glass-card.register-card .social-btn {
-  height: 28px;
+.glass-card.register-card .social-login {
+  margin-bottom: 0.65rem;
+}
+
+/* Tablet / Medium Screens (720px - 1024px) - Displays Split Reference Design Without Scrolling */
+@media (min-width: 720px) and (max-width: 1024px) {
+  .login-wrapper {
+    justify-content: flex-end;
+    background-position: left center;
+  }
+
+  .login-panel {
+    width: 60%;
+    border-top-left-radius: 36px;
+    border-bottom-left-radius: 36px;
+    padding: 1.25rem 1.25rem;
+    box-shadow: -12px 0 35px rgba(0, 0, 0, 0.45);
+    overflow: hidden;
+  }
+
+  .auth-card-container {
+    max-width: 400px;
+    margin: auto 0;
+  }
+
+  .glass-card {
+    padding: 1.35rem 1.55rem;
+    border-radius: 22px;
+  }
+
+  .login-header-title {
+    font-size: 1.6rem;
+    margin-bottom: 0.85rem;
+  }
+
+  .glass-card.register-card {
+    padding: 1.15rem 1.4rem;
+  }
+
+  .glass-card.register-card .form-group {
+    margin-bottom: 0.45rem;
+  }
+
+  .glass-card.register-card .subtitle {
+    margin-bottom: 0.55rem;
+  }
+
+  .glass-card.register-card .divider {
+    margin: 0.5rem 0;
+  }
+
+  .glass-card.register-card .social-login {
+    margin-bottom: 0.5rem;
+  }
+}
+
+/* Height-based responsive adjustments for compact laptop screens */
+@media (max-height: 720px) and (min-width: 720px) {
+  .login-panel {
+    padding: 1rem 1rem;
+    overflow: hidden;
+  }
+
+  .auth-card-container {
+    margin: auto 0;
+  }
+
+  .login-header-title {
+    font-size: 1.5rem;
+    margin-bottom: 0.65rem;
+  }
+
+  .glass-card {
+    padding: 1.15rem 1.5rem;
+    border-radius: 20px;
+  }
+
+  .tab-container {
+    margin-bottom: 0.6rem;
+  }
+
+  .subtitle {
+    margin-bottom: 0.6rem;
+  }
+
+  .form-group {
+    margin-bottom: 0.5rem;
+  }
+
+  .options-row {
+    margin: 0.15rem 0 0.65rem 0;
+  }
+
+  .divider {
+    margin: 0.55rem 0;
+  }
+
+  .social-login {
+    margin-bottom: 0.55rem;
+  }
+}
+
+/* Mobile Screens (< 720px) - Full Blur Design Without Scrollbars */
+@media (max-width: 719px) {
+  .login-wrapper {
+    justify-content: center;
+    align-items: center;
+    background-position: center;
+    padding: 0.75rem;
+    background-color: #0d0815;
+    overflow-x: hidden;
+    overflow-y: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  .login-wrapper::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Full blur overlay backdrop on mobile */
+  .login-wrapper::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    background: rgba(13, 8, 22, 0.78);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    z-index: 1;
+    pointer-events: none;
+  }
+
+  .login-panel {
+    width: 100%;
+    min-height: auto;
+    background: transparent;
+    border-radius: 0;
+    padding: 0.4rem 0;
+    box-shadow: none;
+    z-index: 2;
+    overflow: visible;
+  }
+
+  .auth-card-container {
+    max-width: 380px;
+    width: 100%;
+    margin: auto 0;
+  }
+
+  .login-header-title {
+    font-size: 1.45rem;
+    margin-bottom: 0.65rem;
+  }
+
+  .glass-card {
+    background: rgba(35, 27, 49, 0.88);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border-radius: 20px;
+    padding: 1.25rem 1.15rem;
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    box-shadow: 0 10px 35px rgba(0, 0, 0, 0.6);
+  }
+
+  .glass-card.register-card {
+    padding: 1rem 1rem;
+  }
+
+  .tab-container {
+    gap: 0.65rem;
+    margin-bottom: 0.6rem;
+  }
+
+  .tab-btn {
+    min-width: 100px;
+    padding: 0.38rem 1rem;
+    font-size: 0.82rem;
+  }
+
+  .subtitle {
+    font-size: 0.76rem;
+    margin-bottom: 0.6rem;
+    line-height: 1.3;
+  }
+
+  .form-group {
+    gap: 0.25rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .glass-card.register-card .form-group {
+    margin-bottom: 0.45rem;
+  }
+
+  .form-group label {
+    font-size: 0.75rem;
+  }
+
+  .form-input {
+    height: 36px;
+    font-size: 0.82rem;
+    padding: 0 0.75rem;
+    border-radius: 7px;
+  }
+
+  .input-wrapper .form-input {
+    padding-right: 2.2rem;
+  }
+
+  .btn-primary {
+    height: 36px;
+    font-size: 0.85rem;
+    border-radius: 7px;
+  }
+
+  .options-row {
+    font-size: 0.76rem;
+    margin: 0.1rem 0 0.65rem 0;
+  }
+
+  .remember-label {
+    font-size: 0.76rem;
+  }
+
+  .forgot-link {
+    font-size: 0.76rem;
+  }
+
+  .divider {
+    margin: 0.5rem 0;
+    font-size: 0.72rem;
+  }
+
+  .social-login {
+    gap: 0.85rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .social-btn {
+    width: 60px;
+    height: 32px;
+    border-radius: 7px;
+  }
+
+  .card-footer {
+    font-size: 0.76rem;
+    margin-top: 0.1rem;
+  }
+
+  .toggle-link {
+    font-size: 0.76rem;
+  }
+
+  /* Keep first & last name side by side even on mobile to avoid scrolling */
+  .name-row {
+    display: flex;
+    flex-direction: row;
+    gap: 0.5rem;
+  }
+
+  .name-row .form-group {
+    flex: 1;
+    min-width: 0;
+  }
 }

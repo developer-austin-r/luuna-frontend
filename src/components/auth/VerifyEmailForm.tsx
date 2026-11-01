@@ -72,112 +72,113 @@ export function VerifyEmailForm() {
   }, [token]);
 
   return (
-    <div
-      className="glass-card"
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        justifyContent: "center",
-        minHeight: "300px",
-        textAlign: "center",
-        padding: "2.5rem",
-      }}
-    >
-      {status === "loading" && (
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            gap: "1.5rem",
-          }}
-        >
-          <Loader2
-            className="animate-spin"
-            style={{ color: "#3b82f6", width: "4rem", height: "4rem" }}
-          />
-          <h1 className="login-title" style={{ margin: 0 }}>
-            Verifying Your Account
-          </h1>
-          <p className="subtitle" style={{ margin: 0 }}>
-            Please wait while we confirm your email address...
-          </p>
-        </div>
-      )}
+    <div className="login-panel">
+      <div className="auth-card-container">
+        <h1 className="login-header-title">
+          {status === "loading"
+            ? "Verifying Account"
+            : status === "success"
+              ? "Account Verified"
+              : "Verification Failed"}
+        </h1>
 
-      {status === "success" && (
         <div
+          className="glass-card"
           style={{
             display: "flex",
             flexDirection: "column",
             alignItems: "center",
-            gap: "1.5rem",
+            justifyContent: "center",
+            minHeight: "260px",
+            textAlign: "center",
+            padding: "2.25rem",
           }}
         >
-          <CheckCircle2
-            style={{ color: "#10b981", width: "4rem", height: "4rem" }}
-          />
-          <h1 className="login-title" style={{ margin: 0 }}>
-            Email Verified!
-          </h1>
-          <p className="subtitle" style={{ color: "#e2e8f0", margin: 0 }}>
-            {message}
-          </p>
-          <a
-            href="/login"
-            className="btn-primary"
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: "0.5rem",
-              textDecoration: "none",
-              marginTop: "1rem",
-              padding: "0.75rem 1.5rem",
-              fontSize: "0.9rem",
-              fontWeight: 600,
-            }}
-          >
-            Continue to Sign In <ArrowRight size={16} />
-          </a>
-        </div>
-      )}
-
-      {status === "error" && (
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            gap: "1.5rem",
-          }}
-        >
-          <XCircle
-            style={{ color: "#ef4444", width: "4rem", height: "4rem" }}
-          />
-          <h1 className="login-title" style={{ margin: 0 }}>
-            Verification Failed
-          </h1>
-          <p className="subtitle" style={{ color: "#fca5a5", margin: 0 }}>
-            {message}
-          </p>
-          <div style={{ display: "flex", gap: "1rem", marginTop: "1rem" }}>
-            <a
-              href="/register"
-              className="btn-primary"
+          {status === "loading" && (
+            <div
               style={{
-                display: "inline-block",
-                textDecoration: "none",
-                padding: "0.75rem 1.5rem",
-                fontSize: "0.9rem",
-                fontWeight: 600,
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                gap: "1.25rem",
               }}
             >
-              Back to Register
-            </a>
-          </div>
+              <Loader2
+                className="animate-spin"
+                style={{ color: "#825fa7", width: "3.5rem", height: "3.5rem" }}
+              />
+              <p className="subtitle" style={{ margin: 0 }}>
+                Please wait while we confirm your email address...
+              </p>
+            </div>
+          )}
+
+          {status === "success" && (
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                gap: "1.25rem",
+              }}
+            >
+              <CheckCircle2
+                style={{ color: "#4ade80", width: "3.5rem", height: "3.5rem" }}
+              />
+              <p className="subtitle" style={{ color: "#e2e8f0", margin: 0 }}>
+                {message}
+              </p>
+              <a
+                href="/login"
+                className="btn-primary"
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: "0.5rem",
+                  textDecoration: "none",
+                  marginTop: "0.5rem",
+                  width: "100%",
+                }}
+              >
+                Continue to Sign In <ArrowRight size={16} />
+              </a>
+            </div>
+          )}
+
+          {status === "error" && (
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                gap: "1.25rem",
+              }}
+            >
+              <XCircle
+                style={{ color: "#ef4444", width: "3.5rem", height: "3.5rem" }}
+              />
+              <p className="subtitle" style={{ color: "#fca5a5", margin: 0 }}>
+                {message}
+              </p>
+              <a
+                href="/register"
+                className="btn-primary"
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  textDecoration: "none",
+                  marginTop: "0.5rem",
+                  width: "100%",
+                }}
+              >
+                Back to Register
+              </a>
+            </div>
+          )}
         </div>
-      )}
+      </div>
     </div>
   );
 }
