@@ -17,6 +17,7 @@ import {
   Package,
   Settings,
   ShoppingCart,
+  Star,
   Ticket,
   Users,
   X,
@@ -55,6 +56,9 @@ const ICON_MAP: Record<string, React.FC<{ className?: string }>> = {
   "Invoice History": FileText,
   InvoiceHistory: FileText,
   BarChart2,
+  "User Review": Star,
+  UserReview: Star,
+  Reviews: Star,
 };
 
 /** Fallback static menu (shown only if backend menus unavailable) */
@@ -101,6 +105,12 @@ export const STATIC_MENU_ITEMS = [
     icon: Settings,
     permission: "settings.view",
   },
+  {
+    name: "User Review",
+    href: "/admin/reviews",
+    icon: Star,
+    permission: "reviews.view",
+  },
 ];
 
 /** Convert backend slug → frontend href */
@@ -110,6 +120,9 @@ function slugToHref(slug: string): string {
     users: "/admin/users",
     products: "/admin/products",
     orders: "/admin/orders",
+    "user-review": "/admin/reviews",
+    "user-reviews": "/admin/reviews",
+    reviews: "/admin/reviews",
     billing: "/admin/billing",
     "invoice-history": "/admin/billing/invoices",
     reports: "/admin/reports",
@@ -218,6 +231,9 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
 
   const hasMenus = user?.menus && user.menus.length > 0;
   const flatMenus = hasMenus ? getFlatMenus(user!.menus) : [];
+  const hasUserReviewMenu = flatMenus.some((node) =>
+    ["user-review", "user-reviews", "reviews"].includes(node.slug),
+  );
 
   return (
     <>
@@ -259,7 +275,19 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
         {/* Navigation Items */}
         <nav className="flex-1 overflow-y-auto px-4 py-6 space-y-1">
           {hasMenus
-            ? flatMenus.map((node) => renderMenuNode(node))
+            ? [
+                ...flatMenus.map((node) => renderMenuNode(node)),
+                !hasUserReviewMenu && (
+                  <NavItem
+                    key="user-review"
+                    name="User Review"
+                    href="/admin/reviews"
+                    icon={Star}
+                    isActive={isLinkActive("/admin/reviews")}
+                    onClick={handleLinkClick}
+                  />
+                ),
+              ]
             : STATIC_MENU_ITEMS.map((item) => (
                 <NavItem
                   key={item.name}
