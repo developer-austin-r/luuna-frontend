@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   AlertCircle,
   CheckCircle2,
@@ -17,6 +18,8 @@ import Navbar from "@/components/landing/Navbar/Navbar";
 import { AccountMenu } from "@/components/profile/AccountMenu/AccountMenu";
 import { ProfileActions } from "@/components/profile/ProfileActions/ProfileActions";
 import { ProfileHeader } from "@/components/profile/ProfileHeader/ProfileHeader";
+import { logoutApi } from "@/services/auth";
+import { changePasswordApi, getProfileApi } from "@/services/profile";
 
 const PasswordInput = ({
   label,
@@ -73,6 +76,20 @@ const PasswordInput = ({
 };
 
 export default function ChangePasswordPage() {
+  const router = useRouter();
+
+  useEffect(() => {
+    getProfileApi().catch((err: any) => {
+      const msg = err?.message || "";
+      if (
+        msg.includes("401") ||
+        msg.toLowerCase().includes("unauthorized") ||
+        msg.includes("403")
+      ) {
+        router.replace("/login");
+      }
+    });
+  }, [router]);
   const [isSaving, setIsSaving] = useState(false);
   const [statusMessage, setStatusMessage] = useState<{
     type: "success" | "error";
@@ -98,7 +115,7 @@ export default function ChangePasswordPage() {
     if (statusMessage) setStatusMessage(null);
   };
 
-  const handleSubmit = (e?: React.FormEvent) => {
+  const handleSubmit = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     setIsSaving(true);
     setStatusMessage(null);
@@ -136,21 +153,29 @@ export default function ChangePasswordPage() {
       return;
     }
 
-    // Simulate API call for password change
-    setTimeout(() => {
-      setIsSaving(false);
-      // Backend integration note: Real password change submission requires backend API integration.
-      // This is purely a frontend validation simulation.
+    try {
+      const response = await changePasswordApi(formData);
       setStatusMessage({
         type: "success",
-        text: "Password verified successfully!",
+        text: response?.message || "Password changed successfully!",
       });
       setFormData({
         currentPassword: "",
         newPassword: "",
         confirmPassword: "",
       });
-    }, 1000);
+    } catch (err: unknown) {
+      const errorMessage =
+        err instanceof Error
+          ? err.message
+          : "Failed to change password. Please check your credentials.";
+      setStatusMessage({
+        type: "error",
+        text: errorMessage,
+      });
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const handleCancel = () => {
@@ -167,8 +192,14 @@ export default function ChangePasswordPage() {
     setStatusMessage(null);
   };
 
-  const handleLogout = () => {
-    console.log("Logging out...");
+  const handleLogout = async () => {
+    try {
+      await logoutApi();
+    } catch {
+      // Ignore network errors
+    } finally {
+      window.location.href = "/";
+    }
   };
 
   return (

@@ -1,8 +1,13 @@
 "use client";
 
+import Link from "next/link";
 import { Heart, Menu, Search, ShoppingCart, UserRound } from "lucide-react";
 
+import { getS3AssetUrl } from "@/config";
+
 import styles from "./Navbar.module.css";
+
+const BG_BANNER_URL = getS3AssetUrl("/assets/bg-banner.jpeg");
 
 export default function Navbar() {
   return (
@@ -35,14 +40,19 @@ export default function Navbar() {
             <ShoppingCart size={26} />
           </button>
 
-          <button aria-label="Account">
+          <Link href="/profile" aria-label="Account">
             <UserRound size={25} />
-          </button>
+          </Link>
         </div>
       </nav>
 
       {/* Pattern / White Space below Navbar */}
-      <div className={styles.logoSpace}></div>
+      <div
+        className={styles.logoSpace}
+        style={{
+          backgroundImage: `url("${BG_BANNER_URL}")`,
+        }}
+      ></div>
     </header>
   );
 }

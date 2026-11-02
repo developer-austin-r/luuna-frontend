@@ -2,11 +2,7 @@
   width: 100%;
 
   color: #160525;
-  background: linear-gradient(
-    180deg,
-    #F3E8FF 0%,
-    #E9D5FF 100%
-  );
+  background: linear-gradient(180deg, #f3e8ff 0%, #e9d5ff 100%);
 
   box-sizing: border-box;
 
@@ -46,7 +42,7 @@
 
   font-weight: 800;
 
-  color: #6B21A8;
+  color: #6b21a8;
 }
 
 .subscribe h3,

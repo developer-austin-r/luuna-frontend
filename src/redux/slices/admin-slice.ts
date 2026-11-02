@@ -315,6 +315,29 @@ const adminSlice = createSlice({
       state.settings = action.payload;
     },
 
+    // Customers
+    setCustomers: (state, action: PayloadAction<Customer[]>) => {
+      state.customers = action.payload;
+    },
+    updateCustomer: (state, action: PayloadAction<Customer>) => {
+      const idx = state.customers.findIndex((c) => c.id === action.payload.id);
+      if (idx !== -1) {
+        state.customers[idx] = action.payload;
+      }
+    },
+    updateCustomerStatus: (
+      state,
+      action: PayloadAction<{ id: string; status: "active" | "suspended" }>,
+    ) => {
+      const cust = state.customers.find((c) => c.id === action.payload.id);
+      if (cust) {
+        cust.status = action.payload.status;
+      }
+    },
+    deleteCustomer: (state, action: PayloadAction<string>) => {
+      state.customers = state.customers.filter((c) => c.id !== action.payload);
+    },
+
     // Log Activity
     addActivityLog: (
       state,
@@ -356,6 +379,10 @@ export const {
   updateShippingMethod,
   deleteShippingMethod,
   updateSettings,
+  setCustomers,
+  updateCustomer,
+  updateCustomerStatus,
+  deleteCustomer,
   addActivityLog,
 } = adminSlice.actions;
 
