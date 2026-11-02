@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState, useState } from "react";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { ArrowLeft, Eye, EyeOff } from "lucide-react";
 
 import { authenticate, type FormState } from "@/app/actions/auth";
@@ -13,6 +13,8 @@ import { type AuthTabType, TabSwitcher } from "./TabSwitcher";
 export function LoginForm() {
   const pathname = usePathname();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirectTarget = searchParams.get("redirect") || "";
   const activeTab: AuthTabType =
     pathname === "/register" ? "register" : "login";
 
@@ -98,6 +100,7 @@ export function LoginForm() {
             </div>
           ) : (
             <form action={formAction} className="form-body">
+              <input type="hidden" name="redirectTo" value={redirectTarget} />
               <input
                 type="hidden"
                 name="mode"

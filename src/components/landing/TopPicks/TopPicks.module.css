@@ -35,7 +35,6 @@
   line-height: 1;
 }
 
-
 /* =========================
    TOP PICKS GRID
 ========================= */
@@ -51,7 +50,6 @@
   align-items: center;
 }
 
-
 /* =========================
    PICK ITEM
 ========================= */
@@ -62,7 +60,6 @@
 
   min-width: 0;
 }
-
 
 /* =========================
    RANK NUMBER
@@ -83,7 +80,6 @@
 
   text-align: center;
 }
-
 
 /* =========================
    PRODUCT IMAGE
@@ -111,7 +107,6 @@
   object-fit: cover;
 }
 
-
 /* =========================
    DIVIDER
 ========================= */
@@ -125,13 +120,11 @@
   background: #e5e5e5;
 }
 
-
 /* =========================
    TABLET
 ========================= */
 
 @media (max-width: 1000px) {
-
   .section {
     padding: 25px 30px 40px;
   }
@@ -151,13 +144,11 @@
   }
 }
 
-
 /* =========================
    MOBILE
 ========================= */
 
 @media (max-width: 650px) {
-
   .section {
     padding: 20px 16px 35px;
   }
@@ -200,13 +191,11 @@
   }
 }
 
-
 /* =========================
    SMALL MOBILE
 ========================= */
 
 @media (max-width: 400px) {
-
   .section {
     padding-left: 12px;
     padding-right: 12px;

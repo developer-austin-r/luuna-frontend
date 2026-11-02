@@ -1,3 +1,5 @@
+import { logoutAction } from "@/app/actions/auth";
+
 import { apiClient } from "./api-client";
 
 export interface MenuNode {
@@ -64,10 +66,30 @@ export async function refreshTokenApi(): Promise<AuthUser> {
 }
 
 /**
- * Logs the user out. Clears all auth cookies on the backend.
+ * Logs the user out. Clears all auth cookies on Next.js server, backend, and browser.
  */
 export async function logoutApi(): Promise<void> {
-  await apiClient<{ data: { message: string } }>("/auth/logout", {
-    method: "POST",
-  });
+  // 1. Clear Next.js server cookie store
+  try {
+    await logoutAction();
+  } catch (err) {
+    console.error("Failed to clear server cookies:", err);
+  }
+
+  // 2. Clear backend session & cookies
+  try {
+    await apiClient<{ data: { message: string } }>("/auth/logout", {
+      method: "POST",
+    });
+  } catch {
+    // Ignore backend error
+  }
+
+  // 3. Fallback client-side cookie deletion
+  if (typeof document !== "undefined") {
+    document.cookie =
+      "access_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT;";
+    document.cookie =
+      "refresh_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT;";
+  }
 }
