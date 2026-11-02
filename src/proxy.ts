@@ -10,7 +10,7 @@ const PROTECTED_PREFIXES = ["/admin"];
  */
 const AUTH_ROUTES = ["/login", "/register"];
 
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const lowerPathname = pathname.toLowerCase();
   const accessToken = request.cookies.get("access_token")?.value;

@@ -6,3 +6,4 @@ export * from "./location";
 export * from "./media-upload";
 export * from "./order";
 export * from "./profile";
+export * from "./whatsapp";
