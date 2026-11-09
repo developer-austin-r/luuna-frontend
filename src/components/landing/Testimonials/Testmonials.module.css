@@ -1,168 +1,210 @@
 .testimonials {
   width: 100%;
-  padding: 20px 55px 40px;
-  box-sizing: border-box;
-  background: #ffffff;
+  padding: 18px clamp(16px, 3.5vw, 48px) 18px;
+  overflow: hidden;
+  background: #10051b;
 }
 
-.cards {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 28px;
-  width: 100%;
+.carousel {
+  position: relative;
+  width: min(100%, 1260px);
+  margin: 0 auto;
+  overflow: hidden;
+}
+
+.track {
+  display: flex;
+  width: 166.6667%;
+  min-height: clamp(150px, 18vw, 230px);
+  transition: transform 420ms cubic-bezier(0.22, 0.75, 0.25, 1);
+  will-change: transform;
 }
 
 .card {
-  min-height: 170px;
-  padding: 22px;
-
-  background: #f7f7f7;
-  border-radius: 18px;
-
-  box-sizing: border-box;
-}
-
-.top {
+  position: relative;
+  isolation: isolate;
   display: flex;
+  flex: 0 0 20%;
+  flex-direction: column;
   align-items: center;
-  justify-content: space-between;
-  gap: 10px;
+  justify-content: center;
+  gap: 6px;
+  min-width: 0;
+  padding: 18px clamp(12px, 2vw, 26px);
+  overflow: hidden;
+  background: #050407;
+  color: #fff;
+  text-align: center;
 }
 
-.top h3 {
-  margin: 0;
-
-  font-size: 15px;
-  font-weight: 700;
-  color: #111111;
+.card p,
+.card h2,
+.rating {
+  position: relative;
+  z-index: 1;
 }
 
 .rating {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-}
-
-.rating span {
-  color: #f28b35;
-  font-size: 13px;
-}
-
-.rating .grayStar {
-  color: #d0d0d0;
-}
-
-.rating small {
-  font-size: 10px;
-  color: #555555;
-  white-space: nowrap;
+  color: #ff8619;
+  font-size: clamp(0.8rem, 1.2vw, 1rem);
+  letter-spacing: 0.06em;
+  line-height: 1;
 }
 
 .card p {
-  margin: 22px 0 0;
-
-  font-size: 14px;
-  line-height: 1.5;
-  color: #222222;
+  max-width: 330px;
+  margin: 0;
+  color: #fff;
+  font-size: clamp(0.66rem, 0.95vw, 0.82rem);
+  line-height: 1.35;
 }
 
-.divider {
-  width: 100%;
-  height: 40px;
-
-  margin-top: 25px;
-
-  background: #e5e5e5;
+.card h2 {
+  margin: 0;
+  color: #fff;
+  font-size: clamp(0.65rem, 0.9vw, 0.78rem);
+  font-weight: 750;
+  line-height: 1.2;
 }
 
-/* =========================
-   TABLET
-========================= */
-
-@media (max-width: 900px) {
-  .testimonials {
-    padding: 20px 30px 35px;
-  }
-
-  .cards {
-    gap: 18px;
-  }
-
-  .card {
-    padding: 18px;
-  }
-
-  .top {
-    flex-direction: column;
-    align-items: flex-start;
-  }
+.featured::before {
+  position: absolute;
+  z-index: -2;
+  inset: -8%;
+  background-image: url("/images/recommendation-toy.png");
+  background-position: center 25%;
+  background-size: cover;
+  content: "";
+  filter: saturate(1.55) hue-rotate(300deg);
+  transform: scale(1.06);
 }
 
-/* =========================
-   MOBILE
-========================= */
+.featured::after {
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  background: linear-gradient(180deg, rgb(8 3 9 / 25%), rgb(8 3 9 / 67%));
+  content: "";
+}
+
+.arrow {
+  position: absolute;
+  z-index: 2;
+  top: 50%;
+  display: grid;
+  width: 34px;
+  height: 34px;
+  padding: 0 0 4px;
+  place-items: center;
+  transform: translateY(-50%);
+  border: 1px solid rgb(255 255 255 / 55%);
+  border-radius: 50%;
+  background: rgb(16 5 27 / 78%);
+  color: #fff;
+  cursor: pointer;
+  font: inherit;
+  font-size: 1.8rem;
+  line-height: 1;
+  transition:
+    background 160ms ease,
+    border-color 160ms ease;
+}
+
+.arrow:hover {
+  border-color: #fff;
+  background: #765092;
+}
+
+.previous {
+  left: 10px;
+}
+
+.next {
+  right: 10px;
+}
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  padding-top: 10px;
+}
+
+.dot {
+  width: 6px;
+  height: 6px;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: #aaa0b5;
+  cursor: pointer;
+  transition:
+    width 180ms ease,
+    background 180ms ease;
+}
+
+.activeDot {
+  width: 18px;
+  background: #a77ac5;
+}
 
 @media (max-width: 650px) {
   .testimonials {
-    padding: 18px 16px 30px;
+    padding: 14px 14px 16px;
   }
 
-  .cards {
-    grid-template-columns: 1fr;
-    gap: 15px;
+  .track {
+    width: 500%;
+    min-height: 170px;
   }
 
   .card {
-    min-height: 150px;
-    padding: 18px;
-    border-radius: 14px;
+    min-height: 170px;
+    padding: 18px 14px;
   }
 
-  .top {
-    flex-direction: row;
-    align-items: center;
+  .mobileActive::before {
+    position: absolute;
+    z-index: -2;
+    inset: -8%;
+    background-image: url("/images/recommendation-toy.png");
+    background-position: center 25%;
+    background-size: cover;
+    content: "";
+    filter: saturate(1.55) hue-rotate(300deg);
+    transform: scale(1.06);
   }
 
-  .top h3 {
-    font-size: 14px;
-  }
-
-  .rating span {
-    font-size: 11px;
-  }
-
-  .rating small {
-    font-size: 9px;
+  .mobileActive::after {
+    position: absolute;
+    z-index: -1;
+    inset: 0;
+    background: linear-gradient(180deg, rgb(8 3 9 / 25%), rgb(8 3 9 / 67%));
+    content: "";
   }
 
   .card p {
-    margin-top: 16px;
-    font-size: 13px;
+    max-width: 300px;
+    font-size: 0.78rem;
   }
 
-  .divider {
-    height: 25px;
-    margin-top: 20px;
+  .card h2 {
+    font-size: 0.75rem;
+  }
+
+  .previous {
+    left: 8px;
+  }
+
+  .next {
+    right: 8px;
   }
 }
 
-/* =========================
-   SMALL MOBILE
-========================= */
-
-@media (max-width: 400px) {
-  .testimonials {
-    padding-left: 12px;
-    padding-right: 12px;
-  }
-
-  .top {
-    align-items: flex-start;
-    flex-direction: column;
-    gap: 6px;
-  }
-
-  .card {
-    padding: 15px;
+@media (prefers-reduced-motion: reduce) {
+  .track,
+  .dot,
+  .arrow {
+    transition: none;
   }
 }

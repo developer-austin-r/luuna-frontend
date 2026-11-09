@@ -1,159 +1,186 @@
 .hero {
   position: relative;
+  overflow: hidden;
+  background: #10051b;
+}
 
-  width: 100%;
-  height: 440px;
+.viewport {
+  overflow-x: auto;
+  scrollbar-width: none;
+  scroll-snap-type: x mandatory;
+  overscroll-behavior-x: contain;
+}
 
-  background: #d9d9d9;
+.viewport::-webkit-scrollbar {
+  display: none;
+}
 
+.track {
+  display: flex;
+  gap: 4px;
+  min-height: clamp(255px, 28vw, 405px);
+  padding: 0 4px;
+}
+
+.slide {
+  position: relative;
+  display: grid;
+  flex: 0 0 34%;
+  min-width: 0;
+  align-items: center;
+  justify-items: center;
+  overflow: hidden;
+  scroll-snap-align: start;
+  background-color: #291833;
+}
+
+.slide::before {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(180deg, transparent 48%, rgb(10 4 16 / 57%)),
+    url("/images/luuna-background-pattern.png");
+  background-position: center, center;
+  background-size:
+    cover,
+    auto 100%;
+  content: "";
+  opacity: 0.26;
+}
+
+.ember {
+  background-image: radial-gradient(ellipse at 50% 12%, #b14c2f, #251329 68%);
+}
+
+.ice {
+  background-image: radial-gradient(ellipse at 54% 12%, #557ea6, #1a2638 72%);
+}
+
+.gold {
+  background-image: radial-gradient(ellipse at 55% 12%, #aa7840, #33231c 70%);
+}
+
+.violet {
+  background-image: radial-gradient(ellipse at 52% 14%, #8663a2, #24122f 70%);
+}
+
+.blue {
+  background-image: radial-gradient(ellipse at 52% 14%, #426d8c, #152431 70%);
+}
+
+.artStage {
+  position: absolute;
+  inset: 0 0 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   overflow: hidden;
 }
 
-.overlay {
-  width: 100%;
-  height: 100%;
-
-  display: flex;
-  align-items: center;
+.figure {
+  position: absolute;
+  bottom: -4%;
+  width: min(92%, 370px);
+  height: 108%;
+  filter: drop-shadow(0 12px 12px rgb(0 0 0 / 28%));
 }
 
-.content {
-  width: 100%;
-  max-width: 1200px;
-
-  margin: 0 auto;
-
-  padding: 0 60px;
-}
-
-.content h1 {
-  margin: 0 0 40px;
-
-  color: #ffffff;
-
-  font-size: 48px;
-  line-height: 1.05;
-  font-weight: 700;
+.photo {
+  object-fit: cover;
+  object-position: center 28%;
+  opacity: 0.94;
+  mix-blend-mode: screen;
 }
 
 .shopButton {
-  padding: 11px 24px;
-
-  border: 1px solid #ffffff;
-  border-radius: 8px;
-
-  background: transparent;
-  color: #ffffff;
-
-  font-size: 13px;
-  font-weight: 600;
-
-  cursor: pointer;
+  position: absolute;
+  bottom: 1.1rem;
+  left: 50%;
+  z-index: 1;
+  padding: 0.48rem 0.85rem;
+  border-radius: 5px;
+  background: #fff;
+  color: #17101c;
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-decoration: none;
+  transform: translateX(-50%);
+  transition:
+    background-color 150ms ease,
+    transform 150ms ease;
 }
 
 .shopButton:hover {
-  background: #ffffff;
-  color: #160024;
+  background: #efe0f7;
+  transform: translate(-50%, -2px);
 }
 
-/* Slider dots */
-
-.dots {
+.arrow {
   position: absolute;
-
-  left: 60px;
-  bottom: 22px;
-
-  display: flex;
-  align-items: center;
-
-  gap: 6px;
-}
-
-.dot {
-  width: 7px;
-  height: 7px;
-
+  top: 50%;
+  z-index: 3;
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border: 1px solid rgb(255 255 255 / 35%);
   border-radius: 50%;
-
-  background: #bdbdbd;
+  background: rgb(18 7 26 / 68%);
+  color: #fff;
+  cursor: pointer;
+  transform: translateY(-50%);
+  transition: background-color 150ms ease;
 }
 
-.dot.active {
-  background: #160024;
+.arrow:hover {
+  background: #311b40;
 }
 
-/* =========================
-   TABLET
-========================= */
-
-@media (max-width: 900px) {
-  .hero {
-    height: 400px;
-  }
-
-  .content {
-    padding: 0 40px;
-  }
-
-  .content h1 {
-    font-size: 40px;
-  }
-
-  .dots {
-    left: 40px;
-  }
+.previous {
+  left: 12px;
 }
 
-/* =========================
-   MOBILE
-========================= */
-
-@media (max-width: 650px) {
-  .hero {
-    height: 360px;
-  }
-
-  .content {
-    padding: 0 24px;
-  }
-
-  .content h1 {
-    font-size: 32px;
-    line-height: 1.1;
-
-    margin-bottom: 28px;
-  }
-
-  .shopButton {
-    padding: 10px 20px;
-    font-size: 12px;
-  }
-
-  .dots {
-    left: 24px;
-    bottom: 18px;
-  }
+.next {
+  right: 12px;
 }
 
-/* =========================
-   SMALL MOBILE
-========================= */
+.visuallyHidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+@media (max-width: 700px) {
+  .track {
+    min-height: clamp(245px, 66vw, 360px);
+  }
+
+  .slide {
+    flex-basis: 72%;
+  }
+
+  .figure {
+    width: 100%;
+  }
+
+  .arrow {
+    width: 33px;
+    height: 33px;
+  }
+}
 
 @media (max-width: 400px) {
-  .hero {
-    height: 320px;
+  .slide {
+    flex-basis: 82%;
   }
+}
 
-  .content {
-    padding: 0 18px;
-  }
-
-  .content h1 {
-    font-size: 28px;
-  }
-
-  .dots {
-    left: 18px;
+@media (prefers-reduced-motion: reduce) {
+  .shopButton,
+  .arrow {
+    transition: none;
   }
 }

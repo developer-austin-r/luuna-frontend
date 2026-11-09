@@ -1,361 +1,305 @@
 .section {
-  width: 100%;
-  padding: 35px 55px 45px;
-  box-sizing: border-box;
-  background: #ffffff;
-}
-
-/* =========================
-   SECTION HEADER
-========================= */
-
-.sectionHeader {
-  width: 100%;
-  margin-bottom: 18px;
-
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.titleWrapper {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.titleBar {
-  width: 12px;
-  height: 44px;
-
-  background: #19002d;
-
-  display: block;
-}
-
-.titleWrapper h2 {
-  margin: 0;
-
-  color: #111111;
-
-  font-size: 25px;
-  line-height: 1;
-  font-weight: 700;
-}
-
-.browseLink {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-
-  color: #111111;
-
-  font-size: 12px;
-  font-weight: 500;
-
-  text-decoration: none;
-}
-
-.browseLink span {
-  font-size: 18px;
-  line-height: 1;
-}
-
-/* =========================
-   ARRIVALS GRID
-========================= */
-
-.arrivalsGrid {
-  width: 100%;
-  max-width: 1000px;
-  margin: 0 auto;
-
-  display: grid;
-
-  grid-template-columns: 1.05fr 1fr;
-
-  grid-template-rows: 175px 220px;
-
-  gap: 22px;
-}
-
-/* =========================
-   CARD
-========================= */
-
-.arrivalCard {
-  position: relative;
-
-  background: #e9e9e9;
-
+  padding: 16px clamp(18px, 6.5vw, 94px) 24px;
   overflow: hidden;
+  background: #10051b;
+  color: #fff;
 }
 
-/* Large left card */
-
-.large {
-  grid-column: 1;
-  grid-row: 1 / span 2;
+.heading {
+  margin: 0 auto 18px;
+  text-align: center;
 }
 
-/* Wide right card */
-
-.wide {
-  grid-column: 2;
-  grid-row: 1;
+.heading h2 {
+  margin: 0;
+  color: #fff;
+  font-family: Impact, "Arial Black", sans-serif;
+  font-size: clamp(1.35rem, 2.4vw, 2rem);
+  font-weight: 850;
+  letter-spacing: 0.035em;
 }
 
-/* Bottom cards */
-
-.small {
-  grid-row: 2;
+.carouselWrap {
+  position: relative;
+  width: min(100%, 1260px);
+  margin: 0 auto;
 }
 
-/*
-  Small cards are inside the
-  second column, so create
-  two columns using nth-child
-*/
-
-.arrivalCard:nth-child(3) {
-  grid-column: 2;
-  width: calc(50% - 11px);
+.viewport {
+  position: relative;
+  overflow-x: auto;
+  scrollbar-width: none;
+  scroll-snap-type: x mandatory;
+  overscroll-behavior-x: contain;
 }
 
-.arrivalCard:nth-child(4) {
-  grid-column: 2;
-  width: calc(50% - 11px);
-
-  margin-left: calc(50% + 11px);
+.viewport::-webkit-scrollbar {
+  display: none;
 }
 
-/* =========================
-   CARD CONTENT
-========================= */
+.track {
+  position: relative;
+  display: flex;
+  gap: 14px;
+}
 
-.cardContent {
+.productCard {
+  flex: 0 0 calc((100% - 42px) / 4);
+  min-width: 0;
+  overflow: hidden;
+  scroll-snap-align: start;
+  background: transparent;
+}
+
+.artwork {
+  position: relative;
+  aspect-ratio: 1 / 1.04;
+  overflow: hidden;
+  border-radius: 8px;
+  background:
+    radial-gradient(
+      ellipse at 50% 24%,
+      rgb(188 168 195 / 33%),
+      transparent 50%
+    ),
+    linear-gradient(155deg, #65606a, #3d3942 75%);
+}
+
+.artwork > img {
+  object-fit: cover;
+  object-position: center 28%;
+  transition: transform 250ms ease;
+}
+
+.productCard:hover .artwork > img {
+  transform: scale(1.04);
+}
+
+.figure {
   position: absolute;
-
-  left: 25px;
-  bottom: 25px;
-
-  max-width: 260px;
+  z-index: 1;
+  right: 2%;
+  bottom: -7%;
+  left: 2%;
+  width: 96%;
+  height: 105%;
+  filter: drop-shadow(0 9px 8px rgb(0 0 0 / 35%));
+  transition: transform 220ms ease;
 }
 
-.cardContent h3 {
-  margin: 0 0 8px;
-
-  color: #111111;
-
-  font-size: 18px;
-  font-weight: 700;
+.productCard:hover .figure {
+  transform: translateY(-3px) scale(1.025);
 }
 
-.cardContent p {
-  margin: 0 0 12px;
-
-  color: #222222;
-
-  font-size: 10px;
-  line-height: 1.5;
+.figurewarrior {
+  color: #6f3335;
 }
 
-.shopLink {
-  color: #111111;
-
-  font-size: 11px;
-  font-weight: 500;
-
-  text-decoration: underline;
+.figureninja {
+  filter: drop-shadow(0 10px 8px rgb(0 0 0 / 35%)) saturate(0.82);
 }
 
-/* =========================
-   LARGE CARD
-========================= */
-
-.large .cardContent {
-  left: 25px;
-  bottom: 25px;
+.figuresunburst {
+  filter: drop-shadow(0 10px 8px rgb(0 0 0 / 35%)) saturate(1.2);
 }
 
-/* =========================
-   WIDE CARD
-========================= */
-
-.wide .cardContent {
-  left: 25px;
-  bottom: 22px;
+.figureweb {
+  filter: drop-shadow(0 10px 8px rgb(0 0 0 / 35%)) hue-rotate(-4deg);
 }
 
-/* =========================
-   SMALL CARDS
-========================= */
-
-.small .cardContent {
-  left: 20px;
-  bottom: 18px;
+.imageGlow {
+  position: absolute;
+  right: -15%;
+  bottom: -25%;
+  left: -15%;
+  height: 40%;
+  border-radius: 50%;
+  background: #9b70b2;
+  filter: blur(32px);
+  opacity: 0.18;
 }
 
-.small .cardContent h3 {
-  font-size: 17px;
+.discount {
+  position: absolute;
+  z-index: 2;
+  top: 8px;
+  left: 8px;
+  padding: 0.23rem 0.42rem;
+  border-radius: 99px;
+  background: #f3eef5;
+  color: #22172a;
+  font-size: 0.59rem;
+  font-weight: 800;
 }
 
-.small .cardContent p {
-  margin-bottom: 8px;
+.productInfo {
+  padding: 7px 4px 10px;
 }
 
-/* =========================
-   TABLET
-========================= */
+.productInfo h3 {
+  overflow: hidden;
+  margin: 0;
+  color: #fff;
+  font-size: clamp(0.68rem, 0.82vw, 0.83rem);
+  font-weight: 650;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.productInfo p {
+  overflow: hidden;
+  margin: 3px 0 6px;
+  color: #bcb0c5;
+  font-size: 0.62rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.priceRow {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  font-size: 0.62rem;
+}
+
+.oldPrice {
+  color: #ab9db4;
+  text-decoration: line-through;
+}
+
+.priceRow strong {
+  color: #f5eff7;
+  font-size: 0.7rem;
+}
+
+.arrow {
+  position: absolute;
+  top: 40%;
+  z-index: 3;
+  display: grid;
+  width: 32px;
+  height: 32px;
+  place-items: center;
+  border: 0;
+  border-radius: 50%;
+  background: #eee8f0;
+  color: #5c4a62;
+  cursor: pointer;
+  transition:
+    background-color 150ms ease,
+    transform 150ms ease;
+}
+
+.arrow:hover {
+  background: #fff;
+  transform: scale(1.05);
+}
+
+.previous {
+  left: -15px;
+}
+
+.next {
+  right: -15px;
+}
+
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  min-height: 20px;
+  margin-top: 10px;
+}
+
+.dot,
+.activeDot {
+  width: 5px;
+  height: 5px;
+  padding: 0;
+  border: 0;
+  border-radius: 99px;
+  background: #796b82;
+  cursor: pointer;
+  transition:
+    width 150ms ease,
+    background-color 150ms ease;
+}
+
+.activeDot {
+  width: 14px;
+  background: #bd8cda;
+}
 
 @media (max-width: 900px) {
   .section {
-    padding: 32px 30px 40px;
+    padding: 15px 34px 22px;
   }
 
-  .arrivalsGrid {
-    grid-template-rows: 170px 200px;
-
-    gap: 16px;
+  .track {
+    gap: 11px;
   }
 
-  .titleWrapper h2 {
-    font-size: 23px;
-  }
-
-  .titleBar {
-    width: 10px;
-    height: 40px;
+  .productCard {
+    flex-basis: calc((100% - 22px) / 3);
   }
 }
 
-/* =========================
-   MOBILE
-========================= */
-
-@media (max-width: 650px) {
+@media (max-width: 600px) {
   .section {
-    padding: 28px 16px 35px;
+    padding: 14px 28px 20px;
   }
 
-  .sectionHeader {
-    margin-bottom: 15px;
+  .heading {
+    margin-bottom: 14px;
   }
 
-  .titleWrapper {
-    gap: 7px;
+  .track {
+    gap: 9px;
   }
 
-  .titleBar {
-    width: 8px;
-    height: 34px;
+  .productCard {
+    flex-basis: calc((100% - 9px) / 2);
   }
 
-  .titleWrapper h2 {
-    font-size: 20px;
+  .productInfo {
+    padding: 7px 7px 9px;
   }
 
-  .browseLink {
-    font-size: 9px;
+  .productInfo h3 {
+    font-size: 0.66rem;
   }
 
-  .browseLink span {
-    font-size: 15px;
+  .productInfo p {
+    font-size: 0.58rem;
   }
 
-  /*
-    Mobile becomes a simple
-    vertical layout
-  */
-
-  .arrivalsGrid {
-    max-width: none;
-
-    display: grid;
-
-    grid-template-columns: 1fr 1fr;
-
-    grid-template-rows:
-      260px
-      140px
-      140px;
-
-    gap: 12px;
+  .previous {
+    left: -13px;
   }
 
-  /* Large card full width */
-
-  .large {
-    grid-column: 1 / span 2;
-    grid-row: 1;
-  }
-
-  /* Wide card full width */
-
-  .wide {
-    grid-column: 1 / span 2;
-    grid-row: 2;
-  }
-
-  /* Small cards */
-
-  .arrivalCard:nth-child(3) {
-    grid-column: 1;
-    grid-row: 3;
-
-    width: 100%;
-  }
-
-  .arrivalCard:nth-child(4) {
-    grid-column: 2;
-    grid-row: 3;
-
-    width: 100%;
-    margin-left: 0;
-  }
-
-  .cardContent {
-    left: 16px;
-    bottom: 16px;
-  }
-
-  .cardContent h3 {
-    font-size: 15px;
-  }
-
-  .cardContent p {
-    font-size: 9px;
-  }
-
-  .shopLink {
-    font-size: 10px;
+  .next {
+    right: -13px;
   }
 }
 
-/* =========================
-   SMALL MOBILE
-========================= */
-
-@media (max-width: 400px) {
+@media (max-width: 380px) {
   .section {
-    padding-left: 12px;
-    padding-right: 12px;
+    padding-right: 24px;
+    padding-left: 24px;
   }
 
-  .arrivalsGrid {
-    grid-template-rows:
-      230px
-      125px
-      125px;
-
-    gap: 10px;
+  .productCard {
+    flex-basis: 78%;
   }
+}
 
-  .titleWrapper h2 {
-    font-size: 18px;
-  }
-
-  .browseLink {
-    font-size: 8px;
+@media (prefers-reduced-motion: reduce) {
+  .artwork > img,
+  .figure,
+  .arrow,
+  .dot,
+  .activeDot {
+    transition: none;
   }
 }

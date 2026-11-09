@@ -1,0 +1,450 @@
+.contentWidth {
+  width: min(100%, 1260px);
+  margin: 0 auto;
+}
+
+.posterSection,
+.categorySection,
+.productGridSection {
+  padding-right: clamp(18px, 6.5vw, 94px);
+  padding-left: clamp(18px, 6.5vw, 94px);
+  background: #10051b;
+  color: #fff;
+}
+
+.posterSection {
+  padding-top: 10px;
+  padding-bottom: 10px;
+}
+
+.poster {
+  position: relative;
+  isolation: isolate;
+  width: min(100%, 1260px);
+  height: clamp(150px, 17vw, 225px);
+  margin: 0 auto;
+  overflow: hidden;
+  background: #23152d;
+}
+
+.poster::before {
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  background-image: url("/images/luuna-background-pattern.png");
+  background-position: center;
+  background-size: auto 150%;
+  content: "";
+  opacity: 0.13;
+}
+
+.poster::after {
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  content: "";
+}
+
+.posternew {
+  background:
+    radial-gradient(ellipse at 80% 13%, #fff0af 0 8%, transparent 34%),
+    linear-gradient(180deg, #89b3cb 0%, #f2c18e 56%, #c96956 100%);
+}
+
+.posternew::after {
+  background:
+    linear-gradient(
+      164deg,
+      transparent 55%,
+      rgb(146 91 73 / 72%) 55.5% 69%,
+      transparent 69.5%
+    ),
+    linear-gradient(
+      188deg,
+      transparent 66%,
+      rgb(88 61 68 / 65%) 66.5% 82%,
+      transparent 82.5%
+    ),
+    linear-gradient(180deg, transparent 76%, rgb(54 33 48 / 66%) 76.5%);
+}
+
+.posternostalgia {
+  background:
+    radial-gradient(
+      ellipse at 76% 15%,
+      rgb(210 236 173 / 68%),
+      transparent 24%
+    ),
+    linear-gradient(180deg, #a7b3a7 0%, #4e5c63 42%, #1c2533 100%);
+}
+
+.posternostalgia::after {
+  background:
+    linear-gradient(180deg, transparent 35%, rgb(21 29 39 / 68%) 100%),
+    linear-gradient(
+      160deg,
+      transparent 49%,
+      rgb(51 61 70 / 72%) 50% 65%,
+      transparent 66%
+    ),
+    linear-gradient(
+      195deg,
+      transparent 62%,
+      rgb(33 41 52 / 82%) 63% 80%,
+      transparent 81%
+    );
+}
+
+.posterwheels {
+  background:
+    repeating-linear-gradient(
+      165deg,
+      transparent 0 55px,
+      rgb(255 255 255 / 8%) 56px 58px
+    ),
+    linear-gradient(115deg, #111019 0%, #5a182a 48%, #cf2939 100%);
+}
+
+.posterArt {
+  position: absolute;
+  top: 0;
+  right: 4%;
+  bottom: 22px;
+  display: flex;
+  width: 40%;
+  align-items: center;
+  justify-content: center;
+  color: #f3e8f8;
+}
+
+.posterFigure {
+  position: absolute;
+  right: 6%;
+  bottom: -38%;
+  width: min(82%, 310px);
+  height: 142%;
+  filter: drop-shadow(0 11px 12px rgb(0 0 0 / 36%));
+}
+
+.posternew .posterFigure {
+  filter: drop-shadow(0 11px 12px rgb(0 0 0 / 36%)) saturate(1.3);
+}
+
+.posternostalgia .posterFigure {
+  right: 16%;
+  bottom: -43%;
+  filter: drop-shadow(0 11px 12px rgb(0 0 0 / 44%)) saturate(0.62);
+}
+
+.posterwheels .posterArt {
+  right: 8%;
+  bottom: 28px;
+  width: 36%;
+  color: #f9e8e8;
+  filter: drop-shadow(0 10px 12px rgb(0 0 0 / 42%));
+  transform: skewX(-9deg) rotate(-8deg);
+}
+
+.posterLabel {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  display: grid;
+  height: 22px;
+  place-items: center;
+  background: #08060c;
+  color: #fff;
+}
+
+.posterLabel h2 {
+  margin: 0;
+  font-family: Impact, "Arial Black", sans-serif;
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.09em;
+  line-height: 1;
+}
+
+.categorySection {
+  padding-top: 15px;
+  padding-bottom: 16px;
+}
+
+.sectionTitle {
+  margin: 0 auto 10px;
+  text-align: center;
+}
+
+.sectionTitle h2 {
+  margin: 0;
+  color: #fff;
+  font-family: Impact, "Arial Black", sans-serif;
+  font-size: clamp(1.25rem, 2.3vw, 1.8rem);
+  font-weight: 850;
+  letter-spacing: 0.035em;
+}
+
+.categoryGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-auto-rows: clamp(94px, 10.4vw, 150px);
+  gap: 5px;
+}
+
+.categoryCard {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  min-height: 0;
+  align-items: flex-end;
+  overflow: hidden;
+  padding: 12px;
+  border-radius: 2px;
+  color: #fff;
+  text-decoration: none;
+  transition:
+    filter 150ms ease,
+    transform 150ms ease;
+}
+
+.categoryCard:hover {
+  z-index: 1;
+  filter: brightness(1.12);
+  transform: translateY(-2px);
+}
+
+.categoryCard::before {
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  background-image: url("/images/luuna-background-pattern.png");
+  background-position: center;
+  background-size: auto 170%;
+  content: "";
+  opacity: 0.15;
+}
+
+.categoryCard::after {
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  background:
+    linear-gradient(90deg, rgb(7 3 11 / 67%), transparent 85%),
+    linear-gradient(0deg, rgb(7 3 11 / 60%), transparent 68%);
+  content: "";
+}
+
+.anime {
+  background:
+    radial-gradient(ellipse at 77% 27%, #bc4d37, transparent 32%),
+    linear-gradient(130deg, #8c1d27, #321323 78%);
+}
+
+.classics {
+  background:
+    radial-gradient(ellipse at 76% 15%, #a23235, transparent 35%),
+    linear-gradient(130deg, #5b1425, #151421 75%);
+}
+
+.dc {
+  background:
+    radial-gradient(ellipse at 78% 20%, #4b637b, transparent 36%),
+    linear-gradient(130deg, #1a293a, #15121f 78%);
+}
+
+.marvel {
+  background:
+    radial-gradient(ellipse at 77% 20%, #e7443b, transparent 35%),
+    linear-gradient(130deg, #a01825, #341322 80%);
+}
+
+.kpop {
+  grid-column: 1 / -1;
+  background:
+    radial-gradient(ellipse at 78% 16%, #c85076, transparent 35%),
+    linear-gradient(120deg, #381243, #a32954 56%, #3c1850);
+}
+
+.categoryCopy {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  gap: 0;
+  text-shadow: 0 2px 8px rgb(0 0 0 / 65%);
+}
+
+.categoryName {
+  font-family: Impact, "Arial Black", sans-serif;
+  font-size: clamp(0.92rem, 1.8vw, 1.35rem);
+  font-weight: 900;
+  letter-spacing: 0.08em;
+}
+
+.categoryFigure {
+  position: absolute;
+  right: 1%;
+  bottom: -50%;
+  width: 48%;
+  height: 172%;
+  filter: drop-shadow(0 7px 8px rgb(0 0 0 / 35%));
+  transition: transform 180ms ease;
+}
+
+.categoryCard:hover .categoryFigure {
+  transform: translateY(-5px) scale(1.03);
+}
+
+.kpop .categoryFigure {
+  right: 12%;
+  width: 24%;
+}
+
+.brandStrip {
+  height: 48px;
+  background-color: #efedf0;
+  background-image: url("/images/luuna-background-pattern.png");
+  background-position: center;
+  background-size: auto 150%;
+}
+
+.productGridSection {
+  padding-top: 12px;
+  padding-bottom: 30px;
+}
+
+.productGrid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.gridCard {
+  width: 100%;
+  min-width: 0;
+  flex: initial;
+}
+
+@media (max-width: 760px) {
+  .posterSection,
+  .categorySection,
+  .productGridSection {
+    padding-right: 24px;
+    padding-left: 24px;
+  }
+
+  .poster {
+    height: clamp(138px, 23vw, 200px);
+  }
+
+  .categoryGrid {
+    grid-auto-rows: 105px;
+  }
+
+  .categoryFigure {
+    right: -1%;
+    width: 50%;
+  }
+
+  .productGrid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+  }
+}
+
+@media (max-width: 520px) {
+  .posterSection,
+  .categorySection,
+  .productGridSection {
+    padding-right: 15px;
+    padding-left: 15px;
+  }
+
+  .posterSection {
+    padding-top: 7px;
+    padding-bottom: 7px;
+  }
+
+  .poster {
+    height: clamp(120px, 31vw, 165px);
+  }
+
+  .posterArt {
+    right: 0;
+    width: 46%;
+  }
+
+  .posterFigure {
+    right: -5%;
+    bottom: -40%;
+    width: 95%;
+  }
+
+  .posternostalgia .posterFigure {
+    right: 5%;
+    bottom: -45%;
+  }
+
+  .posterwheels .posterArt {
+    right: 6%;
+    width: 42%;
+  }
+
+  .posterwheels .posterArt svg {
+    width: 105px;
+    height: 105px;
+  }
+
+  .categorySection {
+    padding-top: 10px;
+    padding-bottom: 10px;
+  }
+
+  .categoryGrid {
+    grid-auto-rows: 82px;
+    gap: 4px;
+  }
+
+  .categoryCard {
+    padding: 8px;
+  }
+
+  .categoryName {
+    max-width: 110px;
+    font-size: clamp(0.72rem, 3.5vw, 0.96rem);
+  }
+
+  .categoryFigure {
+    right: -8%;
+    bottom: -52%;
+    width: 60%;
+    height: 175%;
+  }
+
+  .kpop .categoryFigure {
+    right: 8%;
+    width: 33%;
+  }
+
+  .brandStrip {
+    height: 38px;
+    background-size: auto 190%;
+  }
+
+  .productGridSection {
+    padding-top: 8px;
+    padding-bottom: 25px;
+  }
+
+  .productGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 9px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .categoryCard,
+  .categoryFigure {
+    transition: none;
+  }
+}

@@ -1,224 +1,350 @@
 .footer {
   width: 100%;
-
-  color: #160525;
-  background: linear-gradient(180deg, #f3e8ff 0%, #e9d5ff 100%);
-
-  box-sizing: border-box;
-
-  padding-top: 130px;
+  overflow: hidden;
+  background: linear-gradient(
+    180deg,
+    #12071c 0%,
+    #21102e 27%,
+    #6f4391 63%,
+    #c8a8df 82%,
+    #f0e9f3 100%
+  );
+  color: #fff;
 }
 
-.footerContent {
-  width: 100%;
-  max-width: 1150px;
-
-  margin: 0 auto;
-
-  padding: 70px 40px 65px;
-
+.welcome {
   display: grid;
-
-  grid-template-columns:
-    1.3fr
-    1.1fr
-    0.9fr
-    0.9fr
-    0.8fr;
-
-  gap: 55px;
-
-  align-items: start;
-
-  box-sizing: border-box;
-}
-/* Logo / Subscribe */
-
-.logo {
-  margin-bottom: 15px;
-
-  font-size: 38px;
-  line-height: 1;
-
-  font-weight: 800;
-
-  color: #6b21a8;
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.6fr);
+  align-items: center;
+  gap: clamp(28px, 5vw, 72px);
+  width: min(calc(100% - 96px), 1040px);
+  margin: 0 auto;
+  padding: 54px 0 40px;
 }
 
-.subscribe h3,
-.footerColumn h3 {
-  margin: 0 0 18px;
-
-  font-size: 18px;
-  font-weight: 700;
+.welcomeCopy h2 {
+  margin: 0 0 32px;
+  color: #fff;
+  font-size: clamp(1.8rem, 3vw, 2.25rem);
+  font-weight: 750;
+  line-height: 1.05;
+  letter-spacing: -0.03em;
 }
 
-.subscribe p {
-  margin: 0 0 16px;
-
-  font-size: 15px;
+.welcomeCopy p {
+  max-width: 320px;
+  margin: 0 0 38px;
+  color: #f1eaf5;
+  font-size: 0.82rem;
   line-height: 1.5;
 }
 
-.subscribeBox {
-  width: 205px;
-  height: 46px;
+.shopButton {
+  display: inline-grid;
+  width: 120px;
+  height: 42px;
+  place-items: center;
+  border: 1px solid #fff;
+  border-radius: 8px;
+  color: #fff;
+  font-size: 0.9rem;
+  font-weight: 650;
+  text-decoration: none;
+  transition:
+    background-color 150ms ease,
+    color 150ms ease;
+}
 
+.shopButton:hover {
+  background: #fff;
+  color: #39214d;
+}
+
+.gallery {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+  min-width: 0;
+}
+
+.gallery img {
+  display: block;
+  width: 100%;
+  height: clamp(220px, 21vw, 275px);
+  border: 1px solid rgb(255 255 255 / 38%);
+  border-radius: 9px;
+  object-fit: cover;
+  box-shadow: 0 8px 24px rgb(24 9 37 / 20%);
+}
+
+.gallery img:first-child {
+  object-position: 50% 32%;
+}
+
+.gallery img:nth-child(2) {
+  object-position: 50% 44%;
+}
+
+.footerContent {
+  display: grid;
+  grid-template-columns:
+    minmax(220px, 2fr) minmax(110px, 0.8fr) minmax(130px, 1fr)
+    minmax(190px, 1.5fr);
+  gap: clamp(18px, 3.2vw, 46px);
+  width: min(calc(100% - 96px), 1040px);
+  margin: 0 auto;
+  padding: 10px 0 32px;
+  color: #170c20;
+}
+
+.brandColumn,
+.footerColumn,
+.support {
+  min-width: 0;
+}
+
+.brandTitle {
   display: flex;
   align-items: center;
+  gap: 10px;
+  margin-bottom: 9px;
+}
 
-  border: 1.5px solid #160525;
-  border-radius: 4px;
+.brandTitle h2 {
+  margin: 0;
+  color: #100b13;
+  font-size: 0.82rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+}
 
+.brandIcon {
+  display: grid;
+  width: 28px;
+  height: 28px;
   overflow: hidden;
+  place-items: center;
+  border: 1px solid rgb(24 10 36 / 25%);
+  border-radius: 50%;
+  background: #170a21;
 }
 
-.subscribeBox input {
-  width: 100%;
-  min-width: 0;
-  height: 100%;
-
-  padding: 0 14px;
-
-  border: 0;
-  outline: 0;
-
-  background: transparent;
-
-  color: #160525;
-
-  font-size: 14px;
+.brandIcon img {
+  width: 75%;
+  height: auto;
+  filter: brightness(1.5);
 }
 
-.subscribeBox input::placeholder {
-  color: #755d8b;
+.brandColumn > p {
+  max-width: 275px;
+  margin: 0 0 12px;
+  color: #211429;
+  font-size: 0.61rem;
+  line-height: 1.5;
 }
 
-.subscribeBox button {
-  width: 48px;
-  height: 100%;
-
-  flex-shrink: 0;
-
-  border: 0;
-
-  background: transparent;
-  color: #160525;
-
-  font-size: 21px;
-
-  cursor: pointer;
+.brandColumn .followTitle {
+  margin-bottom: 5px;
+  color: #190e22;
+  font-size: 0.61rem;
 }
 
-/* Columns */
+.socialLinks {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
 
-.footerColumn {
+.socialLinks a {
+  display: grid;
+  width: 14px;
+  height: 14px;
+  place-items: center;
+  border-radius: 50%;
+  color: #170c20;
+  font-size: 0.7rem;
+  font-weight: 800;
+  line-height: 1;
+  text-decoration: none;
+}
+
+.socialLinks a:first-child {
+  background: #170c20;
+  color: #eadff0;
+}
+
+.socialLinks a:hover {
+  opacity: 0.68;
+}
+
+.footerColumn,
+.support {
   display: flex;
   flex-direction: column;
-
   align-items: flex-start;
 }
 
-.footerColumn p,
-.footerColumn a {
-  margin: 0 0 14px;
+.footerColumn h2,
+.support h2 {
+  margin: 3px 0 8px;
+  color: #160a20;
+  font-size: 0.7rem;
+  font-weight: 800;
+  line-height: 1.2;
+}
 
-  color: #160525;
-
-  font-size: 15px;
-  line-height: 1.4;
-
+.footerColumn a,
+.support > a {
+  margin: 0 0 5px;
+  color: #271731;
+  font-size: 0.59rem;
+  line-height: 1.25;
   text-decoration: none;
 }
 
-.footerColumn a:hover {
+.footerColumn a:hover,
+.support > a:hover {
   text-decoration: underline;
 }
 
-.columnSpace {
-  margin-top: 4px;
-}
-
-/* Social */
-
-.socialIcons {
+.subscribe {
   display: flex;
+  width: 100%;
+  max-width: 240px;
+  height: 32px;
   align-items: center;
-
-  gap: 24px;
+  margin-top: 4px;
+  overflow: hidden;
+  border: 1px solid #281334;
+  border-radius: 2px;
+  background: rgb(255 255 255 / 12%);
 }
 
-.socialIcons a {
-  margin: 0;
-
-  font-size: 21px;
-  font-weight: 500;
-
-  text-decoration: none;
+.subscribe input {
+  width: 100%;
+  min-width: 0;
+  height: 100%;
+  padding: 0 9px;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: #21132b;
+  font: inherit;
+  font-size: 0.62rem;
 }
 
-/* Copyright */
+.subscribe input::placeholder {
+  color: #705d7b;
+}
+
+.subscribe button {
+  display: grid;
+  width: 34px;
+  height: 100%;
+  flex: none;
+  place-items: center;
+  border: 0;
+  background: transparent;
+  color: #21132b;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
 
 .copyright {
-  width: 100%;
-
-  padding: 16px 20px;
-
-  border-top: 1px solid rgba(22, 5, 37, 0.15);
-
+  padding: 6px 18px;
+  background: #f4f1f5;
+  color: #29202e;
+  font-size: 0.5rem;
+  line-height: 1.35;
   text-align: center;
-
-  font-size: 14px;
-
-  color: rgba(22, 5, 37, 0.6);
-
-  box-sizing: border-box;
 }
 
-/* Tablet */
-
-@media (max-width: 900px) {
-  .footer {
-    padding-top: 65px;
+@media (max-width: 820px) {
+  .welcome,
+  .footerContent {
+    width: min(calc(100% - 56px), 680px);
   }
 
   .footerContent {
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: minmax(180px, 1.5fr) repeat(2, minmax(105px, 1fr));
+  }
 
-    padding: 45px 30px 55px;
-
-    gap: 35px;
+  .support {
+    grid-column: 2 / 4;
   }
 }
 
-/* Mobile */
+@media (max-width: 580px) {
+  .welcome,
+  .footerContent {
+    width: calc(100% - 32px);
+  }
 
-@media (max-width: 600px) {
-  .footer {
-    padding-top: 80px;
+  .welcome {
+    grid-template-columns: 1fr;
+    gap: 22px;
+    padding: 35px 0 28px;
+  }
+
+  .welcomeCopy h2 {
+    margin-bottom: 14px;
+    font-size: 1.75rem;
+  }
+
+  .welcomeCopy p {
+    max-width: 380px;
+    margin-bottom: 18px;
+  }
+
+  .shopButton {
+    width: 100px;
+    height: 38px;
+  }
+
+  .gallery {
+    gap: 10px;
+  }
+
+  .gallery img {
+    height: clamp(155px, 48vw, 230px);
+    border-radius: 7px;
   }
 
   .footerContent {
-    grid-template-columns: 1fr 1fr;
-    padding: 35px 20px 45px;
-    gap: 30px 20px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 20px 16px;
+    padding: 8px 0 24px;
   }
 
-  .subscribe {
+  .brandColumn,
+  .support {
     grid-column: 1 / -1;
   }
 
-  .copyright {
-    font-size: 11px;
+  .footerColumn h2,
+  .support h2 {
+    font-size: 0.73rem;
   }
-}
 
-@media (max-width: 420px) {
-  .footerContent {
-    grid-template-columns: 1fr;
+  .footerColumn a,
+  .support > a,
+  .brandColumn > p,
+  .brandColumn .followTitle {
+    font-size: 0.68rem;
   }
 
   .subscribe {
-    grid-column: auto;
+    max-width: none;
+    height: 38px;
+  }
+
+  .copyright {
+    font-size: 0.55rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .shopButton {
+    transition: none;
   }
 }

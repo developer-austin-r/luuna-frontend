@@ -1,295 +1,196 @@
-/* =========================
-   HEADER
-========================= */
-
 .header {
-  width: 100%;
   position: relative;
-  z-index: 100;
+  z-index: 20;
+  background: #10051b;
 }
-
-/* =========================
-   NAVBAR
-========================= */
 
 .navbar {
-  height: 105px;
-  width: 100%;
-  background: #140025;
-
+  position: relative;
   display: flex;
   align-items: center;
-
-  padding: 0 5%;
-  position: relative;
+  gap: 14px;
+  width: 100%;
+  height: 58px;
+  padding: 0 clamp(12px, 3.2vw, 48px);
 }
 
-/* =========================
-   MENU
-========================= */
+.menuButton,
+.actions a {
+  display: inline-grid;
+  flex: none;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border: 0;
+  border-radius: 5px;
+  background: transparent;
+  color: #fff;
+  transition: background-color 160ms ease;
+}
 
 .menuButton {
-  border: none;
-  background: transparent;
-  color: white;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
   cursor: pointer;
-  padding: 5px;
 }
 
-/* =========================
-   SEARCH
-========================= */
+.menuButton:hover,
+.actions a:hover {
+  background: rgb(255 255 255 / 12%);
+}
 
 .searchBox {
-  width: 390px;
-  height: 50px;
-
-  background: white;
-  border-radius: 6px;
-
   display: flex;
   align-items: center;
-  gap: 10px;
-
-  padding: 0 15px;
-
-  margin-left: 55px;
+  gap: 0.55rem;
+  width: clamp(104px, 27vw, 380px);
+  height: 36px;
+  padding: 0 0.7rem;
+  border: 1px solid #ded9e2;
+  border-radius: 5px;
+  background: #fff;
+  color: #5d5660;
 }
 
 .searchBox svg {
-  color: #777;
-  flex-shrink: 0;
+  flex: none;
 }
 
 .searchBox input {
   width: 100%;
-  border: none;
-  outline: none;
-
-  font-size: 15px;
-  color: #333;
-
+  min-width: 0;
+  border: 0;
+  outline: 0;
   background: transparent;
+  color: #22182a;
+  font: inherit;
+  font-size: 0.78rem;
 }
 
 .searchBox input::placeholder {
-  color: #999;
+  color: #77717a;
 }
 
-/* =========================
-   LOGO
-========================= */
+.searchBox input::-webkit-search-cancel-button {
+  filter: grayscale(1);
+}
+
+.searchBox kbd {
+  display: none;
+}
 
 .logoWrapper {
   position: absolute;
-
+  top: 50%;
   left: 50%;
-  bottom: -30px;
-
-  transform: translateX(-50%);
-
-  z-index: 20;
-
-  display: flex;
-  justify-content: center;
+  display: inline-flex;
+  width: 118px;
   align-items: center;
+  justify-content: center;
+  transform: translate(-50%, -50%);
 }
 
 .logo {
-  width: 230px;
-  height: auto;
   display: block;
+  width: 100%;
+  height: auto;
+  filter: brightness(1.55) saturate(0.9);
 }
-
-/* =========================
-   RIGHT ACTIONS
-========================= */
 
 .actions {
+  display: flex;
+  align-items: center;
+  gap: 3px;
   margin-left: auto;
+}
 
+.menuPanel {
+  position: absolute;
+  top: 100%;
+  left: clamp(12px, 3.2vw, 48px);
+  display: grid;
+  gap: 2px;
+  width: min(270px, calc(100vw - 24px));
+  padding: 8px;
+  border: 1px solid #3a2945;
+  border-radius: 0 0 9px 9px;
+  background: #160a21;
+  box-shadow: 0 15px 32px rgb(9 2 14 / 30%);
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(-5px);
+  transition:
+    opacity 140ms ease,
+    transform 140ms ease;
+}
+
+.menuPanelOpen {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0);
+}
+
+.menuPanel a {
   display: flex;
   align-items: center;
-
-  gap: 22px;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: 5px;
+  color: #f5eff8;
+  font-size: 0.85rem;
+  text-decoration: none;
 }
 
-.actions button {
-  border: none;
-  background: transparent;
-
-  color: white;
-
-  padding: 4px;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  cursor: pointer;
+.menuPanel a:hover {
+  background: rgb(255 255 255 / 9%);
 }
 
-.actions button:hover {
-  opacity: 0.75;
-}
-
-/* =========================
-   SPACE BELOW NAVBAR
-========================= */
-
-.logoSpace {
-  height: 108px;
-  width: 100%;
-  background-size: 100% 100%;
-  background-position: center;
-  background-repeat: no-repeat;
-}
-
-/* =========================================
-   TABLET
-========================================= */
-
-@media (max-width: 900px) {
+@media (max-width: 480px) {
   .navbar {
-    height: 95px;
-    padding: 0 25px;
+    gap: 7px;
+    height: 50px;
   }
 
-  .searchBox {
-    width: 300px;
-    margin-left: 30px;
-  }
-
-  .logo {
-    width: 200px;
-  }
-
-  .actions {
-    gap: 15px;
-  }
-}
-
-/* =========================================
-   MOBILE
-========================================= */
-
-@media (max-width: 600px) {
-  .navbar {
-    min-height: 125px;
-    height: auto;
-
-    padding: 12px 15px 15px;
-
-    display: flex;
-    flex-wrap: wrap;
-
-    align-items: center;
-  }
-
-  /* Menu */
-
-  .menuButton {
-    width: 40px;
-    height: 40px;
+  .menuButton,
+  .actions a {
+    width: 29px;
+    height: 30px;
   }
 
   .menuButton svg {
-    width: 27px;
-    height: 27px;
+    width: 19px;
   }
-
-  /* Logo */
-
-  .logoWrapper {
-    top: 8px;
-    bottom: auto;
-
-    left: 50%;
-
-    transform: translateX(-50%);
-  }
-
-  .logo {
-    width: 145px;
-  }
-
-  /* Right icons */
-
-  .actions {
-    margin-left: auto;
-
-    gap: 8px;
-
-    z-index: 5;
-  }
-
-  .actions button {
-    padding: 3px;
-  }
-
-  .actions svg {
-    width: 21px;
-    height: 21px;
-  }
-
-  /* Search - FULL WIDTH */
 
   .searchBox {
-    order: 10;
+    width: clamp(96px, 26vw, 125px);
+    height: 31px;
+    gap: 5px;
+    padding: 0 6px;
+  }
 
-    width: 100%;
-    height: 44px;
-
-    margin: 12px 0 0;
-
-    padding: 0 13px;
-
-    flex: 0 0 100%;
-
-    box-sizing: border-box;
+  .searchBox svg {
+    width: 14px;
   }
 
   .searchBox input {
-    font-size: 14px;
+    font-size: 0.66rem;
   }
 
-  /* White space */
-
-  .logoSpace {
-    height: 65px;
-  }
-}
-
-/* =========================================
-   SMALL MOBILE
-========================================= */
-
-@media (max-width: 380px) {
-  .navbar {
-    min-height: 120px;
-    padding-left: 10px;
-    padding-right: 10px;
-  }
-
-  .logo {
-    width: 125px;
+  .logoWrapper {
+    width: 88px;
   }
 
   .actions {
-    gap: 5px;
+    gap: 0;
   }
 
   .actions svg {
-    width: 19px;
-    height: 19px;
+    width: 17px;
   }
+}
 
-  .searchBox {
-    height: 42px;
+@media (prefers-reduced-motion: reduce) {
+  .menuPanel,
+  .menuButton,
+  .actions a {
+    transition: none;
   }
 }
