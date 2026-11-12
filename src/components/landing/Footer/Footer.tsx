@@ -1,7 +1,11 @@
 import Image from "next/image";
 import Link from "next/link";
 
+import { env } from "../../../config/env";
+
 import styles from "./Footer.module.css";
+
+const landingAssetsBaseUrl = `${env.s3BaseUrl.replace(/\/$/, "")}/assets/landing-assets`;
 
 const informationLinks = [
   { label: "About Us", href: "/about" },
@@ -40,20 +44,22 @@ export default function Footer() {
           aria-label="Luuna collection highlights"
         >
           <Image
-            src="/images/wall_poster_image.png"
+            src={`${landingAssetsBaseUrl}/wall_poster_image.png`}
             alt="A fantasy collectible figure from the Luuna collection"
             width={1325}
             height={1187}
             sizes="(max-width: 600px) 44vw, 230px"
             loading="lazy"
+            unoptimized
           />
           <Image
-            src="/images/car_truck_image.png"
+            src={`${landingAssetsBaseUrl}/car_truck_image.png`}
             alt="An anime-inspired collector necklace"
             width={1254}
             height={1254}
             sizes="(max-width: 600px) 44vw, 230px"
             loading="lazy"
+            unoptimized
           />
         </div>
       </section>
@@ -64,11 +70,12 @@ export default function Footer() {
             <h2 id="footer-brand">VIBRANCE</h2>
             <span className={styles.brandIcon}>
               <Image
-                src="/images/ellipse.png"
+                src={`${landingAssetsBaseUrl}/ellipse.png`}
                 alt=""
                 width={2122}
                 height={741}
                 sizes="34px"
+                unoptimized
               />
             </span>
           </div>
