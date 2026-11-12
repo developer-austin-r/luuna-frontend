@@ -1,5 +1,5 @@
 .section {
-  padding: 16px clamp(18px, 6.5vw, 94px) 24px;
+  padding: 2px clamp(18px, 6.5vw, 94px) 24px;
   overflow: hidden;
   background: #10051b;
   color: #fff;
