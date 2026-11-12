@@ -5,33 +5,37 @@ import Image from "next/image";
 import Link from "next/link";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
+import { env } from "../../../config/env";
+
 import styles from "./Hero.module.css";
+
+const landingAssetsBaseUrl = `${env.s3BaseUrl.replace(/\/$/, "")}/assets/landing-assets`;
 
 const slides = [
   {
     title: "Featured collectible one",
-    image: "/images/hero-1.jpg",
-    alt: "Description of featured collectible one",
+    image: `${landingAssetsBaseUrl}/hero-1.jpg`,
+    alt: "Featured collectible one",
   },
   {
     title: "Featured collectible two",
-    image: "/images/hero-2.jpg",
-    alt: "Description of featured collectible two",
+    image: `${landingAssetsBaseUrl}/hero-2.jpg`,
+    alt: "Featured collectible two",
   },
   {
     title: "Featured collectible three",
-    image: "/images/hero-3.jpg",
-    alt: "Description of featured collectible three",
+    image: `${landingAssetsBaseUrl}/hero-3.jpg`,
+    alt: "Featured collectible three",
   },
   {
     title: "Featured collectible four",
-    image: "/images/hero-4.jpg",
-    alt: "Description of featured collectible four",
+    image: `${landingAssetsBaseUrl}/hero-4.jpg`,
+    alt: "Featured collectible four",
   },
   {
     title: "Featured collectible five",
-    image: "/images/hero-5.jpg",
-    alt: "Description of featured collectible five",
+    image: `${landingAssetsBaseUrl}/hero-5.jpg`,
+    alt: "Featured collectible five",
   },
 ];
 
@@ -78,8 +82,8 @@ export default function Hero() {
                 alt={slide.alt}
                 fill
                 sizes="(max-width: 700px) 72vw, 31vw"
+                unoptimized
               />
-
               <Link className={styles.shopButton} href="#new-arrivals">
                 SHOP NOW
               </Link>
