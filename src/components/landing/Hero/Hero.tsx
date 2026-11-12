@@ -42,8 +42,10 @@ export default function Hero() {
     const viewport = viewportRef.current;
     if (!viewport) return;
 
+    const isMobile = window.matchMedia("(max-width: 700px)").matches;
+
     viewport.scrollBy({
-      left: direction * viewport.clientWidth * 0.32,
+      left: direction * viewport.clientWidth * (isMobile ? 0.72 : 0.67),
       behavior: "smooth",
     });
   };

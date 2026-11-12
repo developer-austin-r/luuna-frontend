@@ -18,15 +18,15 @@
 .track {
   display: flex;
   gap: 4px;
-  min-height: max(360px, calc(100svh - 155px));
+  min-height: clamp(360px, 51vw, 550px);
   padding: 0 4px;
 }
 
 .slide {
   position: relative;
-  flex: 0 0 30.8%;
+  flex: 0 0 calc((100% - 8px) / 3);
   min-width: 0;
-  height: max(360px, calc(100svh - 155px));
+  height: clamp(360px, 51vw, 550px);
   overflow: hidden;
   scroll-snap-align: start;
   background: #291833;
