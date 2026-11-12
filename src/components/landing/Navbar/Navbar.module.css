@@ -79,10 +79,11 @@
 
 .logoWrapper {
   position: absolute;
-  top: 50%;
+  top: 100%;
   left: 50%;
+  z-index: 21;
   display: inline-flex;
-  width: 118px;
+  width: clamp(150px, 16vw, 200px);
   align-items: center;
   justify-content: center;
   transform: translate(-50%, -50%);
@@ -143,15 +144,17 @@
   background: rgb(255 255 255 / 9%);
 }
 
-@media (max-width: 480px) {
+@media (max-width: 600px) {
   .navbar {
     gap: 7px;
-    height: 50px;
+    height: 52px;
+    padding-right: 10px;
+    padding-left: 10px;
   }
 
   .menuButton,
   .actions a {
-    width: 29px;
+    width: 30px;
     height: 30px;
   }
 
@@ -160,22 +163,23 @@
   }
 
   .searchBox {
-    width: clamp(96px, 26vw, 125px);
-    height: 31px;
+    width: clamp(90px, 27vw, 150px);
+    height: 32px;
     gap: 5px;
     padding: 0 6px;
   }
 
   .searchBox svg {
-    width: 14px;
+    width: 15px;
   }
 
   .searchBox input {
-    font-size: 0.66rem;
+    font-size: 0.68rem;
   }
 
   .logoWrapper {
-    width: 88px;
+    left: 55%;
+    width: clamp(100px, 27vw, 130px);
   }
 
   .actions {
@@ -184,6 +188,32 @@
 
   .actions svg {
     width: 17px;
+  }
+}
+
+@media (max-width: 360px) {
+  .navbar {
+    gap: 4px;
+    height: 48px;
+    padding-right: 6px;
+    padding-left: 6px;
+  }
+
+  .menuButton,
+  .actions a {
+    width: 27px;
+  }
+
+  .searchBox {
+    width: clamp(78px, 25vw, 96px);
+  }
+
+  .logoWrapper {
+    width: 90px;
+  }
+
+  .actions svg {
+    width: 16px;
   }
 }
 

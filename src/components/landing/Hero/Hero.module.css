@@ -18,85 +18,45 @@
 .track {
   display: flex;
   gap: 4px;
-  min-height: clamp(255px, 28vw, 405px);
+  min-height: max(360px, calc(100svh - 155px));
   padding: 0 4px;
 }
 
 .slide {
   position: relative;
-  display: grid;
-  flex: 0 0 34%;
+  flex: 0 0 30.8%;
   min-width: 0;
-  align-items: center;
-  justify-items: center;
+  height: max(360px, calc(100svh - 155px));
   overflow: hidden;
   scroll-snap-align: start;
-  background-color: #291833;
-}
-
-.slide::before {
-  position: absolute;
-  inset: 0;
-  background-image:
-    linear-gradient(180deg, transparent 48%, rgb(10 4 16 / 57%)),
-    url("/images/luuna-background-pattern.png");
-  background-position: center, center;
-  background-size:
-    cover,
-    auto 100%;
-  content: "";
-  opacity: 0.26;
-}
-
-.ember {
-  background-image: radial-gradient(ellipse at 50% 12%, #b14c2f, #251329 68%);
-}
-
-.ice {
-  background-image: radial-gradient(ellipse at 54% 12%, #557ea6, #1a2638 72%);
-}
-
-.gold {
-  background-image: radial-gradient(ellipse at 55% 12%, #aa7840, #33231c 70%);
-}
-
-.violet {
-  background-image: radial-gradient(ellipse at 52% 14%, #8663a2, #24122f 70%);
-}
-
-.blue {
-  background-image: radial-gradient(ellipse at 52% 14%, #426d8c, #152431 70%);
-}
-
-.artStage {
-  position: absolute;
-  inset: 0 0 28px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
-}
-
-.figure {
-  position: absolute;
-  bottom: -4%;
-  width: min(92%, 370px);
-  height: 108%;
-  filter: drop-shadow(0 12px 12px rgb(0 0 0 / 28%));
+  background: #291833;
 }
 
 .photo {
+  z-index: 0;
   object-fit: cover;
-  object-position: center 28%;
-  opacity: 0.94;
-  mix-blend-mode: screen;
+  object-position: center top;
+  transform: translateY(12px) scale(1.06);
+}
+
+.slide::after {
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    rgb(10 4 16 / 5%) 45%,
+    rgb(10 4 16 / 55%) 100%
+  );
+  content: "";
+  pointer-events: none;
 }
 
 .shopButton {
   position: absolute;
   bottom: 1.1rem;
   left: 50%;
-  z-index: 1;
+  z-index: 2;
   padding: 0.48rem 0.85rem;
   border-radius: 5px;
   background: #fff;
@@ -115,6 +75,11 @@
   transform: translate(-50%, -2px);
 }
 
+.shopButton:focus-visible {
+  outline: 3px solid #fff;
+  outline-offset: 3px;
+}
+
 .arrow {
   position: absolute;
   top: 50%;
@@ -123,7 +88,7 @@
   place-items: center;
   width: 38px;
   height: 38px;
-  border: 1px solid rgb(255 255 255 / 35%);
+  border: 0;
   border-radius: 50%;
   background: rgb(18 7 26 / 68%);
   color: #fff;
@@ -155,26 +120,17 @@
 
 @media (max-width: 700px) {
   .track {
-    min-height: clamp(245px, 66vw, 360px);
+    min-height: clamp(280px, 78vw, 420px);
   }
 
   .slide {
     flex-basis: 72%;
-  }
-
-  .figure {
-    width: 100%;
+    height: clamp(280px, 78vw, 420px);
   }
 
   .arrow {
     width: 33px;
     height: 33px;
-  }
-}
-
-@media (max-width: 400px) {
-  .slide {
-    flex-basis: 82%;
   }
 }
 

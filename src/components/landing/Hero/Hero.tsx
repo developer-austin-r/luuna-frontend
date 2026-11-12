@@ -5,24 +5,34 @@ import Image from "next/image";
 import Link from "next/link";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
-import CollectibleFigure from "@/components/landing/CollectibleFigure";
-
 import styles from "./Hero.module.css";
 
 const slides = [
-  { title: "Shadow realm", tone: "ember", variant: "ninja" as const },
   {
-    title: "Collector’s spotlight",
-    tone: "ice",
-    image: "/images/recommendation-toy.png",
+    title: "Featured collectible one",
+    image: "/images/hero-1.jpg",
+    alt: "Description of featured collectible one",
   },
-  { title: "Legends in the making", tone: "gold", variant: "warrior" as const },
   {
-    title: "Power up your shelf",
-    tone: "violet",
-    variant: "sunburst" as const,
+    title: "Featured collectible two",
+    image: "/images/hero-2.jpg",
+    alt: "Description of featured collectible two",
   },
-  { title: "Everyday heroes", tone: "blue", variant: "web" as const },
+  {
+    title: "Featured collectible three",
+    image: "/images/hero-3.jpg",
+    alt: "Description of featured collectible three",
+  },
+  {
+    title: "Featured collectible four",
+    image: "/images/hero-4.jpg",
+    alt: "Description of featured collectible four",
+  },
+  {
+    title: "Featured collectible five",
+    image: "/images/hero-5.jpg",
+    alt: "Description of featured collectible five",
+  },
 ];
 
 export default function Hero() {
@@ -33,7 +43,7 @@ export default function Hero() {
     if (!viewport) return;
 
     viewport.scrollBy({
-      left: direction * viewport.clientWidth * 0.7,
+      left: direction * viewport.clientWidth * 0.32,
       behavior: "smooth",
     });
   };
@@ -43,6 +53,7 @@ export default function Hero() {
       <h1 id="hero-title" className={styles.visuallyHidden}>
         Collect your favorite legends
       </h1>
+
       <div
         className={styles.viewport}
         ref={viewportRef}
@@ -53,29 +64,20 @@ export default function Hero() {
         <div className={styles.track}>
           {slides.map((slide, index) => (
             <article
-              className={`${styles.slide} ${styles[slide.tone]}`}
-              key={slide.title}
+              className={styles.slide}
+              key={slide.image}
               role="group"
               aria-roledescription="slide"
               aria-label={`${index + 1} of ${slides.length}: ${slide.title}`}
             >
-              <div className={styles.artStage}>
-                {slide.image ? (
-                  <Image
-                    className={styles.photo}
-                    src={slide.image}
-                    alt="Dark winged fantasy collectible figure"
-                    fill
-                    priority
-                    sizes="(max-width: 700px) 72vw, 34vw"
-                  />
-                ) : (
-                  <CollectibleFigure
-                    className={styles.figure}
-                    variant={slide.variant!}
-                  />
-                )}
-              </div>
+              <Image
+                className={styles.photo}
+                src={slide.image}
+                alt={slide.alt}
+                fill
+                sizes="(max-width: 700px) 72vw, 31vw"
+              />
+
               <Link className={styles.shopButton} href="#new-arrivals">
                 SHOP NOW
               </Link>
@@ -83,6 +85,7 @@ export default function Hero() {
           ))}
         </div>
       </div>
+
       <button
         className={`${styles.arrow} ${styles.previous}`}
         type="button"
@@ -91,6 +94,7 @@ export default function Hero() {
       >
         <ChevronLeft size={23} />
       </button>
+
       <button
         className={`${styles.arrow} ${styles.next}`}
         type="button"
