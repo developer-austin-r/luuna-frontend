@@ -1,69 +1,38 @@
-import styles from "./CuratedForYou.module.css";
+import Link from "next/link";
 
-const curatedItems = [
-  {
-    id: 1,
-    title: "Anime",
-    description: "Lorem ipsum Lorem ipsumlorem ipsum",
-    className: "largeCard",
-  },
-  {
-    id: 2,
-    title: "Avengers",
-    description: "Lorem ipsum Lorem ipsumlorem ipsum Lorem ipsum",
-    className: "wideCard",
-  },
-  {
-    id: 3,
-    title: "Anime",
-    description: "Lorem ipsum Lorem ipsum",
-    className: "smallCard",
-  },
-  {
-    id: 4,
-    title: "Anime",
-    description: "Lorem ipsum Lorem ipsum",
-    className: "smallCard",
-  },
-];
+import CollectibleFigure from "@/components/landing/CollectibleFigure";
+
+import styles from "./CuratedForYou.module.css";
 
 export default function CuratedForYou() {
   return (
-    <section className={styles.section}>
-      {/* Section Header */}
-      <div className={styles.sectionHeader}>
-        <div className={styles.titleWrapper}>
-          <span className={styles.titleBar}></span>
-
-          <h2>Curated For You</h2>
+    <section className={styles.section} aria-labelledby="curated-title">
+      <div className={styles.banner}>
+        <div className={styles.topBubble}>
+          <h2 id="curated-title">CURATED ?</h2>
         </div>
-
-        <a href="#" className={styles.browseLink}>
-          Browse All Products
-          <span>→</span>
-        </a>
-      </div>
-
-      {/* Curated Grid */}
-      <div className={styles.grid}>
-        {curatedItems.map((item) => (
-          <div
-            key={item.id}
-            className={`${styles.card} ${
-              styles[item.className as keyof typeof styles]
-            }`}
-          >
-            <div className={styles.cardContent}>
-              <h3>{item.title}</h3>
-
-              <p>{item.description}</p>
-
-              <a href="#" className={styles.shopLink}>
-                Shop Now
-              </a>
-            </div>
-          </div>
-        ))}
+        <CollectibleFigure
+          className={`${styles.character} ${styles.leftCharacter}`}
+          variant="sunburst"
+        />
+        <div className={styles.storyBubble}>
+          <p>The best loot all in one box, Captain!</p>
+        </div>
+        <CollectibleFigure
+          className={`${styles.character} ${styles.rightCharacter}`}
+          variant="ninja"
+        />
+        <Link className={styles.cta} href="#new-arrivals">
+          EXPLORE
+          <br />
+          NOW!
+        </Link>
+        <span className={styles.sparkleOne} aria-hidden="true">
+          ✦
+        </span>
+        <span className={styles.sparkleTwo} aria-hidden="true">
+          ✧
+        </span>
       </div>
     </section>
   );

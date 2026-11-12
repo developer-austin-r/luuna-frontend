@@ -1,163 +1,142 @@
 .hero {
   position: relative;
-
-  width: 100%;
-  height: 440px;
-
-  background: #d9d9d9;
-
   overflow: hidden;
+  background: #10051b;
 }
 
-.overlay {
-  width: 100%;
-  height: 100%;
+.viewport {
+  overflow-x: auto;
+  scrollbar-width: none;
+  scroll-snap-type: x mandatory;
+  overscroll-behavior-x: contain;
+}
 
+.viewport::-webkit-scrollbar {
+  display: none;
+}
+
+.track {
   display: flex;
-  align-items: center;
+  gap: 4px;
+  min-height: clamp(360px, 51vw, 550px);
+  padding: 0 4px;
 }
 
-.content {
-  width: 100%;
-  max-width: 1200px;
-
-  margin: 0 auto;
-
-  padding: 0 60px;
+.slide {
+  position: relative;
+  flex: 0 0 calc((100% - 8px) / 3);
+  min-width: 0;
+  height: clamp(360px, 51vw, 550px);
+  overflow: hidden;
+  scroll-snap-align: start;
+  background: #291833;
 }
 
-.content h1 {
-  margin: 0 0 40px;
+.photo {
+  z-index: 0;
+  object-fit: cover;
+  object-position: center top;
+  transform: translateY(12px) scale(1.06);
+}
 
-  color: #ffffff;
-
-  font-size: 48px;
-  line-height: 1.05;
-  font-weight: 700;
+.slide::after {
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    rgb(10 4 16 / 5%) 45%,
+    rgb(10 4 16 / 55%) 100%
+  );
+  content: "";
+  pointer-events: none;
 }
 
 .shopButton {
-  padding: 11px 24px;
-
-  border: 1px solid #ffffff;
-  border-radius: 8px;
-
-  background: transparent;
-  color: #ffffff;
-
-  font-size: 13px;
-  font-weight: 600;
-
-  cursor: pointer;
+  position: absolute;
+  bottom: 1.1rem;
+  left: 50%;
+  z-index: 2;
+  padding: 0.48rem 0.85rem;
+  border-radius: 5px;
+  background: #fff;
+  color: #17101c;
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-decoration: none;
+  transform: translateX(-50%);
+  transition:
+    background-color 150ms ease,
+    transform 150ms ease;
 }
 
 .shopButton:hover {
-  background: #ffffff;
-  color: #160024;
+  background: #efe0f7;
+  transform: translate(-50%, -2px);
 }
 
+.shopButton:focus-visible {
+  outline: 3px solid #fff;
+  outline-offset: 3px;
+}
 
-/* Slider dots */
-
-.dots {
+.arrow {
   position: absolute;
-
-  left: 60px;
-  bottom: 22px;
-
-  display: flex;
-  align-items: center;
-
-  gap: 6px;
-}
-
-.dot {
-  width: 7px;
-  height: 7px;
-
+  top: 50%;
+  z-index: 3;
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border: 0;
   border-radius: 50%;
-
-  background: #bdbdbd;
+  background: rgb(18 7 26 / 68%);
+  color: #fff;
+  cursor: pointer;
+  transform: translateY(-50%);
+  transition: background-color 150ms ease;
 }
 
-.dot.active {
-  background: #160024;
+.arrow:hover {
+  background: #311b40;
 }
 
-
-/* =========================
-   TABLET
-========================= */
-
-@media (max-width: 900px) {
-  .hero {
-    height: 400px;
-  }
-
-  .content {
-    padding: 0 40px;
-  }
-
-  .content h1 {
-    font-size: 40px;
-  }
-
-  .dots {
-    left: 40px;
-  }
+.previous {
+  left: 12px;
 }
 
+.next {
+  right: 12px;
+}
 
-/* =========================
-   MOBILE
-========================= */
+.visuallyHidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
 
-@media (max-width: 650px) {
-  .hero {
-    height: 360px;
+@media (max-width: 700px) {
+  .track {
+    min-height: clamp(280px, 78vw, 420px);
   }
 
-  .content {
-    padding: 0 24px;
+  .slide {
+    flex-basis: 72%;
+    height: clamp(280px, 78vw, 420px);
   }
 
-  .content h1 {
-    font-size: 32px;
-    line-height: 1.1;
-
-    margin-bottom: 28px;
-  }
-
-  .shopButton {
-    padding: 10px 20px;
-    font-size: 12px;
-  }
-
-  .dots {
-    left: 24px;
-    bottom: 18px;
+  .arrow {
+    width: 33px;
+    height: 33px;
   }
 }
 
-
-/* =========================
-   SMALL MOBILE
-========================= */
-
-@media (max-width: 400px) {
-  .hero {
-    height: 320px;
-  }
-
-  .content {
-    padding: 0 18px;
-  }
-
-  .content h1 {
-    font-size: 28px;
-  }
-
-  .dots {
-    left: 18px;
+@media (prefers-reduced-motion: reduce) {
+  .shopButton,
+  .arrow {
+    transition: none;
   }
 }

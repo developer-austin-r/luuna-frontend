@@ -19,10 +19,11 @@ const geistMono = localFont({
 
 export const metadata: Metadata = {
   title: {
-    default: "Luuna",
+    default: "Luuna | Collect your favorite legends",
     template: "%s | Luuna",
   },
-  description: "Production-ready Luuna frontend built with Next.js.",
+  description:
+    "Find collectible figures, fandom favorites and little treasures at Luuna.",
   metadataBase: new URL("https://luuna.example.com"),
 };
 

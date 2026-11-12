@@ -1,52 +1,36 @@
 .offerBar {
-  width: 100vw;
-  position: relative;
-  left: 50%;
-  margin-left: -50vw;
-  margin-right: -50vw;
-  /* Ensure it can escape any max-width from ancestors */
-  max-width: none;
-  height: 34px;
-
+  width: 100%;
+  height: 22px;
   overflow: hidden;
-  box-sizing: border-box;
-  z-index: 999;
+  background: #08060c;
+  color: #fff;
+}
 
-  background: #ffffff;
-
-  border-top: 1px solid #eeeeee;
-  border-bottom: 1px solid #eeeeee;
-
-  box-sizing: border-box;
+.offerTrack,
+.offerGroup {
+  display: flex;
+  width: max-content;
+  min-width: max-content;
+  height: 100%;
+  align-items: center;
 }
 
 .offerTrack {
-  display: flex;
-  align-items: center;
+  animation: offerScroll 32s linear infinite;
+}
 
-  width: max-content;
-  min-width: 100%;
+.offerGroup {
+  gap: clamp(18px, 3.5vw, 50px);
+  padding: 0 clamp(9px, 1.75vw, 25px);
+}
 
-  gap: 40px;
-
+.offerGroup span {
+  color: #f5f0f8;
+  font-size: 0.66rem;
+  font-weight: 750;
+  letter-spacing: 0.07em;
   white-space: nowrap;
-
-  animation: offerScroll 18s linear infinite;
 }
-
-.offerTrack span {
-  flex-shrink: 0;
-
-  font-size: 15px;
-  font-weight: 700;
-
-  color: #111111;
-}
-
-
-/* =========================
-   ANIMATION
-========================= */
 
 @keyframes offerScroll {
   from {
@@ -54,45 +38,20 @@
   }
 
   to {
-    transform: translateX(-30%);
+    transform: translateX(-50%);
   }
 }
 
-
-/* =========================
-   TABLET
-========================= */
-
-@media (max-width: 900px) {
-  .offerBar {
-    width: 100%;
-  }
-
-  .offerTrack {
-    gap: 30px;
-  }
-
-  .offerTrack span {
-    font-size: 13px;
-  }
+.offerBar:hover .offerTrack {
+  animation-play-state: paused;
 }
 
-
-/* =========================
-   MOBILE
-========================= */
-
-@media (max-width: 650px) {
-  .offerBar {
-    width: 100%;
-    height: 30px;
-  }
-
+@media (prefers-reduced-motion: reduce) {
   .offerTrack {
-    gap: 22px;
+    animation: none;
   }
 
-  .offerTrack span {
-    font-size: 12px;
+  .offerGroup[aria-hidden="true"] {
+    display: none;
   }
 }

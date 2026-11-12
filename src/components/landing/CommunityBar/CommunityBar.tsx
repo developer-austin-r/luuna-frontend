@@ -17,8 +17,8 @@ export default function CommunityBar() {
               ◎
             </a>
 
-            <a href="#" aria-label="WhatsApp">
-              ◉
+            <a href="#" aria-label="X">
+              X
             </a>
           </div>
         </div>

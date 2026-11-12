@@ -115,18 +115,18 @@
   }
 }
 
-  .productImage {
-    height: 220px;
-  }
+.productImage {
+  height: 220px;
+}
 
-  .details {
-    padding: 11px 18px 13px;
-  }
+.details {
+  padding: 11px 18px 13px;
+}
 
-  .details h3 {
-    font-size: 17px;
-  }
+.details h3 {
+  font-size: 17px;
+}
 
-  .addButton {
-    min-width: 155px;
-  }
+.addButton {
+  min-width: 155px;
+}

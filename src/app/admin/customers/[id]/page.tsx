@@ -1,23 +1,21 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import {
   ArrowLeft,
   Calendar,
   Clock,
   CreditCard,
-  Heart,
+  Loader2,
   Mail,
   MapPin,
   Phone,
   ShoppingBag,
-  Star,
 } from "lucide-react";
 
 import {
   Avatar,
-  Badge,
   Breadcrumb,
   Button,
   Card,
@@ -26,21 +24,58 @@ import {
   StatusBadge,
   Tabs,
 } from "@/components/admin";
-import { useAppSelector } from "@/redux/hooks";
+import { useToast } from "@/providers/toast-provider";
+import { type DetailedCustomer, getCustomerById } from "@/services/customer";
 import { type Order } from "@/types/admin";
 
 export default function CustomerDetailsPage() {
   const params = useParams();
   const router = useRouter();
+  const toast = useToast();
   const id = params.id as string;
 
-  // Retrieve customer from Redux
-  const customers = useAppSelector((state) => state.admin.customers);
-  const orders = useAppSelector((state) => state.admin.orders);
-  const customer = customers.find((c) => c.id === id);
+  const [customer, setCustomer] = useState<DetailedCustomer | null>(null);
+  const [loading, setLoading] = useState(true);
 
   // Tab State
   const [activeTab, setActiveTab] = useState("orders");
+
+  useEffect(() => {
+    if (!id) return;
+    const fetchDetails = async () => {
+      setLoading(true);
+      try {
+        const data = await getCustomerById(id);
+        setCustomer(data);
+      } catch (err: any) {
+        console.error("Failed to load customer details:", err);
+        toast.error(err.message || "Failed to load customer profile.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDetails();
+  }, [id, toast]);
+
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        <Breadcrumb
+          items={[
+            { label: "Customers", href: "/admin/customers" },
+            { label: "Loading..." },
+          ]}
+        />
+        <Card className="text-center py-20 flex flex-col items-center justify-center space-y-3">
+          <Loader2 className="w-8 h-8 animate-spin text-primary" />
+          <p className="text-sm font-medium text-text-custom/60">
+            Loading customer profile...
+          </p>
+        </Card>
+      </div>
+    );
+  }
 
   if (!customer) {
     return (
@@ -66,74 +101,40 @@ export default function CustomerDetailsPage() {
     );
   }
 
-  // Filter orders for this customer name (case-insensitive approximation)
-  const customerOrders = orders.filter(
-    (o) => o.customerName.toLowerCase() === customer.name.toLowerCase(),
-  );
+  const customerOrders: Order[] = customer.orders || [];
 
-  // Mock Addresses
-  const address = {
+  const address = customer.address || {
     shipping: {
-      street: "4582 Oakwood Avenue, Suite 100",
-      city: "Los Angeles",
-      state: "CA",
-      zip: "90004",
-      country: "United States",
+      street: "Not specified",
+      city: "",
+      state: "",
+      zip: "",
+      country: "India",
     },
     billing: {
-      street: "4582 Oakwood Avenue, Suite 100",
-      city: "Los Angeles",
-      state: "CA",
-      zip: "90004",
-      country: "United States",
+      street: "Not specified",
+      city: "",
+      state: "",
+      zip: "",
+      country: "India",
     },
   };
 
-  // Mock Wishlist
-  const wishlist = [
-    {
-      id: "w-1",
-      name: "Classic Leather Tote Bag",
-      sku: "BG-LTH-01",
-      price: 189.0,
-      inStock: true,
-    },
-    {
-      id: "w-2",
-      name: "Minimalist Gold Ring",
-      sku: "JW-GLD-03",
-      price: 250.0,
-      inStock: true,
-    },
-  ];
-
-  // Mock Activities
-  const timeline = [
-    {
-      id: "act-1",
-      event: "Order ORD-9832 delivered successfully",
-      date: "2026-07-15T14:32:00Z",
-      icon: <ShoppingBag className="w-3.5 h-3.5" />,
-    },
-    {
-      id: "act-2",
-      event: "Item Classic Leather Tote Bag added to Wishlist",
-      date: "2026-07-10T11:00:00Z",
-      icon: <Heart className="w-3.5 h-3.5" />,
-    },
-    {
-      id: "act-3",
-      event: "Submitted a 5-star review for Classic Leather Tote Bag",
-      date: "2026-06-12T16:15:00Z",
-      icon: <Star className="w-3.5 h-3.5" />,
-    },
-    {
-      id: "act-4",
-      event: "Account profile created successfully",
-      date: "2026-02-15T09:00:00Z",
-      icon: <Calendar className="w-3.5 h-3.5" />,
-    },
-  ];
+  const timeline = customer.activityLogs?.length
+    ? customer.activityLogs.map((act) => ({
+        id: act.id,
+        event: act.event,
+        date: act.date,
+        icon: <ShoppingBag className="w-3.5 h-3.5" />,
+      }))
+    : [
+        {
+          id: "act-init",
+          event: `Account registered (${customer.email})`,
+          date: customer.dateJoined,
+          icon: <Calendar className="w-3.5 h-3.5" />,
+        },
+      ];
 
   const orderColumns: Column<Order>[] = [
     {
@@ -146,7 +147,7 @@ export default function CustomerDetailsPage() {
       label: "Date",
       render: (val) => (
         <span suppressHydrationWarning>
-          {new Date(val).toLocaleDateString()}
+          {val ? new Date(val).toLocaleDateString() : "—"}
         </span>
       ),
     },
@@ -155,7 +156,7 @@ export default function CustomerDetailsPage() {
       label: "Total spent",
       render: (val) => (
         <span className="font-bold text-text-custom">
-          ${Number(val).toFixed(2)}
+          ${Number(val || 0).toFixed(2)}
         </span>
       ),
     },
@@ -168,37 +169,6 @@ export default function CustomerDetailsPage() {
       key: "paymentStatus",
       label: "Payment Status",
       render: (val) => <StatusBadge status={val} />,
-    },
-  ];
-
-  const wishlistColumns = [
-    {
-      key: "name",
-      label: "Product Title",
-      render: (val: string, item: any) => (
-        <div>
-          <p className="font-bold text-text-custom">{val}</p>
-          <span className="text-3xs text-text-custom/50 font-bold uppercase tracking-wider">
-            SKU: {item.sku}
-          </span>
-        </div>
-      ),
-    },
-    {
-      key: "price",
-      label: "Price",
-      render: (val: number) => (
-        <span className="font-bold">${val.toFixed(2)}</span>
-      ),
-    },
-    {
-      key: "inStock",
-      label: "Availability",
-      render: (val: boolean) => (
-        <Badge variant={val ? "success" : "danger"}>
-          {val ? "In stock" : "Out of stock"}
-        </Badge>
-      ),
     },
   ];
 
@@ -272,7 +242,7 @@ export default function CustomerDetailsPage() {
                 <div className="flex items-center gap-2 text-text-custom/85 border-t border-border-custom/50 pt-3">
                   <CreditCard className="w-4 h-4 text-primary shrink-0" />
                   <span className="font-bold text-text-custom">
-                    Spent total: ${customer.totalSpent.toFixed(2)}
+                    Spent total: ${Number(customer.totalSpent || 0).toFixed(2)}
                   </span>
                 </div>
               </div>
@@ -290,8 +260,13 @@ export default function CustomerDetailsPage() {
                 <div className="text-text-custom/75 leading-relaxed pl-5">
                   <p>{address.shipping.street}</p>
                   <p>
-                    {address.shipping.city}, {address.shipping.state}{" "}
-                    {address.shipping.zip}
+                    {[
+                      address.shipping.city,
+                      address.shipping.state,
+                      address.shipping.zip,
+                    ]
+                      .filter(Boolean)
+                      .join(", ")}
                   </p>
                   <p>{address.shipping.country}</p>
                 </div>
@@ -305,8 +280,13 @@ export default function CustomerDetailsPage() {
                 <div className="text-text-custom/75 leading-relaxed pl-5">
                   <p>{address.billing.street}</p>
                   <p>
-                    {address.billing.city}, {address.billing.state}{" "}
-                    {address.billing.zip}
+                    {[
+                      address.billing.city,
+                      address.billing.state,
+                      address.billing.zip,
+                    ]
+                      .filter(Boolean)
+                      .join(", ")}
                   </p>
                   <p>{address.billing.country}</p>
                 </div>
@@ -315,7 +295,7 @@ export default function CustomerDetailsPage() {
           </Card>
         </div>
 
-        {/* Right column: Interactive Tabs for History, Wishlist, Reviews, Timeline */}
+        {/* Right column: Interactive Tabs for History, Timeline */}
         <div className="lg:col-span-2 space-y-6">
           <Card
             title="Account Summary"
@@ -327,7 +307,6 @@ export default function CustomerDetailsPage() {
                     label: "Order History",
                     count: customerOrders.length,
                   },
-                  { id: "wishlist", label: "Wishlist", count: wishlist.length },
                   { id: "timeline", label: "Activity Feed" },
                 ]}
                 activeTab={activeTab}
@@ -338,14 +317,18 @@ export default function CustomerDetailsPage() {
             {/* Orders Tab */}
             {activeTab === "orders" && (
               <div className="mt-4">
-                <DataTable columns={orderColumns} data={customerOrders} />
-              </div>
-            )}
-
-            {/* Wishlist Tab */}
-            {activeTab === "wishlist" && (
-              <div className="mt-4">
-                <DataTable columns={wishlistColumns as any} data={wishlist} />
+                {customerOrders.length === 0 ? (
+                  <div className="py-12 text-center">
+                    <p className="text-sm font-semibold text-text-custom/70">
+                      No orders placed yet
+                    </p>
+                    <p className="text-xs text-text-custom/50 mt-1">
+                      Orders placed by this customer will appear here.
+                    </p>
+                  </div>
+                ) : (
+                  <DataTable columns={orderColumns} data={customerOrders} />
+                )}
               </div>
             )}
 
@@ -354,7 +337,6 @@ export default function CustomerDetailsPage() {
               <div className="mt-4 pl-4 space-y-6 relative border-l border-border-custom">
                 {timeline.map((act) => (
                   <div key={act.id} className="relative pl-6">
-                    {/* Circle timeline dot */}
                     <div className="absolute -left-[27px] top-0.5 bg-primary text-white p-1 rounded-full border-4 border-white shadow-xs">
                       {act.icon}
                     </div>

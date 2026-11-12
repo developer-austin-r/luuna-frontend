@@ -1,13 +1,13 @@
 "use client";
 import React, { useState } from "react";
 
+import { getS3AssetUrl } from "@/config";
 import type { Bill } from "@/services/billing";
 import { whatsappService } from "@/services/whatsapp";
 
-// export const DEFAULT_BILLING_LOGO_URL =
-//   process.env.NEXT_PUBLIC_BILLING_LOGO_URL"/assets/Luuna%20Logo-02.png";
-
-export const DEFAULT_BILLING_LOGO_URL = `${process.env.NEXT_PUBLIC_BILLING_LOGO_URL}/assets/Luuna%20Logo-02.png`;
+export const DEFAULT_BILLING_LOGO_URL = getS3AssetUrl(
+  "/assets/Luuna%20Logo-02.png",
+);
 
 interface Props {
   bill: Bill;

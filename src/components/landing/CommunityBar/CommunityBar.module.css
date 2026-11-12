@@ -1,201 +1,96 @@
 .communityBar {
-  width: 100%;
-
-  background: #f5f2f6;
-
-  border-top: 1px solid #eeeeee;
-  border-bottom: 1px solid #eeeeee;
-
-  padding: 24px 50px;
-
-  box-sizing: border-box;
+  padding: 4px clamp(12px, 6.5vw, 94px);
+  border-bottom: 1px solid #e7e1ea;
+  background: #fff;
+  color: #21172a;
 }
 
-.communityContent {
-  width: 100%;
-  max-width: 1200px;
-
-  margin: 0 auto;
-
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-
-/* =========================
-   FOLLOW THE JOURNEY
-========================= */
-
-.followSection {
-  display: flex;
-  align-items: center;
-
-  gap: 22px;
-}
-
-.followSection p {
-  margin: 0;
-
-  color: #160024;
-
-  font-size: 11px;
-  font-weight: 700;
-
-  letter-spacing: 1.2px;
-}
-
-.socialIcons {
-  display: flex;
-  align-items: center;
-
-  gap: 12px;
-}
-
-.socialIcons a {
-  width: 30px;
-  height: 30px;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  border-radius: 50%;
-
-  background: #160024;
-  color: #ffffff;
-
-  text-decoration: none;
-
-  font-size: 15px;
-  font-weight: 600;
-
-  transition: transform 0.2s ease;
-}
-
-.socialIcons a:hover {
-  transform: translateY(-2px);
-}
-
-
-/* =========================
-   JOIN COMMUNITY
-========================= */
-
+.communityContent,
+.followSection,
+.socialIcons,
 .joinSection {
   display: flex;
   align-items: center;
-
-  gap: 14px;
 }
 
+.communityContent {
+  width: min(100%, 1260px);
+  justify-content: space-between;
+  gap: 1rem;
+  margin: 0 auto;
+}
+
+.followSection,
+.joinSection {
+  gap: 9px;
+}
+
+.followSection p,
 .joinSection span {
-  color: #160024;
+  margin: 0;
+  color: #281d30;
+  font-size: 0.57rem;
+  font-weight: 750;
+  letter-spacing: 0.07em;
+  white-space: nowrap;
+}
 
-  font-size: 11px;
+.socialIcons {
+  gap: 5px;
+}
+
+.socialIcons a {
+  display: grid;
+  width: 18px;
+  height: 18px;
+  place-items: center;
+  border: 1px solid #e4dce8;
+  border-radius: 50%;
+  background: #fff;
+  color: #281d30;
+  font-size: 0.61rem;
   font-weight: 700;
+  text-decoration: none;
+}
 
-  letter-spacing: 1.2px;
+.socialIcons a:hover {
+  background: #f1eaf5;
 }
 
 .arrowButton {
-  width: 32px;
-  height: 32px;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  border: 1px solid #160024;
+  display: grid;
+  width: 20px;
+  height: 20px;
+  place-items: center;
+  border: 1px solid #ded3e3;
   border-radius: 50%;
-
-  background: transparent;
-  color: #160024;
-
-  font-size: 17px;
-
+  background: #fff;
+  color: #281d30;
+  font-size: 0.8rem;
   cursor: pointer;
-
-  transition: all 0.2s ease;
 }
 
 .arrowButton:hover {
-  background: #160024;
-  color: #ffffff;
+  background: #f1eaf5;
 }
 
-
-/* =========================
-   TABLET
-========================= */
-
-@media (max-width: 900px) {
+@media (max-width: 380px) {
   .communityBar {
-    padding: 22px 30px;
+    padding-right: 9px;
+    padding-left: 9px;
   }
 
   .communityContent {
-    gap: 25px;
+    gap: 5px;
+  }
+
+  .followSection,
+  .joinSection {
+    gap: 5px;
   }
 
   .followSection p,
   .joinSection span {
-    font-size: 10px;
-  }
-}
-
-
-/* =========================
-   MOBILE
-========================= */
-
-@media (max-width: 650px) {
-  .communityBar {
-    padding: 20px 16px;
-  }
-
-  .communityContent {
-    flex-direction: column;
-
-    align-items: center;
-    justify-content: center;
-
-    gap: 20px;
-  }
-
-  .followSection {
-    flex-direction: column;
-
-    gap: 10px;
-  }
-
-  .followSection p {
-    font-size: 10px;
-  }
-
-  .socialIcons {
-    gap: 10px;
-  }
-
-  .socialIcons a {
-    width: 28px;
-    height: 28px;
-
-    font-size: 14px;
-  }
-
-  .joinSection {
-    gap: 10px;
-  }
-
-  .joinSection span {
-    font-size: 10px;
-  }
-
-  .arrowButton {
-    width: 29px;
-    height: 29px;
-
-    font-size: 15px;
+    font-size: 0.5rem;
   }
 }

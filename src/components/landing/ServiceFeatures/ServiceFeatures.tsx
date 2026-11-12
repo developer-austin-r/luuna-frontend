@@ -2,20 +2,20 @@ import styles from "./ServiceFeatures.module.css";
 
 const features = [
   {
-    icon: "🚚",
-    title: "Quick Delivery",
+    icon: "↗",
+    title: "Fast delivery",
   },
   {
-    icon: "💳",
-    title: "Secure Payment",
+    icon: "◇",
+    title: "Secure checkout",
   },
   {
-    icon: "🛡️",
-    title: "Best Quality",
+    icon: "✦",
+    title: "Collector favorites",
   },
   {
-    icon: "📍",
-    title: "Quick Delivery",
+    icon: "♡",
+    title: "Made for fans",
   },
 ];
 
@@ -23,8 +23,8 @@ export default function ServiceFeatures() {
   return (
     <section className={styles.featuresSection}>
       <div className={styles.featuresContainer}>
-        {features.map((feature, index) => (
-          <div className={styles.featureCard} key={index}>
+        {features.map((feature) => (
+          <div className={styles.featureCard} key={feature.title}>
             <span className={styles.icon}>{feature.icon}</span>
 
             <span className={styles.title}>{feature.title}</span>

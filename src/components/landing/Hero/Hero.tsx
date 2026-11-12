@@ -1,28 +1,114 @@
+"use client";
+
+import { useRef } from "react";
+import Image from "next/image";
+import Link from "next/link";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+
+import { env } from "../../../config/env";
+
 import styles from "./Hero.module.css";
 
-export default function Hero() {
-  return (
-    <section className={styles.hero}>
-      <div className={styles.overlay}>
-        <div className={styles.content}>
-          <h1>
-            Collect Your Favorite
-            <br />
-            Legends
-          </h1>
+const landingAssetsBaseUrl = `${env.s3BaseUrl.replace(/\/$/, "")}/assets/landing-assets`;
 
-          <button className={styles.shopButton}>SHOP NOW</button>
+const slides = [
+  {
+    title: "Featured collectible one",
+    image: `${landingAssetsBaseUrl}/hero-1.jpg`,
+    alt: "Featured collectible one",
+  },
+  {
+    title: "Featured collectible two",
+    image: `${landingAssetsBaseUrl}/hero-2.jpg`,
+    alt: "Featured collectible two",
+  },
+  {
+    title: "Featured collectible three",
+    image: `${landingAssetsBaseUrl}/hero-3.jpg`,
+    alt: "Featured collectible three",
+  },
+  {
+    title: "Featured collectible four",
+    image: `${landingAssetsBaseUrl}/hero-4.jpg`,
+    alt: "Featured collectible four",
+  },
+  {
+    title: "Featured collectible five",
+    image: `${landingAssetsBaseUrl}/hero-5.jpg`,
+    alt: "Featured collectible five",
+  },
+];
+
+export default function Hero() {
+  const viewportRef = useRef<HTMLDivElement>(null);
+
+  const moveCarousel = (direction: -1 | 1) => {
+    const viewport = viewportRef.current;
+    if (!viewport) return;
+
+    const isMobile = window.matchMedia("(max-width: 700px)").matches;
+
+    viewport.scrollBy({
+      left: direction * viewport.clientWidth * (isMobile ? 0.72 : 0.67),
+      behavior: "smooth",
+    });
+  };
+
+  return (
+    <section className={styles.hero} aria-labelledby="hero-title">
+      <h1 id="hero-title" className={styles.visuallyHidden}>
+        Collect your favorite legends
+      </h1>
+
+      <div
+        className={styles.viewport}
+        ref={viewportRef}
+        role="region"
+        aria-label="Featured collectibles"
+        aria-roledescription="carousel"
+      >
+        <div className={styles.track}>
+          {slides.map((slide, index) => (
+            <article
+              className={styles.slide}
+              key={slide.image}
+              role="group"
+              aria-roledescription="slide"
+              aria-label={`${index + 1} of ${slides.length}: ${slide.title}`}
+            >
+              <Image
+                className={styles.photo}
+                src={slide.image}
+                alt={slide.alt}
+                fill
+                sizes="(max-width: 700px) 72vw, 31vw"
+                unoptimized
+              />
+              <Link className={styles.shopButton} href="#new-arrivals">
+                SHOP NOW
+              </Link>
+            </article>
+          ))}
         </div>
       </div>
 
-      {/* Slider dots */}
-      <div className={styles.dots}>
-        <span className={`${styles.dot} ${styles.active}`} />
-        <span className={styles.dot} />
-        <span className={styles.dot} />
-        <span className={styles.dot} />
-        <span className={styles.dot} />
-      </div>
+      <button
+        className={`${styles.arrow} ${styles.previous}`}
+        type="button"
+        aria-label="Previous featured collectibles"
+        onClick={() => moveCarousel(-1)}
+      >
+        <ChevronLeft size={23} />
+      </button>
+
+      <button
+        className={`${styles.arrow} ${styles.next}`}
+        type="button"
+        aria-label="Next featured collectibles"
+        onClick={() => moveCarousel(1)}
+      >
+        <ChevronRight size={23} />
+      </button>
     </section>
   );
 }
