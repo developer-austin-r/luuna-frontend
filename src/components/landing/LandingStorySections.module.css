@@ -300,12 +300,18 @@
   width: 24%;
 }
 
-.brandStrip {
-  height: 48px;
-  background-color: #efedf0;
-  background-image: url("/images/luuna-background-pattern.png");
+/* .brandStrip {
+  height: 220px;
+  background-image: url("/images/brand-strip.png");
   background-position: center;
-  background-size: auto 150%;
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+} */
+
+.brandStrip {
+  display: block;
+  height: auto;
+  object-fit: contain;
 }
 
 .productGridSection {
@@ -426,11 +432,6 @@
     width: 33%;
   }
 
-  .brandStrip {
-    height: 38px;
-    background-size: auto 190%;
-  }
-
   .productGridSection {
     padding-top: 8px;
     padding-bottom: 25px;
@@ -447,4 +448,18 @@
   .categoryFigure {
     transition: none;
   }
+}
+
+.categoryImage {
+  width: 100%;
+  max-width: 1280px;
+  margin: 0 auto;
+  overflow: hidden;
+}
+
+.categoryImage img {
+  display: block;
+  width: 100%;
+  height: auto;
+  object-fit: contain;
 }
