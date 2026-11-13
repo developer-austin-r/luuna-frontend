@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Image from "next/image";
 import { CarFront } from "lucide-react";
 
 import CollectibleFigure from "@/components/landing/CollectibleFigure";
@@ -169,22 +169,16 @@ function CategoryGrid() {
         <div className={styles.sectionTitle}>
           <h2 id="category-title">CATEGORY</h2>
         </div>
-        <div className={styles.categoryGrid}>
-          {categories.map((category) => (
-            <Link
-              href="#top-picks"
-              className={`${styles.categoryCard} ${styles[category.tone]}`}
-              key={`${category.tone}-${category.name}`}
-            >
-              <span className={styles.categoryCopy}>
-                <span className={styles.categoryName}>{category.name}</span>
-              </span>
-              <CollectibleFigure
-                className={styles.categoryFigure}
-                variant={category.variant}
-              />
-            </Link>
-          ))}
+
+        <div className={styles.categoryImage}>
+          <Image
+            src="/images/category.png"
+            alt="Explore Anime, Marvel, DC, K-Pop, Nostalgia, and Wheels collections"
+            width={959}
+            height={1598}
+            priority
+            sizes="100vw"
+          />
         </div>
       </div>
     </section>
@@ -192,7 +186,13 @@ function CategoryGrid() {
 }
 
 function BrandStrip() {
-  return <div className={styles.brandStrip} aria-hidden="true" />;
+  return (
+    <img
+      src="/images/brand-strip.png"
+      alt="Quick Delivery, Secure Payment, Best Quality"
+      className="brandStrip"
+    />
+  );
 }
 
 function ProductGrid() {
@@ -228,8 +228,6 @@ export default function LandingStorySections() {
       />
       <ArtworkBanner id="whats-new" title="WHAT’S NEW" scene="new" />
       <CategoryGrid />
-      <ArtworkBanner id="nostalgia" title="NOSTALGIA" scene="nostalgia" />
-      <ArtworkBanner id="wheels" title="WHEELS" scene="wheels" />
       <BrandStrip />
       <ProductCarousel id="top-picks" title="TOP PICKS" products={topPicks} />
       <ProductGrid />
