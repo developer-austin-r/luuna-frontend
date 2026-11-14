@@ -3,6 +3,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import {
+  AlertCircle,
   CheckCircle2,
   ChevronDown,
   ChevronLeft,
@@ -20,6 +21,7 @@ import Footer from "@/components/landing/Footer/Footer";
 import LoginOfferBar from "@/components/landing/LoginOfferBar/LoginOfferBar";
 import Navbar from "@/components/landing/Navbar/Navbar";
 import { AccountMenu } from "@/components/profile/AccountMenu/AccountMenu";
+import { apiClient } from "@/services/api-client";
 import { logoutApi } from "@/services/auth";
 import { getProfileApi } from "@/services/profile";
 
@@ -157,18 +159,38 @@ export default function HelpSupportPage() {
   const [contactCategory, setContactCategory] = useState("Orders & Payments");
   const [contactMessage, setContactMessage] = useState("");
   const [isSending, setIsSending] = useState(false);
-  const [formFeedback, setFormFeedback] = useState<string | null>(null);
+  const [formFeedback, setFormFeedback] = useState<{
+    type: "success" | "error";
+    text: string;
+  } | null>(null);
 
-  // Auto-fill user info if logged in
+  // Auto-fill user info if logged in (with AbortController cancellation and unmount protection)
   useEffect(() => {
-    getProfileApi()
-      .then((profile) => {
+    const controller = new AbortController();
+    let isMounted = true;
+
+    async function loadProfile() {
+      try {
+        const profile = await getProfileApi({
+          signal: controller.signal,
+        });
+
+        if (!isMounted) return;
         if (profile?.name) setContactName(profile.name);
         if (profile?.email) setContactEmail(profile.email);
-      })
-      .catch(() => {
-        // Guest/unauthenticated, do nothing
-      });
+      } catch (err: any) {
+        if (!controller.signal.aborted && isMounted) {
+          // Allow guest access - unauthenticated users can still submit inquiries
+        }
+      }
+    }
+
+    loadProfile();
+
+    return () => {
+      isMounted = false;
+      controller.abort();
+    };
   }, []);
 
   const handleLogout = async () => {
@@ -200,20 +222,40 @@ export default function HelpSupportPage() {
     });
   }, [selectedCategory, searchQuery]);
 
-  const handleSendMessage = (e: React.FormEvent) => {
+  const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!contactMessage.trim()) return;
 
     setIsSending(true);
-    // Simulate inquiry submission
-    setTimeout(() => {
-      setIsSending(false);
-      setFormFeedback(
-        "Thank you! Your message has been received. Our support team will reply to your email shortly.",
-      );
+    setFormFeedback(null);
+
+    try {
+      // Connect to backend support API
+      await apiClient("/support/contact", {
+        method: "POST",
+        body: JSON.stringify({
+          name: contactName,
+          email: contactEmail,
+          subject: contactCategory,
+          message: contactMessage,
+        }),
+      });
+
+      // Only show success after the backend confirms submission
+      setFormFeedback({
+        type: "success",
+        text: "Thank you! Your message has been received. Our support team will reply to your email shortly.",
+      });
       setContactMessage("");
-      setTimeout(() => setFormFeedback(null), 6000);
-    }, 700);
+    } catch {
+      // If backend support API is not available or encounters an error, show honest message
+      setFormFeedback({
+        type: "error",
+        text: "Support submission is currently unavailable. Please contact us through our official support channel.",
+      });
+    } finally {
+      setIsSending(false);
+    }
   };
 
   return (
@@ -487,9 +529,51 @@ export default function HelpSupportPage() {
               </p>
 
               {formFeedback && (
-                <div className="mb-4 p-3.5 rounded-xl bg-green-50 border border-green-200 text-green-800 text-xs font-medium flex items-center gap-2">
-                  <CheckCircle2 size={16} className="text-green-600 shrink-0" />
-                  <span>{formFeedback}</span>
+                <div
+                  className={`mb-4 p-4 rounded-xl border text-xs sm:text-sm font-medium flex items-start sm:items-center gap-3 transition-all ${
+                    formFeedback.type === "success"
+                      ? "bg-green-50 border-green-200 text-green-800"
+                      : "bg-amber-50 border-amber-200 text-amber-900"
+                  }`}
+                >
+                  {formFeedback.type === "success" ? (
+                    <CheckCircle2
+                      size={18}
+                      className="text-green-600 shrink-0 mt-0.5 sm:mt-0"
+                    />
+                  ) : (
+                    <AlertCircle
+                      size={18}
+                      className="text-amber-600 shrink-0 mt-0.5 sm:mt-0"
+                    />
+                  )}
+                  <div className="flex-1">
+                    <span>{formFeedback.text}</span>
+                    {formFeedback.type === "error" && (
+                      <div className="mt-2.5 flex flex-wrap items-center gap-2 pt-2 border-t border-amber-200/60">
+                        <a
+                          href={`mailto:luuna@gmail.com?subject=${encodeURIComponent(
+                            `Support Request: ${contactCategory}`,
+                          )}&body=${encodeURIComponent(
+                            `Name: ${contactName}\nEmail: ${contactEmail}\n\nMessage:\n${contactMessage}`,
+                          )}`}
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#6B21A8] hover:bg-[#581c87] text-white rounded-lg text-xs font-semibold transition-colors cursor-pointer"
+                        >
+                          <Mail size={12} />
+                          Email luuna@gmail.com
+                        </a>
+                        <a
+                          href="https://wa.me/919876543210"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-semibold transition-colors cursor-pointer"
+                        >
+                          <MessageCircle size={12} />
+                          WhatsApp Support
+                        </a>
+                      </div>
+                    )}
+                  </div>
                 </div>
               )}
 

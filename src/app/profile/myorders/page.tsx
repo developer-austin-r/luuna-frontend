@@ -27,6 +27,7 @@ import Footer from "@/components/landing/Footer/Footer";
 import LoginOfferBar from "@/components/landing/LoginOfferBar/LoginOfferBar";
 import Navbar from "@/components/landing/Navbar/Navbar";
 import { AccountMenu } from "@/components/profile/AccountMenu/AccountMenu";
+import { useToast } from "@/providers/toast-provider";
 import { logoutApi } from "@/services/auth";
 import {
   cancelOrderApi,
@@ -60,6 +61,7 @@ function formatPrice(val: number | string | undefined): string {
 
 export default function MyOrdersPage() {
   const router = useRouter();
+  const { success, error: toastError } = useToast();
 
   const [orders, setOrders] = useState<Order[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -111,10 +113,34 @@ export default function MyOrdersPage() {
     }
   };
 
-  const handleCopy = (text: string, id: string) => {
-    navigator.clipboard.writeText(text);
-    setCopiedId(id);
-    setTimeout(() => setCopiedId(null), 2000);
+  const handleCopy = async (text: string, id: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopiedId(id);
+      success("Order ID copied to clipboard!");
+      setTimeout(() => setCopiedId(null), 2000);
+    } catch {
+      try {
+        const textarea = document.createElement("textarea");
+        textarea.value = text;
+        textarea.style.position = "fixed";
+        textarea.style.opacity = "0";
+        document.body.appendChild(textarea);
+        textarea.select();
+        const ok = document.execCommand("copy");
+        document.body.removeChild(textarea);
+        if (ok) {
+          setCopiedId(id);
+          success("Order ID copied to clipboard!");
+          setTimeout(() => setCopiedId(null), 2000);
+          return;
+        }
+      } catch {
+        // Fallback failed
+      }
+      setCopiedId(null);
+      toastError("Unable to copy to clipboard.");
+    }
   };
 
   const handleConfirmCancelOrder = async () => {

@@ -50,11 +50,14 @@ interface ApiResponse<T> {
 /**
  * Fetches the currently authenticated user's profile information.
  */
-export async function getProfileApi(): Promise<UserProfileResponse> {
+export async function getProfileApi(
+  init?: RequestInit,
+): Promise<UserProfileResponse> {
   const res = await apiClient<ApiResponse<UserProfileResponse>>(
     "/users/profile",
     {
       method: "GET",
+      ...init,
     },
   );
   return res.data;

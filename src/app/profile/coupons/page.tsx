@@ -20,6 +20,7 @@ import Footer from "@/components/landing/Footer/Footer";
 import LoginOfferBar from "@/components/landing/LoginOfferBar/LoginOfferBar";
 import Navbar from "@/components/landing/Navbar/Navbar";
 import { AccountMenu } from "@/components/profile/AccountMenu/AccountMenu";
+import { useToast } from "@/providers/toast-provider";
 import { logoutApi } from "@/services/auth";
 import { type CouponItem, getCouponsApi } from "@/services/coupon";
 
@@ -55,8 +56,40 @@ function isExpired(expiryDate: string): boolean {
   }
 }
 
+function isCouponUpcoming(coupon: CouponItem): boolean {
+  if (!coupon.activeDate) return false;
+  try {
+    const activeDate = new Date(coupon.activeDate);
+    return !isNaN(activeDate.getTime()) && Date.now() < activeDate.getTime();
+  } catch {
+    return false;
+  }
+}
+
+function isCouponValid(coupon: CouponItem): boolean {
+  if (coupon.status !== "ACTIVE") return false;
+  const now = new Date();
+
+  if (coupon.activeDate) {
+    const activeDate = new Date(coupon.activeDate);
+    if (!isNaN(activeDate.getTime()) && now < activeDate) {
+      return false;
+    }
+  }
+
+  if (coupon.expiryDate) {
+    const expiryDate = new Date(coupon.expiryDate);
+    if (!isNaN(expiryDate.getTime()) && now > expiryDate) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
 export default function ProfileCouponsPage() {
   const router = useRouter();
+  const { success, error: toastError } = useToast();
 
   const [coupons, setCoupons] = useState<CouponItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -96,11 +129,30 @@ export default function ProfileCouponsPage() {
     try {
       await navigator.clipboard.writeText(code);
       setCopiedCode(code);
+      success("Coupon code copied!");
       setTimeout(() => setCopiedCode(null), 2500);
     } catch {
-      // Fallback
-      setCopiedCode(code);
-      setTimeout(() => setCopiedCode(null), 2500);
+      // Fallback manual copy attempt
+      try {
+        const textarea = document.createElement("textarea");
+        textarea.value = code;
+        textarea.style.position = "fixed";
+        textarea.style.opacity = "0";
+        document.body.appendChild(textarea);
+        textarea.select();
+        const ok = document.execCommand("copy");
+        document.body.removeChild(textarea);
+        if (ok) {
+          setCopiedCode(code);
+          success("Coupon code copied!");
+          setTimeout(() => setCopiedCode(null), 2500);
+          return;
+        }
+      } catch {
+        // Fallback also failed
+      }
+      setCopiedCode(null);
+      toastError("Unable to copy coupon code.");
     }
   };
 
@@ -114,24 +166,25 @@ export default function ProfileCouponsPage() {
     }
   };
 
-  // Filtered coupons
+  // Filtered coupons based on validity and tab
   const filteredCoupons = useMemo(() => {
     return coupons.filter((c) => {
+      const valid = isCouponValid(c);
       const expired = isExpired(c.expiryDate) || c.status === "EXPIRED";
+      const upcoming = isCouponUpcoming(c);
+
       if (activeTab === "ACTIVE") {
-        return c.status === "ACTIVE" && !expired;
+        return valid;
       }
       if (activeTab === "EXPIRED") {
-        return expired || c.status === "INACTIVE";
+        return expired || c.status === "INACTIVE" || upcoming;
       }
       return true;
     });
   }, [coupons, activeTab]);
 
   const activeCount = useMemo(() => {
-    return coupons.filter(
-      (c) => c.status === "ACTIVE" && !isExpired(c.expiryDate),
-    ).length;
+    return coupons.filter(isCouponValid).length;
   }, [coupons]);
 
   return (
@@ -298,10 +351,12 @@ export default function ProfileCouponsPage() {
             {!isLoading && filteredCoupons.length > 0 && (
               <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 sm:gap-5">
                 {filteredCoupons.map((coupon) => {
+                  const valid = isCouponValid(coupon);
+                  const upcoming = isCouponUpcoming(coupon);
                   const expired =
                     isExpired(coupon.expiryDate) || coupon.status === "EXPIRED";
                   const isInactive = coupon.status === "INACTIVE";
-                  const isUsable = !expired && !isInactive;
+                  const isUsable = valid;
 
                   const isPercentage = coupon.discountType === "PERCENTAGE";
                   const discountDisplay = isPercentage
@@ -346,9 +401,13 @@ export default function ProfileCouponsPage() {
 
                         {/* Status Badge */}
                         <div className="shrink-0">
-                          {isUsable ? (
+                          {valid ? (
                             <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
                               Active
+                            </span>
+                          ) : upcoming ? (
+                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-blue-50 text-blue-700 border border-blue-200">
+                              Starts {formatDate(coupon.activeDate)}
                             </span>
                           ) : expired ? (
                             <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-gray-100 text-gray-600 border border-gray-200">
@@ -416,7 +475,9 @@ export default function ProfileCouponsPage() {
                         <div className="flex items-center justify-between text-[11px] text-gray-500 gap-2">
                           <span className="inline-flex items-center gap-1 truncate">
                             <Clock size={12} className="shrink-0" />
-                            Expires: {formatDate(coupon.expiryDate)}
+                            {upcoming
+                              ? `Active from: ${formatDate(coupon.activeDate)}`
+                              : `Expires: ${formatDate(coupon.expiryDate)}`}
                           </span>
 
                           {coupon.redemptionLimit && (

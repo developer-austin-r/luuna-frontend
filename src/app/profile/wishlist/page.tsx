@@ -7,6 +7,7 @@ import {
   AlertCircle,
   CheckCircle2,
   ChevronLeft,
+  ChevronRight,
   HeartOff,
   Loader2,
   Package,
@@ -25,6 +26,7 @@ import {
   getWishlistApi,
   removeFromWishlistApi,
   type WishlistItem,
+  type WishlistPagination,
 } from "@/services/wishlist";
 
 function formatPrice(val: number | string | undefined | null): string {
@@ -59,6 +61,8 @@ export default function WishlistPage() {
   const router = useRouter();
 
   const [wishlistItems, setWishlistItems] = useState<WishlistItem[]>([]);
+  const [pagination, setPagination] = useState<WishlistPagination | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
   const [removingId, setRemovingId] = useState<string | null>(null);
   const [isClearing, setIsClearing] = useState(false);
@@ -80,9 +84,10 @@ export default function WishlistPage() {
     async function loadWishlist() {
       try {
         setIsLoading(true);
-        const data = await getWishlistApi();
+        const res = await getWishlistApi({ page: currentPage, limit: 12 });
         if (!isMounted) return;
-        setWishlistItems(data);
+        setWishlistItems(res.data);
+        setPagination(res.pagination);
       } catch (err: any) {
         if (!isMounted) return;
         const msg = err?.message || "";
@@ -110,7 +115,7 @@ export default function WishlistPage() {
     return () => {
       isMounted = false;
     };
-  }, [router]);
+  }, [router, currentPage]);
 
   const handleRemove = async (productId: string, productName: string) => {
     try {
@@ -118,6 +123,14 @@ export default function WishlistPage() {
       await removeFromWishlistApi(productId);
       setWishlistItems((prev) =>
         prev.filter((item) => item.productId !== productId),
+      );
+      setPagination((prev) =>
+        prev
+          ? {
+              ...prev,
+              total: Math.max(0, prev.total - 1),
+            }
+          : null,
       );
       setStatusMessage({
         type: "success",
@@ -144,6 +157,15 @@ export default function WishlistPage() {
       setIsClearing(true);
       await clearWishlistApi();
       setWishlistItems([]);
+      setPagination((prev) =>
+        prev
+          ? {
+              ...prev,
+              total: 0,
+              totalPages: 1,
+            }
+          : null,
+      );
       setStatusMessage({
         type: "success",
         text: "Your wishlist has been cleared.",
@@ -205,8 +227,10 @@ export default function WishlistPage() {
                   </h1>
                   {!isLoading && (
                     <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[#F3E8FF] text-[#6B21A8]">
-                      {wishlistItems.length}{" "}
-                      {wishlistItems.length === 1 ? "item" : "items"}
+                      {pagination?.total ?? wishlistItems.length}{" "}
+                      {(pagination?.total ?? wishlistItems.length) === 1
+                        ? "item"
+                        : "items"}
                     </span>
                   )}
                 </div>
@@ -392,6 +416,50 @@ export default function WishlistPage() {
                     </div>
                   );
                 })}
+              </div>
+            )}
+
+            {/* Pagination Controls */}
+            {pagination && pagination.totalPages > 1 && (
+              <div className="mt-8 pt-4 border-t border-gray-100 flex flex-wrap items-center justify-between gap-4">
+                <p className="text-xs sm:text-sm text-gray-500">
+                  Showing page{" "}
+                  <span className="font-semibold text-gray-800">
+                    {pagination.page}
+                  </span>{" "}
+                  of{" "}
+                  <span className="font-semibold text-gray-800">
+                    {pagination.totalPages}
+                  </span>{" "}
+                  ({pagination.total} total)
+                </p>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    disabled={currentPage <= 1 || isLoading}
+                    onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                    className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-gray-700 bg-gray-50 hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed rounded-lg border border-gray-200 transition-colors cursor-pointer"
+                  >
+                    <ChevronLeft size={14} />
+                    Previous
+                  </button>
+                  <span className="text-xs font-medium text-gray-600 px-2">
+                    {currentPage} / {pagination.totalPages}
+                  </span>
+                  <button
+                    type="button"
+                    disabled={currentPage >= pagination.totalPages || isLoading}
+                    onClick={() =>
+                      setCurrentPage((p) =>
+                        Math.min(pagination.totalPages, p + 1),
+                      )
+                    }
+                    className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-gray-700 bg-gray-50 hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed rounded-lg border border-gray-200 transition-colors cursor-pointer"
+                  >
+                    Next
+                    <ChevronRight size={14} />
+                  </button>
+                </div>
               </div>
             )}
           </div>

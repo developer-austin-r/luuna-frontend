@@ -55,6 +55,20 @@ export interface WishlistItem {
   product: WishlistProduct;
 }
 
+export interface WishlistPagination {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+  hasNextPage?: boolean;
+  hasPrevPage?: boolean;
+}
+
+export interface WishlistResponseData {
+  data: WishlistItem[];
+  pagination: WishlistPagination;
+}
+
 interface ApiResponse<T> {
   data: T;
   statusCode: number;
@@ -63,13 +77,46 @@ interface ApiResponse<T> {
 }
 
 /**
- * Fetches all wishlist items for the authenticated user.
+ * Fetches paginated wishlist items for the authenticated user.
  */
-export async function getWishlistApi(): Promise<WishlistItem[]> {
-  const res = await apiClient<ApiResponse<WishlistItem[]>>("/wishlist", {
+export async function getWishlistApi(params?: {
+  page?: number;
+  limit?: number;
+}): Promise<WishlistResponseData> {
+  const query = new URLSearchParams();
+  if (params?.page) query.append("page", params.page.toString());
+  if (params?.limit) query.append("limit", params.limit.toString());
+  const qs = query.toString();
+  const url = qs ? `/wishlist?${qs}` : "/wishlist";
+
+  const res = await apiClient<
+    ApiResponse<WishlistResponseData | WishlistItem[]>
+  >(url, {
     method: "GET",
   });
-  return res.data ?? [];
+
+  const payload = res.data;
+  if (
+    payload &&
+    typeof payload === "object" &&
+    "data" in payload &&
+    Array.isArray((payload as WishlistResponseData).data)
+  ) {
+    return payload as WishlistResponseData;
+  }
+
+  const items = Array.isArray(payload) ? payload : [];
+  return {
+    data: items,
+    pagination: {
+      page: params?.page || 1,
+      limit: params?.limit || items.length || 10,
+      total: items.length,
+      totalPages: 1,
+      hasNextPage: false,
+      hasPrevPage: false,
+    },
+  };
 }
 
 /**
