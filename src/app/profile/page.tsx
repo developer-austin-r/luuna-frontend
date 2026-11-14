@@ -420,30 +420,32 @@ export default function ProfilePage() {
           </Link>
         </div>
 
-        <div className="max-w-6xl mx-auto flex flex-col md:flex-row gap-6">
+        <div className="max-w-6xl mx-auto flex flex-col md:flex-row gap-4 sm:gap-6">
           {/* Left Sidebar Navigation */}
-          <div className="w-full md:w-72 shrink-0">
-            <h2 className="text-xl font-bold text-white mb-4 px-1 tracking-tight">
+          <div className="w-full md:w-64 lg:w-72 shrink-0">
+            <h2 className="text-xl font-bold text-white mb-4 px-1 tracking-tight hidden md:block">
               Manage My Account
             </h2>
             <AccountMenu onLogout={handleLogout} />
           </div>
 
           {/* Right Main Content area */}
-          <div className="flex-1 bg-white rounded-3xl shadow-2xl p-6 sm:p-8">
-            <div className="flex justify-between items-start mb-6">
-              <ProfileHeader
-                title={
-                  displayFullName
-                    ? `Hello, ${displayFullName}`
-                    : "Edit Your Profile"
-                }
-                subtitle="Update your personal information and account details"
-              />
+          <div className="flex-1 bg-white rounded-2xl sm:rounded-3xl shadow-2xl p-4 sm:p-6 lg:p-8 min-w-0">
+            <div className="flex items-start justify-between gap-3 sm:gap-4 mb-6">
+              <div className="min-w-0 flex-1">
+                <ProfileHeader
+                  title={
+                    displayFullName
+                      ? `Hello, ${displayFullName}`
+                      : "Edit Your Profile"
+                  }
+                  subtitle="Update your personal information and account details"
+                />
+              </div>
 
               {/* Avatar Section at Top Right */}
-              <div className="relative shrink-0 ml-4">
-                <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-gray-50 flex items-center justify-center overflow-hidden border-2 border-white shadow-md">
+              <div className="relative shrink-0">
+                <div className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 rounded-full bg-gray-50 flex items-center justify-center overflow-hidden border-2 border-white shadow-md">
                   <img
                     src={avatarPreview || "/images/recommendation-toy.png"}
                     alt="Profile preview"
@@ -452,9 +454,9 @@ export default function ProfilePage() {
                 </div>
                 <label
                   htmlFor="avatar-upload"
-                  className="absolute bottom-1 right-1 p-1.5 bg-[#6B21A8] rounded-full text-white cursor-pointer hover:bg-[#4C1D95] transition-colors shadow-lg border-2 border-white"
+                  className="absolute bottom-0 right-0 p-1.5 bg-[#6B21A8] rounded-full text-white cursor-pointer hover:bg-[#4C1D95] transition-colors shadow-lg border-2 border-white"
                 >
-                  <Camera size={14} />
+                  <Camera size={13} />
                   <input
                     id="avatar-upload"
                     type="file"

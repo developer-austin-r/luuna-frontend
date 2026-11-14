@@ -29,7 +29,7 @@ const MENU_ITEMS: MenuItem[] = [
   { label: "My Orders", href: "/profile/myorders", icon: Package },
   { label: "My Wishlist", href: "/profile/wishlist", icon: Heart },
   { label: "Coupon code", href: "/profile/coupons", icon: Ticket },
-  { label: "Help & Support", href: "/help-support", icon: HelpCircle },
+  { label: "Help & Support", href: "/profile/help-support", icon: HelpCircle },
 ];
 
 export interface AccountMenuProps {
@@ -75,8 +75,48 @@ export const AccountMenu: React.FC<AccountMenuProps> = ({
 
   return (
     <>
+      {/* Mobile Horizontal Navigation Pills (< md) */}
+      <div className="md:hidden w-full overflow-hidden mb-3">
+        <div className="flex items-center gap-2 overflow-x-auto pb-2 px-1 scrollbar-none">
+          {MENU_ITEMS.map((item) => {
+            const isActive =
+              pathname === item.href ||
+              (item.href === "/profile/myorders" &&
+                (pathname === "/profile/orders" ||
+                  pathname.startsWith("/profile/myorders")));
+            const Icon = item.icon;
+
+            return (
+              <Link
+                key={item.label}
+                href={item.href || "#"}
+                className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all duration-200 shrink-0 ${
+                  isActive
+                    ? "bg-white text-[#6B21A8] shadow-md ring-2 ring-white/50"
+                    : "bg-white/20 text-white hover:bg-white/30 backdrop-blur-md"
+                }`}
+              >
+                {Icon && <Icon size={14} className="shrink-0" />}
+                <span>{item.label}</span>
+              </Link>
+            );
+          })}
+
+          {/* Mobile Logout Button */}
+          <button
+            type="button"
+            onClick={() => setShowLogoutModal(true)}
+            className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold text-rose-200 bg-rose-950/40 hover:bg-rose-950/60 backdrop-blur-md whitespace-nowrap shrink-0 cursor-pointer"
+          >
+            <LogOut size={14} className="shrink-0" />
+            <span>Logout</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Desktop / Tablet Vertical Sidebar (md+) */}
       <div
-        className={`w-full rounded-2xl border border-gray-100 bg-white shadow-sm overflow-hidden flex flex-col justify-between p-3 pb-8 ${className}`}
+        className={`hidden md:flex w-full rounded-2xl border border-gray-100 bg-white shadow-sm overflow-hidden flex-col justify-between p-3 pb-8 ${className}`}
       >
         <ul className="flex flex-col w-full gap-1">
           {MENU_ITEMS.map((item) => {
@@ -88,7 +128,7 @@ export const AccountMenu: React.FC<AccountMenuProps> = ({
             const Icon = item.icon;
 
             return (
-              <li key={item.label} className="">
+              <li key={item.label}>
                 <Link
                   href={item.href || "#"}
                   className={`group flex items-center justify-between px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-200 ${
