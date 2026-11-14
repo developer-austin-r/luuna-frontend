@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -11,6 +11,7 @@ import {
   HeartOff,
   Loader2,
   Package,
+  RefreshCw,
   ShoppingBag,
   Trash2,
 } from "lucide-react";
@@ -46,15 +47,44 @@ function resolveProductImage(item: WishlistItem): string {
   const img = images[0];
   if (!img) return "/images/recommendation-toy.png";
   const url = img.displayUrl || img.imageUrl || img.originalUrl;
-  if (!url) return "/images/recommendation-toy.png";
-  if (
-    url.startsWith("http://") ||
-    url.startsWith("https://") ||
-    url.startsWith("/")
-  ) {
-    return url;
+  if (!url || typeof url !== "string" || !url.trim()) {
+    return "/images/recommendation-toy.png";
   }
-  return `${env.s3BaseUrl}/${url}`;
+
+  const trimmed = url.trim();
+
+  // 1. Absolute URLs (http:// or https://)
+  if (trimmed.startsWith("http://") || trimmed.startsWith("https://")) {
+    return trimmed;
+  }
+
+  // 2. Relative root URLs (e.g. /images/...)
+  if (trimmed.startsWith("/")) {
+    return trimmed;
+  }
+
+  // 3. S3-hosted assets: normalize base URL and eliminate duplicate bucket/host prefixes
+  const base = (env.s3BaseUrl || "").replace(/\/+$/, "");
+  if (!base) {
+    return `/${trimmed}`;
+  }
+
+  let cleanKey = trimmed.replace(/^\/+/, "");
+
+  try {
+    const parsedBase = new URL(base);
+    const bucketName = parsedBase.hostname.split(".")[0];
+    if (bucketName && cleanKey.startsWith(`${bucketName}/`)) {
+      cleanKey = cleanKey.slice(bucketName.length + 1);
+    }
+    if (cleanKey.startsWith(`${parsedBase.host}/`)) {
+      cleanKey = cleanKey.slice(parsedBase.host.length + 1);
+    }
+  } catch {
+    // If base is a relative or custom string, proceed with cleanKey
+  }
+
+  return `${base}/${cleanKey}`;
 }
 
 export default function WishlistPage() {
@@ -64,6 +94,7 @@ export default function WishlistPage() {
   const [pagination, setPagination] = useState<WishlistPagination | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
+  const [hasLoadError, setHasLoadError] = useState(false);
   const [removingId, setRemovingId] = useState<string | null>(null);
   const [isClearing, setIsClearing] = useState(false);
   const [statusMessage, setStatusMessage] = useState<{
@@ -78,60 +109,66 @@ export default function WishlistPage() {
     return () => clearTimeout(timer);
   }, [statusMessage]);
 
-  useEffect(() => {
-    let isMounted = true;
-
-    async function loadWishlist() {
-      try {
-        setIsLoading(true);
-        const res = await getWishlistApi({ page: currentPage, limit: 12 });
-        if (!isMounted) return;
-        setWishlistItems(res.data);
-        setPagination(res.pagination);
-      } catch (err: any) {
-        if (!isMounted) return;
-        const msg = err?.message || "";
-        if (
-          msg.includes("401") ||
-          msg.toLowerCase().includes("unauthorized") ||
-          msg.includes("403")
-        ) {
-          router.push("/login");
-          return;
-        }
-        setStatusMessage({
-          type: "error",
-          text: msg || "Failed to load wishlist. Please try refreshing.",
-        });
-      } finally {
-        if (isMounted) {
-          setIsLoading(false);
-        }
+  const loadWishlist = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      setHasLoadError(false);
+      const res = await getWishlistApi({ page: currentPage, limit: 12 });
+      setWishlistItems(res.data);
+      setPagination(res.pagination);
+      setHasLoadError(false);
+    } catch (err: any) {
+      setHasLoadError(true);
+      const msg = err?.message || "";
+      if (
+        msg.includes("401") ||
+        msg.toLowerCase().includes("unauthorized") ||
+        msg.includes("403")
+      ) {
+        router.push("/login");
+        return;
       }
+      setStatusMessage({
+        type: "error",
+        text: msg || "Failed to load wishlist. Please try refreshing.",
+      });
+    } finally {
+      setIsLoading(false);
     }
+  }, [currentPage, router]);
 
+  useEffect(() => {
     loadWishlist();
-
-    return () => {
-      isMounted = false;
-    };
-  }, [router, currentPage]);
+  }, [loadWishlist]);
 
   const handleRemove = async (productId: string, productName: string) => {
     try {
       setRemovingId(productId);
       await removeFromWishlistApi(productId);
-      setWishlistItems((prev) =>
-        prev.filter((item) => item.productId !== productId),
+
+      const nextItems = wishlistItems.filter(
+        (item) => item.productId !== productId,
       );
-      setPagination((prev) =>
-        prev
-          ? {
-              ...prev,
-              total: Math.max(0, prev.total - 1),
-            }
-          : null,
-      );
+
+      // If current page is now empty and user is past page 1, navigate back
+      if (nextItems.length === 0 && currentPage > 1) {
+        setCurrentPage((prev) => Math.max(1, prev - 1));
+      } else {
+        setWishlistItems(nextItems);
+        setPagination((prev) =>
+          prev
+            ? {
+                ...prev,
+                total: Math.max(0, prev.total - 1),
+                totalPages: Math.max(
+                  1,
+                  Math.ceil((prev.total - 1) / prev.limit),
+                ),
+              }
+            : null,
+        );
+      }
+
       setStatusMessage({
         type: "success",
         text: `"${productName}" has been removed from your wishlist.`,
@@ -291,8 +328,32 @@ export default function WishlistPage() {
               </div>
             )}
 
+            {/* Load Error State */}
+            {!isLoading && hasLoadError && (
+              <div className="flex-1 flex flex-col items-center justify-center py-16 px-4 text-center">
+                <div className="w-20 h-20 rounded-full bg-red-50 flex items-center justify-center text-red-500 mb-4 shadow-inner">
+                  <AlertCircle size={36} />
+                </div>
+                <h3 className="text-xl font-bold text-gray-900 mb-2">
+                  Unable to load your wishlist
+                </h3>
+                <p className="text-sm text-gray-500 max-w-md mb-6 leading-relaxed">
+                  We encountered an issue communicating with the server. Please
+                  check your connection and try again.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => loadWishlist()}
+                  className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-[#6B21A8] hover:bg-[#581c87] text-white text-sm font-semibold shadow-md transition-all hover:shadow-lg cursor-pointer"
+                >
+                  <RefreshCw size={16} />
+                  Try Again
+                </button>
+              </div>
+            )}
+
             {/* Empty State */}
-            {!isLoading && wishlistItems.length === 0 && (
+            {!isLoading && !hasLoadError && wishlistItems.length === 0 && (
               <div className="flex-1 flex flex-col items-center justify-center py-16 px-4 text-center">
                 <div className="w-20 h-20 rounded-full bg-[#F3E8FF] flex items-center justify-center text-[#6B21A8] mb-4 shadow-inner">
                   <HeartOff size={36} />
