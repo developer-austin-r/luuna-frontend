@@ -185,133 +185,79 @@
   letter-spacing: 0.035em;
 }
 
-.categoryGrid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  grid-auto-rows: clamp(94px, 10.4vw, 150px);
-  gap: 5px;
-}
-
-.categoryCard {
+.categoryArtwork {
   position: relative;
   isolation: isolate;
-  display: flex;
-  min-height: 0;
-  align-items: flex-end;
+  width: 100%;
+  aspect-ratio: 959 / 1598;
   overflow: hidden;
-  padding: 12px;
-  border-radius: 2px;
-  color: #fff;
-  text-decoration: none;
-  transition:
-    filter 150ms ease,
-    transform 150ms ease;
+  background: #000;
 }
 
-.categoryCard:hover {
+.categoryArtworkImage {
+  z-index: 0;
+  object-fit: fill;
+}
+
+.categoryHotspot {
+  position: absolute;
   z-index: 1;
-  filter: brightness(1.12);
-  transform: translateY(-2px);
-}
-
-.categoryCard::before {
-  position: absolute;
-  z-index: -1;
-  inset: 0;
-  background-image: url("/images/luuna-background-pattern.png");
-  background-position: center;
-  background-size: auto 170%;
-  content: "";
-  opacity: 0.15;
-}
-
-.categoryCard::after {
-  position: absolute;
-  z-index: -1;
-  inset: 0;
-  background:
-    linear-gradient(90deg, rgb(7 3 11 / 67%), transparent 85%),
-    linear-gradient(0deg, rgb(7 3 11 / 60%), transparent 68%);
-  content: "";
-}
-
-.anime {
-  background:
-    radial-gradient(ellipse at 77% 27%, #bc4d37, transparent 32%),
-    linear-gradient(130deg, #8c1d27, #321323 78%);
-}
-
-.classics {
-  background:
-    radial-gradient(ellipse at 76% 15%, #a23235, transparent 35%),
-    linear-gradient(130deg, #5b1425, #151421 75%);
-}
-
-.dc {
-  background:
-    radial-gradient(ellipse at 78% 20%, #4b637b, transparent 36%),
-    linear-gradient(130deg, #1a293a, #15121f 78%);
-}
-
-.marvel {
-  background:
-    radial-gradient(ellipse at 77% 20%, #e7443b, transparent 35%),
-    linear-gradient(130deg, #a01825, #341322 80%);
-}
-
-.kpop {
-  grid-column: 1 / -1;
-  background:
-    radial-gradient(ellipse at 78% 16%, #c85076, transparent 35%),
-    linear-gradient(120deg, #381243, #a32954 56%, #3c1850);
-}
-
-.categoryCopy {
-  position: relative;
-  z-index: 2;
-  display: grid;
-  gap: 0;
-  text-shadow: 0 2px 8px rgb(0 0 0 / 65%);
-}
-
-.categoryName {
-  font-family: Impact, "Arial Black", sans-serif;
-  font-size: clamp(0.92rem, 1.8vw, 1.35rem);
-  font-weight: 900;
-  letter-spacing: 0.08em;
-}
-
-.categoryFigure {
-  position: absolute;
-  right: 1%;
-  bottom: -50%;
-  width: 48%;
-  height: 172%;
-  filter: drop-shadow(0 7px 8px rgb(0 0 0 / 35%));
-  transition: transform 180ms ease;
-}
-
-.categoryCard:hover .categoryFigure {
-  transform: translateY(-5px) scale(1.03);
-}
-
-.kpop .categoryFigure {
-  right: 12%;
-  width: 24%;
-}
-
-/* .brandStrip {
-  height: 220px;
-  background-image: url("/images/brand-strip.png");
-  background-position: center;
-  background-size: 100% 100%;
-  background-repeat: no-repeat;
-} */
-
-.brandStrip {
   display: block;
-  height: auto;
-  object-fit: contain;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.hotspotAnime {
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 20%;
+  clip-path: polygon(0 0, 100% 0, 100% 61%, 0 100%);
+}
+
+.hotspotDC {
+  top: 17%;
+  left: 0;
+  width: 40%;
+  height: 43%;
+  clip-path: polygon(0 10%, 100% 0, 76% 100%, 0 100%);
+}
+
+.hotspotMarvel {
+  top: 12%;
+  right: 0;
+  width: 64%;
+  height: 29%;
+  clip-path: polygon(0 27%, 100% 0, 100% 100%, 0 100%);
+}
+
+.hotspotKpop {
+  top: 38%;
+  right: 0;
+  width: 68%;
+  height: 24%;
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 0 80%);
+}
+
+.hotspotNostalgia {
+  top: 59%;
+  left: 0;
+  width: 100%;
+  height: 25%;
+  clip-path: polygon(0 0, 100% 10%, 100% 100%, 0 100%);
+}
+
+.hotspotWheels {
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 20%;
+  clip-path: polygon(0 22%, 100% 0, 100% 100%, 0 100%);
+}
+
+.categoryHotspot:focus-visible {
+  outline: 3px solid #fff;
+  outline-offset: -5px;
 }
 
 .productGridSection {
@@ -341,15 +287,6 @@
 
   .poster {
     height: clamp(138px, 23vw, 200px);
-  }
-
-  .categoryGrid {
-    grid-auto-rows: 105px;
-  }
-
-  .categoryFigure {
-    right: -1%;
-    width: 50%;
   }
 
   .productGrid {
@@ -406,32 +343,6 @@
     padding-bottom: 10px;
   }
 
-  .categoryGrid {
-    grid-auto-rows: 82px;
-    gap: 4px;
-  }
-
-  .categoryCard {
-    padding: 8px;
-  }
-
-  .categoryName {
-    max-width: 110px;
-    font-size: clamp(0.72rem, 3.5vw, 0.96rem);
-  }
-
-  .categoryFigure {
-    right: -8%;
-    bottom: -52%;
-    width: 60%;
-    height: 175%;
-  }
-
-  .kpop .categoryFigure {
-    right: 8%;
-    width: 33%;
-  }
-
   .productGridSection {
     padding-top: 8px;
     padding-bottom: 25px;
@@ -441,25 +352,4 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 9px;
   }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .categoryCard,
-  .categoryFigure {
-    transition: none;
-  }
-}
-
-.categoryImage {
-  width: 100%;
-  max-width: 1280px;
-  margin: 0 auto;
-  overflow: hidden;
-}
-
-.categoryImage img {
-  display: block;
-  width: 100%;
-  height: auto;
-  object-fit: contain;
 }

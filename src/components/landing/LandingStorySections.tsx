@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 import { CarFront } from "lucide-react";
 
 import CollectibleFigure from "@/components/landing/CollectibleFigure";
@@ -104,28 +105,33 @@ const topPicks: ArrivalProduct[] = [
 const categories = [
   {
     name: "ANIME",
-    tone: "anime",
-    variant: "sunburst" as const,
-  },
-  {
-    name: "ANIME",
-    tone: "classics",
-    variant: "ninja" as const,
+    image: "/images/categories/anime.png",
+    href: "/categories/anime",
   },
   {
     name: "DC",
-    tone: "dc",
-    variant: "warrior" as const,
+    image: "/images/categories/dc.png",
+    href: "/categories/dc",
   },
   {
     name: "MARVEL",
-    tone: "marvel",
-    variant: "web" as const,
+    image: "/images/categories/marvel.png",
+    href: "/categories/marvel",
   },
   {
     name: "K-POP",
-    tone: "kpop",
-    variant: "sunburst" as const,
+    image: "/images/categories/kpop.png",
+    href: "/categories/kpop",
+  },
+  {
+    name: "NOSTALGIA",
+    image: "/images/categories/nostalgia.png",
+    href: "/categories/nostalgia",
+  },
+  {
+    name: "WHEELS",
+    image: "/images/categories/wheels.png",
+    href: "/categories/wheels",
   },
 ];
 
@@ -170,14 +176,50 @@ function CategoryGrid() {
           <h2 id="category-title">CATEGORY</h2>
         </div>
 
-        <div className={styles.categoryImage}>
+        <div className={styles.categoryArtwork}>
           <Image
             src="/images/category.png"
-            alt="Explore Anime, Marvel, DC, K-Pop, Nostalgia, and Wheels collections"
-            width={959}
-            height={1598}
+            alt="Explore Anime, DC, Marvel, K-Pop, Nostalgia, and Wheels"
+            fill
             priority
-            sizes="100vw"
+            sizes="(max-width: 1280px) 100vw, 1280px"
+            className={styles.categoryArtworkImage}
+          />
+
+          <Link
+            href="/categories/anime"
+            className={`${styles.categoryHotspot} ${styles.hotspotAnime}`}
+            aria-label="Explore Anime"
+          />
+
+          <Link
+            href="/categories/dc"
+            className={`${styles.categoryHotspot} ${styles.hotspotDC}`}
+            aria-label="Explore DC"
+          />
+
+          <Link
+            href="/categories/marvel"
+            className={`${styles.categoryHotspot} ${styles.hotspotMarvel}`}
+            aria-label="Explore Marvel"
+          />
+
+          <Link
+            href="/categories/kpop"
+            className={`${styles.categoryHotspot} ${styles.hotspotKpop}`}
+            aria-label="Explore K-Pop"
+          />
+
+          <Link
+            href="/categories/nostalgia"
+            className={`${styles.categoryHotspot} ${styles.hotspotNostalgia}`}
+            aria-label="Explore Nostalgia"
+          />
+
+          <Link
+            href="/categories/wheels"
+            className={`${styles.categoryHotspot} ${styles.hotspotWheels}`}
+            aria-label="Explore Wheels"
           />
         </div>
       </div>
