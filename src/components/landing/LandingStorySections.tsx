@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { CarFront } from "lucide-react";
 
@@ -104,28 +105,33 @@ const topPicks: ArrivalProduct[] = [
 const categories = [
   {
     name: "ANIME",
-    tone: "anime",
-    variant: "sunburst" as const,
-  },
-  {
-    name: "ANIME",
-    tone: "classics",
-    variant: "ninja" as const,
+    image: "/images/categories/anime.png",
+    href: "/categories/anime",
   },
   {
     name: "DC",
-    tone: "dc",
-    variant: "warrior" as const,
+    image: "/images/categories/dc.png",
+    href: "/categories/dc",
   },
   {
     name: "MARVEL",
-    tone: "marvel",
-    variant: "web" as const,
+    image: "/images/categories/marvel.png",
+    href: "/categories/marvel",
   },
   {
     name: "K-POP",
-    tone: "kpop",
-    variant: "sunburst" as const,
+    image: "/images/categories/kpop.png",
+    href: "/categories/kpop",
+  },
+  {
+    name: "NOSTALGIA",
+    image: "/images/categories/nostalgia.png",
+    href: "/categories/nostalgia",
+  },
+  {
+    name: "WHEELS",
+    image: "/images/categories/wheels.png",
+    href: "/categories/wheels",
   },
 ];
 
@@ -169,22 +175,52 @@ function CategoryGrid() {
         <div className={styles.sectionTitle}>
           <h2 id="category-title">CATEGORY</h2>
         </div>
-        <div className={styles.categoryGrid}>
-          {categories.map((category) => (
-            <Link
-              href="#top-picks"
-              className={`${styles.categoryCard} ${styles[category.tone]}`}
-              key={`${category.tone}-${category.name}`}
-            >
-              <span className={styles.categoryCopy}>
-                <span className={styles.categoryName}>{category.name}</span>
-              </span>
-              <CollectibleFigure
-                className={styles.categoryFigure}
-                variant={category.variant}
-              />
-            </Link>
-          ))}
+
+        <div className={styles.categoryArtwork}>
+          <Image
+            src="/images/category.png"
+            alt="Explore Anime, DC, Marvel, K-Pop, Nostalgia, and Wheels"
+            fill
+            priority
+            sizes="(max-width: 1280px) 100vw, 1280px"
+            className={styles.categoryArtworkImage}
+          />
+
+          <Link
+            href="/categories/anime"
+            className={`${styles.categoryHotspot} ${styles.hotspotAnime}`}
+            aria-label="Explore Anime"
+          />
+
+          <Link
+            href="/categories/dc"
+            className={`${styles.categoryHotspot} ${styles.hotspotDC}`}
+            aria-label="Explore DC"
+          />
+
+          <Link
+            href="/categories/marvel"
+            className={`${styles.categoryHotspot} ${styles.hotspotMarvel}`}
+            aria-label="Explore Marvel"
+          />
+
+          <Link
+            href="/categories/kpop"
+            className={`${styles.categoryHotspot} ${styles.hotspotKpop}`}
+            aria-label="Explore K-Pop"
+          />
+
+          <Link
+            href="/categories/nostalgia"
+            className={`${styles.categoryHotspot} ${styles.hotspotNostalgia}`}
+            aria-label="Explore Nostalgia"
+          />
+
+          <Link
+            href="/categories/wheels"
+            className={`${styles.categoryHotspot} ${styles.hotspotWheels}`}
+            aria-label="Explore Wheels"
+          />
         </div>
       </div>
     </section>
@@ -192,7 +228,13 @@ function CategoryGrid() {
 }
 
 function BrandStrip() {
-  return <div className={styles.brandStrip} aria-hidden="true" />;
+  return (
+    <img
+      src="/images/brand-strip.png"
+      alt="Quick Delivery, Secure Payment, Best Quality"
+      className="brandStrip"
+    />
+  );
 }
 
 function ProductGrid() {
@@ -228,8 +270,6 @@ export default function LandingStorySections() {
       />
       <ArtworkBanner id="whats-new" title="WHAT’S NEW" scene="new" />
       <CategoryGrid />
-      <ArtworkBanner id="nostalgia" title="NOSTALGIA" scene="nostalgia" />
-      <ArtworkBanner id="wheels" title="WHEELS" scene="wheels" />
       <BrandStrip />
       <ProductCarousel id="top-picks" title="TOP PICKS" products={topPicks} />
       <ProductGrid />
