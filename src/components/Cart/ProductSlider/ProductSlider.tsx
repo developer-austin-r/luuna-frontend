@@ -31,10 +31,13 @@ export default function ProductSlider({ title, children }: ProductSliderProps) {
     <section className={styles.section}>
       <div className={styles.header}>
         <h2>{title}</h2>
+      </div>
 
+      <div className={styles.sliderContainer}>
         <div className={styles.controls}>
           <button
             type="button"
+            className={styles.previousButton}
             onClick={scrollLeft}
             aria-label="Previous products"
           >
@@ -43,16 +46,17 @@ export default function ProductSlider({ title, children }: ProductSliderProps) {
 
           <button
             type="button"
+            className={styles.nextButton}
             onClick={scrollRight}
             aria-label="Next products"
           >
             <ChevronRight size={20} />
           </button>
         </div>
-      </div>
 
-      <div ref={sliderRef} className={styles.slider}>
-        {children}
+        <div ref={sliderRef} className={styles.slider}>
+          {children}
+        </div>
       </div>
     </section>
   );
