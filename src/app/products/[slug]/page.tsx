@@ -7,6 +7,7 @@ import Navbar from "@/components/landing/Navbar/Navbar";
 import BatmanBanner from "@/components/product/BatmanBanner";
 import ProductGallery from "@/components/product/ProductGallery";
 import ProductInfo from "@/components/product/ProductInfo";
+import ProductReviews from "@/components/product/ProductReviews";
 import RelatedItems from "@/components/product/RelatedItems";
 
 interface ProductPageProps {
@@ -50,7 +51,7 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
   };
 
   return (
-    <div className="min-h-screen bg-[#130924] flex flex-col font-sans">
+    <div className="min-h-screen bg-[#10051b] flex flex-col font-sans text-white">
       {/* 1. Header: Existing LoginOfferBar and Navbar */}
       <LoginOfferBar />
       <Navbar />
@@ -59,8 +60,9 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
       <BatmanBanner />
 
       {/* 3. Main Product Section */}
-      <main className="flex-1 w-full bg-[#130924] py-6 sm:py-10 lg:py-12">
-        <div className="mx-auto max-w-7xl px-3 sm:px-6 lg:px-8">
+      <main className="flex-1 w-full bg-[#10051b]">
+        {/* Top Product Hero Details */}
+        <div className="mx-auto max-w-7xl px-3 sm:px-6 lg:px-8 py-6 sm:py-10 lg:py-12">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8 lg:gap-10 xl:gap-12 items-start">
             {/* Left Column: Product Gallery with Thumbnails & Main Image */}
             <div className="lg:col-span-7 w-full">
@@ -74,11 +76,14 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
           </div>
         </div>
 
-        {/* 4. Related Products Section */}
+        {/* 4. Reused Landing Page New Arrivals Design for Related Items & Accessories */}
         <RelatedItems />
+
+        {/* 5. Product Reviews Section (Rating Breakdown, Customer Photos, Reviews Grid & Write a Review) */}
+        <ProductReviews />
       </main>
 
-      {/* 5. Footer */}
+      {/* 6. Footer */}
       <Footer />
     </div>
   );
