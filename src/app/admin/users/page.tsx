@@ -58,7 +58,7 @@ type UserTab = "Admin" | "Billing User";
 
 export default function UsersPage() {
   const [customers, setCustomers] = useState<User[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   // Active tab
   const [activeTab, setActiveTab] = useState<UserTab>("Admin");
@@ -677,10 +677,6 @@ export default function UsersPage() {
       {/* ================= TABLE ================= */}
 
       <Card>
-        {loading && (
-          <div className="text-sm text-text-custom/50 mb-4">Loading...</div>
-        )}
-
         {/* SEARCH */}
 
         <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -702,7 +698,12 @@ export default function UsersPage() {
 
         {/* TABLE */}
 
-        <DataTable columns={columns} data={customers} onSort={handleSort} />
+        <DataTable
+          columns={columns}
+          data={customers}
+          onSort={handleSort}
+          isLoading={loading}
+        />
 
         {/* PAGINATION */}
 

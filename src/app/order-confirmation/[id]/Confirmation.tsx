@@ -12,6 +12,7 @@ import {
   Truck,
 } from "lucide-react";
 
+import { ConfirmationSkeleton } from "@/components/loading/StorefrontSkeletons";
 import { env } from "@/config/env";
 import { ApiRequestError } from "@/services/api-client";
 import { getOrderConfirmation, type OrderConfirmation } from "@/services/order";
@@ -326,11 +327,7 @@ export default function Confirmation({ orderId }: { orderId: string }) {
       {order ? (
         <OrderDetails order={order} loading={loading} refresh={refresh} />
       ) : (
-        loading && (
-          <p className={styles.feedback} role="status">
-            Loading your order…
-          </p>
-        )
+        loading && <ConfirmationSkeleton />
       )}
       {error !== null && (
         <div className={styles.feedback} role="alert">

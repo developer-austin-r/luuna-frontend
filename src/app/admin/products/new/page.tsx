@@ -23,6 +23,7 @@ import {
   Select,
   StatusBadge,
 } from "@/components/admin";
+import { AdminDetailSkeleton } from "@/components/admin/LoadingSkeleton";
 import { useToast } from "@/providers/toast-provider";
 import { useAppDispatch, useAppSelector } from "@/redux/hooks";
 import { addActivityLog, setCategories } from "@/redux/slices/admin-slice";
@@ -94,6 +95,7 @@ export default function AddProductPage() {
   const { error: toastError, success: toastSuccess } = useToast();
 
   const [statuses, setStatuses] = useState<StatusOption[]>([]);
+  const [loadingOptions, setLoadingOptions] = useState(true);
 
   // Form setup
   const {
@@ -148,6 +150,8 @@ export default function AddProductPage() {
         }
       } catch (err) {
         console.error("Error loading categories or statuses:", err);
+      } finally {
+        setLoadingOptions(false);
       }
     }
     loadData();
@@ -483,6 +487,9 @@ export default function AddProductPage() {
       toastError(errMsg);
     }
   };
+
+  if (loadingOptions)
+    return <AdminDetailSkeleton label="Loading product form" variant="form" />;
 
   return (
     <div className="space-y-6">

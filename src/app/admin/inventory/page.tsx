@@ -449,16 +449,11 @@ export default function InventoryPage() {
             </div>
           </div>
 
-          {loading ? (
-            <div className="flex flex-col items-center justify-center py-12 gap-2 text-text-custom/50">
-              <div className="w-8 h-8 rounded-full border-4 border-primary/20 border-t-primary animate-spin" />
-              <span className="text-xs font-semibold">
-                Loading live stock levels...
-              </span>
-            </div>
-          ) : (
-            <DataTable columns={columns} data={filteredInventory} />
-          )}
+          <DataTable
+            columns={columns}
+            data={filteredInventory}
+            isLoading={loading}
+          />
         </div>
       </Card>
 

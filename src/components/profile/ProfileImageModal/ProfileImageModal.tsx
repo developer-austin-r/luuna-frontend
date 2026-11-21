@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { Check, Loader2, Sparkles, X } from "lucide-react";
 
+import { Skeleton, SkeletonRegion } from "@/components/loading/Skeleton";
 import { getS3AssetUrl } from "@/config";
 import type { AvailableProfileImage } from "@/services/profile";
 
@@ -168,12 +169,16 @@ export const ProfileImageModal: React.FC<ProfileImageModalProps> = ({
           </label>
 
           {isLoadingOptions ? (
-            <div className="flex items-center justify-center gap-4 py-8">
-              <Loader2 size={24} className="animate-spin text-[#6B21A8]" />
-              <span className="text-xs sm:text-sm text-gray-500 font-medium">
-                Loading available avatars from S3...
-              </span>
-            </div>
+            <SkeletonRegion label="Loading profile images">
+              <div className="grid grid-cols-4 gap-3">
+                {Array.from({ length: 8 }, (_, index) => (
+                  <Skeleton
+                    key={index}
+                    className="aspect-square w-full rounded-full"
+                  />
+                ))}
+              </div>
+            </SkeletonRegion>
           ) : images.length === 0 ? (
             <p className="text-sm text-gray-500 text-center py-6">
               No profile avatars found in storage.

@@ -44,6 +44,7 @@ export default function CouponsPage() {
   // Pagination State
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
+  const [loading, setLoading] = useState(true);
 
   // CRUD Modal States
   const [isAddMode, setIsAddMode] = useState(true);
@@ -67,6 +68,8 @@ export default function CouponsPage() {
       } catch (err: any) {
         console.warn(err);
         toastError(err.message || "Failed to load coupons from backend.");
+      } finally {
+        setLoading(false);
       }
     }
     loadCoupons();
@@ -363,7 +366,11 @@ export default function CouponsPage() {
             </div>
           </div>
 
-          <DataTable columns={columns} data={paginatedCoupons} />
+          <DataTable
+            columns={columns}
+            data={paginatedCoupons}
+            isLoading={loading}
+          />
 
           <Pagination
             currentPage={currentPage}

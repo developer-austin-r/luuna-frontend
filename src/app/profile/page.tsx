@@ -9,7 +9,6 @@ import {
   Camera,
   CheckCircle2,
   ChevronLeft,
-  Loader2,
   Lock,
   Mail,
   MapPin,
@@ -20,6 +19,7 @@ import {
 import Footer from "@/components/landing/Footer/Footer";
 import LoginOfferBar from "@/components/landing/LoginOfferBar/LoginOfferBar";
 import Navbar from "@/components/landing/Navbar/Navbar";
+import { AccountFormSkeleton } from "@/components/loading/AccountSkeletons";
 import { AccountMenu } from "@/components/profile/AccountMenu/AccountMenu";
 import { AvatarSelector } from "@/components/profile/AvatarSelector/AvatarSelector";
 import { ProfileActions } from "@/components/profile/ProfileActions/ProfileActions";
@@ -586,12 +586,7 @@ export default function ProfilePage() {
             )}
 
             {isLoading ? (
-              <div className="flex flex-col items-center justify-center py-24 gap-3">
-                <Loader2 size={32} className="animate-spin text-[#6B21A8]" />
-                <p className="text-sm font-medium text-gray-500">
-                  Loading profile information...
-                </p>
-              </div>
+              <AccountFormSkeleton />
             ) : (
               <form onSubmit={handleSubmit} className="flex flex-col gap-4">
                 {/* Row 1: First Name | Last Name */}

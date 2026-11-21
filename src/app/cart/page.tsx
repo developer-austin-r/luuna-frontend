@@ -7,6 +7,7 @@ import CartItem from "@/components/Cart/CartItem/CartItem";
 import CartSummary from "@/components/Cart/CartSummary/CartSummary";
 import Footer from "@/components/landing/Footer/Footer";
 import Navbar from "@/components/landing/Navbar/Navbar";
+import { CartSkeleton } from "@/components/loading/StorefrontSkeletons";
 import { removeCartItem, setCartItemQuantity } from "@/services/cart";
 
 import styles from "./page.module.css";
@@ -19,7 +20,7 @@ export default function CartPage() {
       <Navbar />
       <main className={styles.page}>
         <h1>Your Shopping Cart</h1>
-        {loading && <p role="status">Loading your cart…</p>}
+        {loading && <CartSkeleton />}
         {error && !loading && (
           <p role="alert" className="mb-4">
             {error}{" "}

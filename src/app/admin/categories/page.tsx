@@ -22,6 +22,7 @@ import {
   Input,
   Select,
 } from "@/components/admin";
+import { AdminDetailSkeleton } from "@/components/admin/LoadingSkeleton";
 import { useToast } from "@/providers/toast-provider";
 import { useAppDispatch, useAppSelector } from "@/redux/hooks";
 import { addActivityLog, setCategories } from "@/redux/slices/admin-slice";
@@ -359,6 +360,9 @@ export default function CategoriesPage() {
   );
 
   const selectedCategory = categories.find((c) => c.id === selectedCategoryId);
+  if (loading && categories.length === 0) {
+    return <AdminDetailSkeleton label="Loading categories" variant="form" />;
+  }
 
   return (
     <div className="space-y-6">

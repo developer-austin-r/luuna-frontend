@@ -26,6 +26,7 @@ import {
 import Footer from "@/components/landing/Footer/Footer";
 import LoginOfferBar from "@/components/landing/LoginOfferBar/LoginOfferBar";
 import Navbar from "@/components/landing/Navbar/Navbar";
+import { AccountListSkeleton } from "@/components/loading/AccountSkeletons";
 import { AccountMenu } from "@/components/profile/AccountMenu/AccountMenu";
 import { useToast } from "@/providers/toast-provider";
 import { logoutApi } from "@/services/auth";
@@ -348,18 +349,7 @@ export default function MyOrdersPage() {
 
             {/* Content States */}
             {isLoading ? (
-              <div className="py-20 flex flex-col items-center justify-center text-center">
-                <Loader2
-                  size={36}
-                  className="animate-spin text-[#6B21A8] mb-4"
-                />
-                <p className="text-gray-600 font-medium">
-                  Loading your orders...
-                </p>
-                <p className="text-xs text-gray-400 mt-1">
-                  Please wait while we retrieve your order history.
-                </p>
-              </div>
+              <AccountListSkeleton label="Loading your orders" />
             ) : error ? (
               <div className="py-16 flex flex-col items-center justify-center text-center max-w-md mx-auto">
                 <div className="h-12 w-12 rounded-full bg-red-50 text-red-600 flex items-center justify-center mb-4">

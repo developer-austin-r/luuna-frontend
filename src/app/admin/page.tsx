@@ -19,6 +19,7 @@ import {
   StatsCard,
   StatusBadge,
 } from "@/components/admin";
+import { AdminLoading } from "@/components/admin/LoadingSkeleton";
 import { useAppDispatch, useAppSelector } from "@/redux/hooks";
 import { setProducts } from "@/redux/slices/admin-slice";
 import { apiClient } from "@/services/api-client";
@@ -36,11 +37,9 @@ export default function DashboardPage() {
     categories,
   } = useAppSelector((state) => state.admin);
 
-  const [mounted, setMounted] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    setMounted(true);
-
     async function loadProducts() {
       try {
         const res = await apiClient<{ data: { data: any[] } }>("/products");
@@ -64,6 +63,8 @@ export default function DashboardPage() {
         }
       } catch (err) {
         console.error("Error loading dashboard products:", err);
+      } finally {
+        setLoading(false);
       }
     }
     loadProducts();
@@ -115,6 +116,8 @@ export default function DashboardPage() {
       render: (val) => <StatusBadge status={val} />,
     },
   ];
+
+  if (loading) return <AdminLoading />;
 
   return (
     <div className="space-y-6">

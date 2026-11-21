@@ -23,6 +23,7 @@ import {
   Select,
   StatusBadge,
 } from "@/components/admin";
+import { AdminDetailSkeleton } from "@/components/admin/LoadingSkeleton";
 import { useAppDispatch, useAppSelector } from "@/redux/hooks";
 import { addActivityLog, setCategories } from "@/redux/slices/admin-slice";
 import { apiClient } from "@/services/api-client";
@@ -513,16 +514,10 @@ export default function EditProductPage() {
     }
   };
 
-  if (loadingProduct) {
+  if (loadingProduct)
     return (
-      <div className="flex flex-col items-center justify-center py-24 gap-4">
-        <div className="w-12 h-12 rounded-full border-4 border-primary/20 border-t-primary animate-spin" />
-        <span className="text-sm font-semibold text-text-custom/60">
-          Fetching product details...
-        </span>
-      </div>
+      <AdminDetailSkeleton label="Loading product editor" variant="form" />
     );
-  }
 
   return (
     <div className="space-y-6">

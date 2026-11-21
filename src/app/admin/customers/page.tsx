@@ -29,6 +29,7 @@ import {
   Select,
   StatusBadge,
 } from "@/components/admin";
+import { LoadingSkeletonTable } from "@/components/admin/LoadingSkeleton";
 import { useToast } from "@/providers/toast-provider";
 import { useAppDispatch, useAppSelector } from "@/redux/hooks";
 import {
@@ -365,12 +366,10 @@ export default function CustomersPage() {
           </div>
 
           {loading ? (
-            <div className="py-16 flex flex-col items-center justify-center space-y-3">
-              <Loader2 className="w-8 h-8 animate-spin text-primary" />
-              <p className="text-sm font-medium text-text-custom/60">
-                Loading customers...
-              </p>
-            </div>
+            <LoadingSkeletonTable
+              label="Loading customers"
+              columns={columns.length}
+            />
           ) : customersList.length === 0 ? (
             <div className="py-16 text-center">
               <p className="text-base font-semibold text-text-custom">
