@@ -10,7 +10,9 @@ import LoginOfferBar from "@/components/landing/LoginOfferBar/LoginOfferBar";
 import Navbar from "@/components/landing/Navbar/Navbar";
 import NewArrivals from "@/components/landing/NewArrivals/NewArrivals";
 import OfferBar from "@/components/landing/OfferBar/OfferBar";
+import ServiceFeatures from "@/components/landing/ServiceFeatures/ServiceFeatures";
 import Testimonials from "@/components/landing/Testimonials/Testmonials";
+import TopPicks from "@/components/landing/TopPicks/TopPicks";
 
 export default async function Home() {
   const cookieStore = await cookies();
@@ -49,6 +51,8 @@ export default async function Home() {
       <NewArrivals />
       <CuratedForYou />
       <LandingStorySections />
+      <ServiceFeatures />
+      <TopPicks />
       <Testimonials />
       <Footer />
     </main>

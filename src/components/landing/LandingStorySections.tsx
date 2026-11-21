@@ -5,7 +5,6 @@ import { CarFront } from "lucide-react";
 import CollectibleFigure from "@/components/landing/CollectibleFigure";
 import {
   type ArrivalProduct,
-  ProductCard,
   ProductCarousel,
 } from "@/components/landing/NewArrivals/NewArrivals";
 
@@ -39,66 +38,6 @@ const accessories: ArrivalProduct[] = [
     price: "₹2500",
     oldPrice: "₹3500",
     variant: "ninja",
-  },
-];
-
-const topPicks: ArrivalProduct[] = [
-  {
-    name: "God of War bundle",
-    description: "Collector figure · 18 cm",
-    price: "₹2500",
-    oldPrice: "₹3500",
-    variant: "warrior",
-    image: "/images/recommendation-toy.png",
-  },
-  {
-    name: "God of War bundle",
-    description: "Vinyl figures · Set of 2",
-    price: "₹2500",
-    oldPrice: "₹3500",
-    variant: "web",
-  },
-  {
-    name: "God of War bundle",
-    description: "Anime figure · 16 cm",
-    price: "₹2500",
-    oldPrice: "₹3500",
-    variant: "sunburst",
-  },
-  {
-    name: "God of War bundle",
-    description: "Anime figure · 15 cm",
-    price: "₹2500",
-    oldPrice: "₹3500",
-    variant: "ninja",
-  },
-  {
-    name: "God of War bundle",
-    description: "Fantasy figure · 18 cm",
-    price: "₹2500",
-    oldPrice: "₹3500",
-    variant: "warrior",
-  },
-  {
-    name: "God of War bundle",
-    description: "Collector figure · 17 cm",
-    price: "₹2500",
-    oldPrice: "₹3500",
-    variant: "web",
-  },
-  {
-    name: "God of War bundle",
-    description: "Fantasy figure · 16 cm",
-    price: "₹2500",
-    oldPrice: "₹3500",
-    variant: "ninja",
-  },
-  {
-    name: "God of War bundle",
-    description: "Anime figure · 15 cm",
-    price: "₹2500",
-    oldPrice: "₹3500",
-    variant: "sunburst",
   },
 ];
 
@@ -227,39 +166,6 @@ function CategoryGrid() {
   );
 }
 
-function BrandStrip() {
-  return (
-    <img
-      src="/images/brand-strip.png"
-      alt="Quick Delivery, Secure Payment, Best Quality"
-      className="brandStrip"
-    />
-  );
-}
-
-function ProductGrid() {
-  return (
-    <section
-      className={styles.productGridSection}
-      aria-label="Featured products"
-    >
-      <div className={styles.contentWidth}>
-        <div className={styles.productGrid}>
-          {topPicks.map((product, index) => (
-            <ProductCard
-              key={`favorite-${index}-${product.name}`}
-              product={product}
-              index={index}
-              total={topPicks.length}
-              className={styles.gridCard}
-            />
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-
 export default function LandingStorySections() {
   return (
     <>
@@ -270,9 +176,6 @@ export default function LandingStorySections() {
       />
       <ArtworkBanner id="whats-new" title="WHAT’S NEW" scene="new" />
       <CategoryGrid />
-      <BrandStrip />
-      <ProductCarousel id="top-picks" title="TOP PICKS" products={topPicks} />
-      <ProductGrid />
     </>
   );
 }

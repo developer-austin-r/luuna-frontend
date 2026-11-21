@@ -1,76 +1,84 @@
 "use client";
 
-import { useState } from "react";
+import Image from "next/image";
 
 import styles from "./Testmonials.module.css";
 
-const review =
-  "Luuna's products are amazing! The quality is top-notch, and the design are so unique and fun!";
+type Testimonial = {
+  id: string;
+  name: string;
+  rating: number;
+  review: string;
+  isCenter?: boolean;
+};
 
-const testimonials = [
-  { id: "review-1", name: "M. Harshiline" },
-  { id: "review-2", name: "M. Harshiline" },
-  { id: "review-3", name: "M. Harshiline" },
-  { id: "review-4", name: "M. Harshiline" },
-  { id: "review-5", name: "M. Harshiline" },
+// Available genuine customer review data from the project
+const genuineReview: Testimonial = {
+  id: "review-genuine",
+  name: "M. Harshinie",
+  rating: 5,
+  review:
+    "Luuna's products are amazing! The quality is top-notch, and the design are so unique and fun!",
+};
+
+// Three visible cards matching Abu's reference screenshot layout (Left, Center genuine review, Right)
+const reviewCards: Testimonial[] = [
+  {
+    ...genuineReview,
+    id: "review-card-left",
+    isCenter: false,
+  },
+  {
+    ...genuineReview,
+    id: "review-card-center",
+    isCenter: true,
+  },
+  {
+    ...genuineReview,
+    id: "review-card-right",
+    isCenter: false,
+  },
 ];
 
 export default function Testimonials() {
-  const [activePage, setActivePage] = useState(0);
-  const pageCount = testimonials.length - 2;
-
-  const showPage = (page: number) => {
-    setActivePage((page + pageCount) % pageCount);
-  };
-
   return (
     <section className={styles.testimonials} aria-label="Customer reviews">
-      <div className={styles.carousel}>
-        <div
-          className={styles.track}
-          style={{ transform: `translateX(-${activePage * 20}%)` }}
-        >
-          {testimonials.map((item, index) => (
-            <article
-              className={`${styles.card} ${index === activePage + 1 ? styles.featured : ""} ${index === activePage ? styles.mobileActive : ""}`}
-              key={item.id}
-            >
-              <div className={styles.rating} aria-label="5 out of 5 stars">
-                ★★★★★
-              </div>
-              <p>{review}</p>
-              <h2>{item.name}</h2>
-            </article>
-          ))}
+      <div className={styles.contentContainer}>
+        <div className={styles.reviewGrid}>
+          {reviewCards.map((item) => {
+            const isCenter = item.isCenter;
+            return (
+              <article
+                className={`${styles.card} ${isCenter ? styles.centerCard : styles.sideCard}`}
+                key={item.id}
+              >
+                {/* Background Anime Character Artwork dedicated behind the middle review card */}
+                {isCenter && (
+                  <div className={styles.centerArtWrapper} aria-hidden="true">
+                    <Image
+                      src="/images/testimonials-art.png"
+                      alt=""
+                      fill
+                      className={styles.centerArt}
+                    />
+                    <div className={styles.artOverlay} />
+                  </div>
+                )}
+
+                <div className={styles.cardContent}>
+                  <div
+                    className={styles.rating}
+                    aria-label={`${item.rating} out of 5 stars`}
+                  >
+                    {"★".repeat(item.rating)}
+                  </div>
+                  <p className={styles.reviewText}>{item.review}</p>
+                  <h3 className={styles.authorName}>{item.name}</h3>
+                </div>
+              </article>
+            );
+          })}
         </div>
-        <button
-          className={`${styles.arrow} ${styles.previous}`}
-          type="button"
-          onClick={() => showPage(activePage - 1)}
-          aria-label="Previous reviews"
-        >
-          ‹
-        </button>
-        <button
-          className={`${styles.arrow} ${styles.next}`}
-          type="button"
-          onClick={() => showPage(activePage + 1)}
-          aria-label="Next reviews"
-        >
-          ›
-        </button>
-      </div>
-      <div className={styles.pagination} aria-label="Review pages">
-        {Array.from({ length: pageCount }, (_, page) => (
-          <button
-            className={`${styles.dot} ${page === activePage ? styles.activeDot : ""}`}
-            key={page}
-            type="button"
-            onClick={() => showPage(page)}
-            aria-label={`Show review page ${page + 1}`}
-            aria-current={page === activePage ? "true" : undefined}
-          />
-        ))}
       </div>
     </section>
   );
