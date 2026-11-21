@@ -99,26 +99,26 @@ export default function CuratedForYou() {
         <div className={styles.topBubble}>
           <h2 id="curated-title">CURATED ?</h2>
           <svg
-            viewBox="0 0 52 42"
+            viewBox="0 0 50 42"
             fill="none"
             className={styles.topTail}
             aria-hidden="true"
           >
             <path
-              d="M4 1 C16 14 32 26 50 39 C38 26 32 14 30 1 Z"
+              d="M2 1 C14 12 30 24 48 39 C40 24 34 10 28 1 Z"
               fill="#ffffff"
               stroke="#160b24"
-              strokeWidth="3"
+              strokeWidth="2.8"
               strokeLinejoin="round"
               strokeLinecap="round"
             />
             <line
-              x1="3"
+              x1="1"
               y1="1"
-              x2="31"
+              x2="29"
               y2="1"
               stroke="#ffffff"
-              strokeWidth="5"
+              strokeWidth="4.5"
             />
           </svg>
         </div>
@@ -131,26 +131,26 @@ export default function CuratedForYou() {
             one box, Captain !
           </p>
           <svg
-            viewBox="0 0 44 42"
+            viewBox="0 0 44 40"
             fill="none"
             className={styles.storyTail}
             aria-hidden="true"
           >
             <path
-              d="M43 14 C28 10 16 6 3 2 C16 20 28 32 43 38 Z"
+              d="M42 12 C28 9 16 5 2 2 C14 16 26 26 42 34 Z"
               fill="#ffffff"
               stroke="#160b24"
-              strokeWidth="3"
+              strokeWidth="2.8"
               strokeLinejoin="round"
               strokeLinecap="round"
             />
             <line
-              x1="43"
-              y1="13"
-              x2="43"
-              y2="39"
+              x1="42"
+              y1="11"
+              x2="42"
+              y2="35"
               stroke="#ffffff"
-              strokeWidth="5"
+              strokeWidth="4.5"
             />
           </svg>
         </div>
@@ -162,26 +162,26 @@ export default function CuratedForYou() {
             <span className={styles.ctaBottomText}>NOW!</span>
           </span>
           <svg
-            viewBox="0 0 38 34"
+            viewBox="0 0 36 32"
             fill="none"
             className={styles.ctaTail}
             aria-hidden="true"
           >
             <path
-              d="M37 6 C25 11 15 19 3 29 C14 29 26 28 37 27 Z"
+              d="M34 4 C24 10 14 18 2 28 C12 28 22 26 34 24 Z"
               fill="#ffffff"
               stroke="#160b24"
-              strokeWidth="3"
+              strokeWidth="2.8"
               strokeLinejoin="round"
               strokeLinecap="round"
             />
             <line
-              x1="37"
-              y1="5"
-              x2="37"
-              y2="28"
+              x1="34"
+              y1="3"
+              x2="34"
+              y2="25"
               stroke="#ffffff"
-              strokeWidth="5"
+              strokeWidth="4.5"
             />
           </svg>
         </Link>

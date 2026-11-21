@@ -99,9 +99,9 @@
   overflow: visible;
 }
 
-/* Top Bubble: "CURATED ?" (Pill speech bubble with tail pointing to Luffy) */
+/* Top Bubble: "CURATED ?" (Pill speech bubble with tail pointing down-right to Luffy) */
 .topBubble {
-  inset: 4% 22% auto 35%;
+  inset: 4% 23% auto 35%;
   min-height: 20%;
   border-radius: 9999px;
   padding: 0.8cqw 2.8cqw;
@@ -109,9 +109,9 @@
 
 .topTail {
   position: absolute;
-  bottom: calc(-1 * max(14px, 2.5cqw));
-  right: 14%;
-  width: max(32px, 4.8cqw);
+  bottom: calc(-1 * max(14px, 2.2cqw) + 1px);
+  right: 4%;
+  width: max(34px, 5.2cqw);
   height: auto;
   pointer-events: none;
 }
@@ -119,20 +119,18 @@
 .topBubble h2 {
   margin: 0;
   font-family:
-    Impact,
-    "Arial Black",
-    -apple-system,
-    sans-serif;
-  font-size: clamp(1.2rem, 5.2cqw, 4.2rem);
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue",
+    Arial, sans-serif;
+  font-size: clamp(1.2rem, 4.2cqw, 3.4rem);
   font-weight: 900;
   line-height: 1;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.05em;
   color: #160b24;
 }
 
 /* Story Bubble: "The best loot all in one box, Captain !" (Tail pointing up-left to Zoro) */
 .storyBubble {
-  inset: 46% 23% auto 47%;
+  inset: 43% 25% auto 41%;
   min-height: 24%;
   padding: 1cqw 1.8cqw;
   border-radius: clamp(16px, 2.8cqw, 32px);
@@ -141,8 +139,8 @@
 
 .storyTail {
   position: absolute;
-  top: 10%;
-  left: calc(-1 * max(16px, 2.6cqw));
+  top: 8%;
+  left: calc(-1 * max(16px, 2.5cqw) + 1px);
   width: max(26px, 3.8cqw);
   height: auto;
   pointer-events: none;
@@ -150,9 +148,9 @@
 
 .storyBubble p {
   margin: 0;
-  font-size: clamp(0.72rem, 2.5cqw, 1.95rem);
+  font-size: clamp(0.72rem, 2.3cqw, 1.8rem);
   font-weight: 850;
-  line-height: 1.18;
+  line-height: 1.25;
   color: #160b24;
   font-family:
     system-ui,
@@ -164,7 +162,7 @@
 
 /* CTA: "EXPLORE NOW!" (Compact bubble with tail pointing down-left to Nami) */
 .cta {
-  inset: 48.5% 67% auto 16%;
+  inset: 48.5% 67% auto 14.5%;
   min-height: 15%;
   padding: 0.35cqw 0.45cqw;
   border-radius: clamp(14px, 2.5cqw, 28px);
@@ -179,8 +177,8 @@
 
 .ctaTail {
   position: absolute;
-  bottom: 14%;
-  left: calc(-1 * max(14px, 2.2cqw));
+  bottom: 8%;
+  left: calc(-1 * max(14px, 2.2cqw) + 1px);
   width: max(20px, 3.2cqw);
   height: auto;
   pointer-events: none;
