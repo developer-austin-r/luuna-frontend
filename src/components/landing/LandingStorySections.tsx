@@ -1,3 +1,4 @@
+import localFont from "next/font/local";
 import Image from "next/image";
 import Link from "next/link";
 import { CarFront } from "lucide-react";
@@ -8,9 +9,14 @@ import {
   ProductCard,
   ProductCarousel,
 } from "@/components/landing/NewArrivals/NewArrivals";
-import { getS3AssetUrl } from "@/config";
 
 import styles from "./LandingStorySections.module.css";
+
+const categoryFont = localFont({
+  src: "../../assets/fonts/black-han-sans.ttf",
+  display: "swap",
+  weight: "400",
+});
 
 const accessories: ArrivalProduct[] = [
   {
@@ -106,37 +112,37 @@ const topPicks: ArrivalProduct[] = [
 const categories = [
   {
     name: "Anime",
-    image: "Anime.png",
+    image: "anime.png",
     href: "/categories/anime",
     hotspot: styles.hotspotAnime,
   },
   {
     name: "DC",
-    image: "Dc.png",
+    image: "dc.png",
     href: "/categories/dc",
     hotspot: styles.hotspotDC,
   },
   {
     name: "Marvel",
-    image: "Marvel.png",
+    image: "marvel.png",
     href: "/categories/marvel",
     hotspot: styles.hotspotMarvel,
   },
   {
     name: "K-Pop",
-    image: "K-Pop.png",
+    image: "kpop.png",
     href: "/categories/kpop",
     hotspot: styles.hotspotKpop,
   },
   {
     name: "Nostalgia",
-    image: "Nostalogia.png",
+    image: "nostalgia.png",
     href: "/categories/nostalgia",
     hotspot: styles.hotspotNostalgia,
   },
   {
     name: "Wheels",
-    image: "Wheels.PNG",
+    image: "wheels.png",
     href: "/categories/wheels",
     hotspot: styles.hotspotWheels,
   },
@@ -175,7 +181,7 @@ function ArtworkBanner({
 function CategoryGrid() {
   return (
     <section
-      className={styles.categorySection}
+      className={`${styles.categorySection} ${categoryFont.className}`}
       aria-labelledby="category-title"
     >
       <div className={styles.contentWidth}>
@@ -189,15 +195,15 @@ function CategoryGrid() {
               key={href}
               href={href}
               className={`${styles.categoryHotspot} ${hotspot}`}
-              aria-label={`Explore ${name}`}
             >
               <Image
-                src={getS3AssetUrl(`assets/Categories-img/${image}`)}
+                src={`/images/category-collage/${image}`}
                 alt=""
                 fill
-                unoptimized
+                sizes="(min-width: 1440px) 1280px, 89vw"
                 className={styles.categoryArtworkImage}
               />
+              <span className={styles.categoryLabel}>{name}</span>
             </Link>
           ))}
         </div>

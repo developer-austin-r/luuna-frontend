@@ -4,7 +4,6 @@
 }
 
 .posterSection,
-.categorySection,
 .productGridSection {
   padding-right: clamp(18px, 6.5vw, 94px);
   padding-left: clamp(18px, 6.5vw, 94px);
@@ -167,96 +166,105 @@
 }
 
 .categorySection {
-  padding-top: 15px;
-  padding-bottom: 16px;
+  padding: 15px 5.556% 16px;
+  background: #140824;
+}
+
+.categorySection .contentWidth {
+  width: min(100%, 1280px);
+  container-type: inline-size;
 }
 
 .sectionTitle {
-  margin: 0 auto 10px;
+  margin: 0 auto 3.9cqw;
   text-align: center;
 }
 
 .sectionTitle h2 {
   margin: 0;
   color: #fff;
-  font-family: Impact, "Arial Black", sans-serif;
-  font-size: clamp(1.25rem, 2.3vw, 1.8rem);
-  font-weight: 850;
-  letter-spacing: 0.035em;
+  font-size: 3.90625cqw;
+  font-weight: 400;
+  letter-spacing: 0.05em;
+  line-height: 0.96;
 }
 
 .categoryArtwork {
   position: relative;
   isolation: isolate;
   width: 100%;
-  aspect-ratio: 959 / 1598;
-  overflow: hidden;
-  background: #000;
+  aspect-ratio: 1280 / 2124.735;
 }
 
 .categoryArtworkImage {
-  object-fit: cover;
+  object-fit: fill;
 }
 
 .categoryHotspot {
   position: absolute;
-  z-index: 1;
   display: block;
-  cursor: pointer;
+  clip-path: var(--panel-shape);
   -webkit-tap-highlight-color: transparent;
 }
 
+.categoryLabel {
+  position: absolute;
+  top: var(--label-top);
+  left: var(--label-left);
+  color: #fff;
+  font-size: 4.6875cqw;
+  letter-spacing: 0.05em;
+  line-height: 1;
+  text-transform: uppercase;
+  white-space: nowrap;
+  transform: translateY(-50%);
+}
+
 .hotspotAnime {
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 20%;
-  clip-path: polygon(0 0, 100% 0, 100% 61%, 0 100%);
+  inset: 0 0 81.1%;
+  --panel-shape: polygon(0 0, 100% 0, 100% 59%, 0 100%);
+  --label-left: 78.516%;
+  --label-top: 34.116%;
 }
 
 .hotspotDC {
-  top: 17%;
-  left: 0;
-  width: 40%;
-  height: 43%;
-  clip-path: polygon(0 10%, 100% 0, 76% 100%, 0 100%);
+  inset: 17.79% 61.641% 40.61% 0;
+  --panel-shape: polygon(0 7%, 100% 0, 78% 100%, 0 100%);
+  --label-left: 40.122%;
+  --label-top: 53.174%;
 }
 
 .hotspotMarvel {
-  top: 12%;
-  right: 0;
-  width: 64%;
-  height: 29%;
-  clip-path: polygon(0 27%, 100% 0, 100% 100%, 0 100%);
+  inset: 12.237% 0 59.013% 37.188%;
+  --panel-shape: polygon(4% 18%, 100% 0, 100% 100%, 0 87%);
+  --label-left: 58.955%;
+  --label-top: 49.684%;
 }
 
 .hotspotKpop {
-  top: 38%;
-  right: 0;
-  width: 68%;
-  height: 24%;
-  clip-path: polygon(0 0, 100% 0, 100% 100%, 0 80%);
+  inset: 38.3% 0 38.9% 33.359%;
+  --panel-shape: polygon(5% 0, 100% 21%, 100% 100%, 0 94%);
+  --label-left: 6.213%;
+  --label-top: 80.552%;
 }
 
 .hotspotNostalgia {
-  top: 59%;
-  left: 0;
-  width: 100%;
-  height: 25%;
-  clip-path: polygon(0 0, 100% 10%, 100% 100%, 0 100%);
+  inset: 59.824% 0 15.726%;
+  --panel-shape: polygon(0 0, 100% 14%, 100% 78%, 0 100%);
+  --label-left: 66.016%;
+  --label-top: 45.411%;
 }
 
 .hotspotWheels {
-  right: 0;
-  bottom: 0;
-  left: 0;
-  height: 20%;
-  clip-path: polygon(0 22%, 100% 0, 100% 100%, 0 100%);
+  inset: 81.1% 0 0;
+  --panel-shape: polygon(0 23%, 100% 0, 100% 100%, 0 100%);
+  --label-left: 8.516%;
+  --label-top: 63.46%;
 }
 
-.categoryHotspot:focus-visible {
-  outline: 3px solid #fff;
-  outline-offset: -5px;
+.categoryHotspot:focus-visible .categoryLabel {
+  outline: 2px solid currentColor;
+  outline-offset: 0.12em;
 }
 
 .productGridSection {
@@ -278,7 +286,6 @@
 
 @media (max-width: 760px) {
   .posterSection,
-  .categorySection,
   .productGridSection {
     padding-right: 24px;
     padding-left: 24px;
@@ -296,7 +303,6 @@
 
 @media (max-width: 520px) {
   .posterSection,
-  .categorySection,
   .productGridSection {
     padding-right: 15px;
     padding-left: 15px;
