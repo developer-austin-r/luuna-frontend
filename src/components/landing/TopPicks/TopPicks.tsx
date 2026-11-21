@@ -46,10 +46,7 @@ export default function TopPicks() {
         <div className={styles.picksGrid}>
           {topPicks.map((product) => (
             <div className={styles.pickItem} key={product.id}>
-              <span
-                className={`${styles.rank} ${headingFont.className}`}
-                aria-hidden="true"
-              >
+              <span className={styles.rank} aria-hidden="true">
                 {product.id}
               </span>
               <div className={styles.productImageWrapper}>
