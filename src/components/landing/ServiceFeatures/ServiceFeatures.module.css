@@ -1,7 +1,7 @@
 .section {
   width: 100%;
   background: #10051b;
-  padding: clamp(12px, 2.5vw, 32px) 0;
+  padding: clamp(8px, 1.5vw, 20px) 0;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -11,9 +11,9 @@
 
 .container {
   width: 100%;
-  max-width: 1440px;
-  margin: 0 auto;
-  padding: 0 clamp(16px, 3vw, 40px);
+  max-width: 100%;
+  margin: 0;
+  padding: 0;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -24,24 +24,4 @@
   width: 100%;
   height: auto;
   display: block;
-  object-fit: contain;
-  object-position: center;
-}
-
-@media (max-width: 1024px) {
-  .brandStrip {
-    object-fit: contain;
-  }
-}
-
-@media (max-width: 768px) {
-  .brandStrip {
-    object-fit: contain;
-  }
-}
-
-@media (max-width: 480px) {
-  .brandStrip {
-    object-fit: contain;
-  }
 }
