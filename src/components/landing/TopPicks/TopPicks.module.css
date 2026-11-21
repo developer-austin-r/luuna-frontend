@@ -1,6 +1,6 @@
 .section {
   width: 100%;
-  padding: clamp(28px, 4vw, 56px) 0 clamp(32px, 4.5vw, 64px);
+  padding: clamp(32px, 4.5vw, 64px) 0 clamp(36px, 5vw, 72px);
   background: #10051b;
   box-sizing: border-box;
   overflow: hidden;
@@ -10,12 +10,12 @@
   width: 100%;
   max-width: 1360px;
   margin: 0 auto;
-  padding: 0 clamp(16px, 4vw, 64px);
+  padding: 0 clamp(16px, 3vw, 48px);
   box-sizing: border-box;
 }
 
 .title {
-  margin: 0 0 clamp(24px, 3.5vw, 44px);
+  margin: 0 0 clamp(28px, 4vw, 48px);
   color: #ffffff;
   font-size: clamp(26px, 3.6vw, 42px);
   font-weight: 900;
@@ -27,9 +27,9 @@
 
 .picksGrid {
   display: flex;
-  justify-content: space-evenly;
+  justify-content: space-between;
   align-items: center;
-  gap: clamp(16px, 2.5vw, 40px);
+  gap: clamp(12px, 2vw, 32px);
   width: 100%;
   box-sizing: border-box;
 }
@@ -42,29 +42,30 @@
 }
 
 .rank {
-  font-size: clamp(96px, 11vw, 160px);
+  font-size: clamp(84px, 10vw, 150px);
   font-weight: 900;
-  line-height: 0.78;
+  line-height: 0.8;
   color: transparent;
-  -webkit-text-stroke: 2.2px #785a97;
+  -webkit-text-stroke: 2px #785a97;
   text-align: center;
   user-select: none;
-  margin-right: -16px;
+  margin-right: -14px;
   z-index: 1;
-  font-family: inherit;
+  font-family:
+    system-ui,
+    -apple-system,
+    sans-serif;
 }
 
 .productImageWrapper {
   position: relative;
-  width: clamp(135px, 15vw, 205px);
-  height: clamp(155px, 17.5vw, 235px);
-  border-radius: 8px;
+  width: clamp(130px, 14.5vw, 195px);
+  height: clamp(130px, 14.5vw, 195px);
+  border-radius: 6px;
   overflow: hidden;
   background: #180b26;
   flex-shrink: 0;
-  box-shadow:
-    0 10px 28px rgb(0 0 0 / 60%),
-    0 0 0 1px rgb(120 90 151 / 15%);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.55);
   transition:
     transform 0.25s ease,
     box-shadow 0.25s ease;
@@ -73,8 +74,8 @@
 .productImageWrapper:hover {
   transform: translateY(-4px) scale(1.02);
   box-shadow:
-    0 14px 34px rgb(117 91 148 / 35%),
-    0 0 0 1px rgb(167 122 197 / 35%);
+    0 12px 30px rgba(117, 91, 148, 0.4),
+    0 0 0 1px rgba(167, 122, 197, 0.4);
 }
 
 .productImage {
@@ -97,7 +98,7 @@
 
   .productImageWrapper {
     width: clamp(125px, 24vw, 170px);
-    height: clamp(142px, 27vw, 192px);
+    height: clamp(125px, 24vw, 170px);
   }
 }
 
@@ -114,6 +115,6 @@
 
   .productImageWrapper {
     width: clamp(105px, 28vw, 135px);
-    height: clamp(120px, 32vw, 155px);
+    height: clamp(105px, 28vw, 135px);
   }
 }
