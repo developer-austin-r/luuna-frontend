@@ -3,8 +3,15 @@ import localFont from "next/font/local";
 import Image from "next/image";
 import Link from "next/link";
 
-import LandingProductCarousel from "@/components/landing/NewArrivals/LandingProductCarousel";
+import LandingProductCarousel, {
+  toProductCard,
+} from "@/components/landing/NewArrivals/LandingProductCarousel";
+import { ProductCard } from "@/components/landing/NewArrivals/NewArrivals";
 import { getS3AssetUrl } from "@/config";
+import {
+  getActiveProductPreview,
+  getProductImages,
+} from "@/services/storefront-products";
 
 import styles from "./LandingStorySections.module.css";
 
@@ -103,6 +110,53 @@ function CategoryGrid() {
             </Link>
           ))}
         </div>
+      </div>
+    </section>
+  );
+}
+
+export async function LandingProductGrid() {
+  const products = await getActiveProductPreview().catch((error: unknown) => {
+    console.error("Failed to load the landing product grid", error);
+    return null;
+  });
+
+  return (
+    <section
+      className={styles.productGridSection}
+      aria-label="Explore products"
+    >
+      <div className={styles.contentWidth}>
+        {products && products.length > 0 ? (
+          <div className={styles.productGrid}>
+            {products.map((product, index) => (
+              <ProductCard
+                key={product.id}
+                product={toProductCard({
+                  id: product.id,
+                  name: product.name,
+                  shortDescription: null,
+                  basePrice: Number(product.basePrice),
+                  finalPrice: Number(product.finalPrice),
+                  imageUrl: getProductImages(product)[0] ?? null,
+                })}
+                index={index}
+                total={products.length}
+                className={styles.gridCard}
+                asSlide={false}
+              />
+            ))}
+          </div>
+        ) : (
+          <p className={styles.productGridMessage}>
+            {products
+              ? "No products available yet."
+              : "Products are temporarily unavailable. Please refresh to try again."}
+          </p>
+        )}
+        <Link href="/products" className={styles.exploreLink}>
+          Explore
+        </Link>
       </div>
     </section>
   );
