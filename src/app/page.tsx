@@ -9,7 +9,7 @@ import Hero from "@/components/landing/Hero/Hero";
 import LandingStorySections from "@/components/landing/LandingStorySections";
 import LoginOfferBar from "@/components/landing/LoginOfferBar/LoginOfferBar";
 import Navbar from "@/components/landing/Navbar/Navbar";
-import LandingNewArrivals from "@/components/landing/NewArrivals/LandingNewArrivals";
+import LandingProductCarousel from "@/components/landing/NewArrivals/LandingProductCarousel";
 import OfferBar from "@/components/landing/OfferBar/OfferBar";
 import ServiceFeatures from "@/components/landing/ServiceFeatures/ServiceFeatures";
 import Testimonials from "@/components/landing/Testimonials/Testmonials";
@@ -50,7 +50,7 @@ export default async function Home() {
       <OfferBar />
       <CommunityBar />
       <Suspense>
-        <LandingNewArrivals />
+        <LandingProductCarousel section="new-arrivals" />
       </Suspense>
       <CuratedForYou />
       <LandingStorySections />

@@ -1,13 +1,11 @@
+import { Suspense } from "react";
 import localFont from "next/font/local";
 import Image from "next/image";
 import Link from "next/link";
 import { CarFront } from "lucide-react";
 
 import CollectibleFigure from "@/components/landing/CollectibleFigure";
-import {
-  type ArrivalProduct,
-  ProductCarousel,
-} from "@/components/landing/NewArrivals/NewArrivals";
+import LandingProductCarousel from "@/components/landing/NewArrivals/LandingProductCarousel";
 
 import styles from "./LandingStorySections.module.css";
 
@@ -16,37 +14,6 @@ const categoryFont = localFont({
   display: "swap",
   weight: "400",
 });
-
-const accessories: ArrivalProduct[] = [
-  {
-    name: "God of War bundle",
-    description: "Collectible set · 2 pieces",
-    price: "₹2500",
-    oldPrice: "₹3500",
-    variant: "web",
-  },
-  {
-    name: "God of War bundle",
-    description: "Shelf accessory · 1 piece",
-    price: "₹2500",
-    oldPrice: "₹3500",
-    variant: "warrior",
-  },
-  {
-    name: "God of War bundle",
-    description: "Mini figure · 10 cm",
-    price: "₹2500",
-    oldPrice: "₹3500",
-    variant: "sunburst",
-  },
-  {
-    name: "God of War bundle",
-    description: "Enamel pins · Set of 3",
-    price: "₹2500",
-    oldPrice: "₹3500",
-    variant: "ninja",
-  },
-];
 
 const categories = [
   {
@@ -154,11 +121,9 @@ function CategoryGrid() {
 export default function LandingStorySections() {
   return (
     <>
-      <ProductCarousel
-        id="accessories"
-        title="ACCESSORIES"
-        products={accessories}
-      />
+      <Suspense>
+        <LandingProductCarousel section="accessories" />
+      </Suspense>
       <ArtworkBanner id="whats-new" title="WHAT’S NEW" scene="new" />
       <CategoryGrid />
     </>

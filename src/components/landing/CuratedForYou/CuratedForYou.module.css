@@ -1,7 +1,9 @@
 .section {
-  padding-inline: clamp(14px, 2vw, 28px);
-  background: #160b24;
+  padding-inline: clamp(14px, 3vw, 36px);
+  padding-block: clamp(24px, 4vw, 48px);
+  background: #140922;
   color: #160b24;
+  overflow: hidden;
 }
 
 .banner {
@@ -13,59 +15,94 @@
   margin-inline: auto;
 }
 
+/* Purple rounded banner card */
 .banner::before {
   position: absolute;
-  z-index: -1;
-  inset: 23% 0 9.7%;
-  border-radius: 2.3cqw;
-  background: #8a66a8;
-  box-shadow: inset 0 0.45cqw 0.85cqw rgb(35 18 53 / 55%);
+  z-index: 1;
+  inset: 22% 0 8%;
+  border-radius: clamp(16px, 2.8cqw, 36px);
+  background: #7a5697;
+  box-shadow:
+    inset 0 0.4cqw 0.8cqw rgba(35, 18, 53, 0.45),
+    0 4px 20px rgba(0, 0, 0, 0.3);
   content: "";
 }
 
+/* Characters */
 .character {
   position: absolute;
-  z-index: 1;
-  bottom: 9.7%;
+  z-index: 2;
+  bottom: 8%;
   object-fit: contain;
+  pointer-events: none;
+  user-select: none;
 }
 
 .leftCharacter {
-  left: 0;
-  width: 17%;
-  height: 47%;
+  left: 2.5%;
+  height: 52%;
+  width: auto;
 }
 
 .centerCharacter {
-  left: 29%;
-  width: 20%;
-  height: 64%;
+  left: 31%;
+  height: 67%;
+  width: auto;
+}
+
+.luffyWrapper {
+  position: absolute;
+  z-index: 2;
+  right: 0;
+  bottom: 8%;
+  height: 94%;
+  width: auto;
+  aspect-ratio: 478 / 677;
+  pointer-events: none;
 }
 
 .rightCharacter {
-  right: 2%;
-  width: 25%;
-  height: 90%;
+  position: relative;
+  height: 100%;
+  width: 100%;
+  bottom: 0;
+  right: 0;
 }
 
+/* Sound lines next to Luffy's mouth */
+.soundLines {
+  position: absolute;
+  top: 31%;
+  left: -22%;
+  width: 25%;
+  aspect-ratio: 1;
+  pointer-events: none;
+}
+
+.soundLinesSvg {
+  width: 100%;
+  height: 100%;
+}
+
+/* Common bubble styles */
 .topBubble,
 .storyBubble,
 .cta {
   position: absolute;
-  z-index: 2;
-  display: grid;
-  place-items: center;
-  border: max(1px, 0.28cqw) solid #160b24;
-  background: #fff;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: max(1.5px, 0.28cqw) solid #160b24;
+  background: #ffffff;
+  box-shadow: 0 0.3cqw 0.6cqw rgba(0, 0, 0, 0.15);
 }
 
+/* Speech bubble tails via pseudo-element */
 .topBubble::after,
 .storyBubble::after,
 .cta::after {
   position: absolute;
-  z-index: -1;
-  width: max(8px, 2.2cqw);
-  aspect-ratio: 1;
   border: inherit;
   border-top: 0;
   border-left: 0;
@@ -73,180 +110,241 @@
   content: "";
 }
 
+/* Top Bubble: "CURATED ?" */
 .topBubble {
-  inset: 7.7% 27.4% auto 34.3%;
-  min-height: 22%;
-  border-radius: 999px;
+  inset: 6% 24% auto 33%;
+  min-height: 20%;
+  border-radius: 9999px;
+  padding: 0.8cqw 2.5cqw;
 }
 
 .topBubble::after {
-  right: 2.2%;
-  bottom: -8%;
-  border-bottom-right-radius: 90%;
-  transform: skewY(26deg) rotate(37deg);
+  bottom: -9%;
+  right: 14%;
+  width: max(8px, 1.8cqw);
+  aspect-ratio: 1;
+  transform: rotate(45deg) skew(-10deg);
 }
 
 .topBubble h2 {
   margin: 0;
-  font-family: Impact, "Arial Black", sans-serif;
-  font-size: clamp(1rem, 4.7cqw, 3.75rem);
+  font-family:
+    Impact,
+    "Arial Black",
+    -apple-system,
+    sans-serif;
+  font-size: clamp(1.2rem, 5.2cqw, 4.2rem);
   font-weight: 900;
   line-height: 1;
+  letter-spacing: 0.04em;
+  color: #160b24;
 }
 
+/* Story Bubble: "The best loot all in one box, Captain !" */
 .storyBubble {
-  inset: 49% 24.2% auto 46.5%;
-  min-height: 25%;
-  padding: 1.2cqw 2cqw;
-  border-radius: 4.6cqw;
+  inset: 48% 24.5% auto 45%;
+  min-height: 24%;
+  padding: 1.2cqw 2.2cqw;
+  border-radius: clamp(14px, 3cqw, 32px);
 }
 
 .storyBubble::after {
-  top: -9%;
-  left: 3%;
-  transform: rotate(180deg) skewX(24deg);
+  top: 40%;
+  left: -3%;
+  width: max(8px, 1.8cqw);
+  aspect-ratio: 1;
+  transform: rotate(135deg) skew(-10deg);
 }
 
 .storyBubble p {
   margin: 0;
-  font-size: clamp(0.69rem, 2.65cqw, 2.1rem);
-  font-weight: 900;
-  line-height: 1.16;
+  font-size: clamp(0.75rem, 2.7cqw, 2.15rem);
+  font-weight: 850;
+  line-height: 1.18;
+  color: #160b24;
+  font-family:
+    system-ui,
+    -apple-system,
+    "Segoe UI",
+    Roboto,
+    sans-serif;
 }
 
+/* CTA: "EXPLORE NOW!" */
 .cta {
-  inset: 48.5% 67.6% auto 16%;
-  min-height: 14%;
-  padding: 0.55cqw 1.15cqw;
-  border-radius: 999px;
-  color: #fff;
-  text-align: center;
+  inset: 48% 68% auto 16.5%;
+  min-height: 15%;
+  padding: 0.45cqw 0.75cqw;
+  border-radius: 9999px;
   text-decoration: none;
+  cursor: pointer;
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.cta:hover {
+  transform: scale(1.05);
 }
 
 .cta::after {
-  bottom: -8%;
-  left: 4%;
-  border-bottom-right-radius: 90%;
-  transform: rotate(62deg);
+  top: 38%;
+  left: -3.5%;
+  width: max(8px, 1.6cqw);
+  aspect-ratio: 1;
+  transform: rotate(135deg) skew(-10deg);
 }
 
 .cta span {
-  display: block;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   width: 100%;
   padding: 0.65cqw 1.5cqw;
-  border-radius: 1.6cqw;
-  background: #ffbc00;
-  box-shadow: 0 0.25cqw 0.45cqw rgb(65 41 0 / 35%);
-  font-size: clamp(0.56rem, 1.52cqw, 1.2rem);
-  font-weight: 850;
+  border-radius: 9999px;
+  background: #ffb800;
+  box-shadow: 0 0.25cqw 0.5cqw rgba(80, 50, 0, 0.35);
+  font-size: clamp(0.55rem, 1.55cqw, 1.25rem);
+  font-weight: 900;
   line-height: 1;
-  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #ffffff;
+  white-space: nowrap;
+  transition: background 0.15s ease;
 }
 
 .cta:hover span {
-  background: #e9a600;
+  background: #e6a500;
 }
 
-@media (max-width: 520px) {
+/* Responsive adjustments */
+@media (max-width: 560px) {
   .banner {
-    min-height: 210px;
+    min-height: 200px;
   }
 
-  .storyBubble {
-    right: 19%;
-    left: 45%;
+  .topBubble h2 {
+    font-size: clamp(1.1rem, 5cqw, 2rem);
   }
 
-  .topBubble {
-    right: 24%;
-    left: 30%;
+  .storyBubble p {
+    font-size: clamp(0.65rem, 2.6cqw, 1.2rem);
   }
 
-  .cta {
-    right: 66%;
-    left: 14%;
+  .cta span {
+    font-size: clamp(0.5rem, 1.5cqw, 0.85rem);
   }
 }
 
-@media (prefers-reduced-motion: no-preference) and (scripting: enabled) {
-  .banner {
-    --artwork-duration: 480ms;
-    --message-interval: 1s;
-    --right-character-delay: 90ms;
-    --artwork-end: calc(var(--artwork-duration) + var(--right-character-delay));
+/* Animation sequence:
+   1. Show anime images first (0s - 480ms)
+   2. Show curated message "CURATED ?" (starts 480ms)
+   3. Wait 1s after curated message, show "The best loot all in one box, Captain !" (starts 1480ms)
+   4. Wait 1s, show "EXPLORE NOW!" (starts 2480ms)
+*/
+.banner:not([data-reveal])
+  :is(.character, .luffyWrapper, .topBubble, .storyBubble, .cta) {
+  opacity: 0;
+  visibility: hidden;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  /* Step 1: Characters entrance */
+  .banner[data-reveal] .character,
+  .banner[data-reveal] .luffyWrapper {
+    animation: characterEntrance 480ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
   }
 
-  .banner:not([data-reveal]) :is(.character, .topBubble, .storyBubble, .cta) {
-    visibility: hidden;
-  }
-
-  .banner[data-reveal] .character {
-    animation: artworkEnter var(--artwork-duration) ease-out both;
+  .banner[data-reveal] .leftCharacter {
+    animation-delay: 0ms;
   }
 
   .banner[data-reveal] .centerCharacter {
-    animation-delay: 45ms;
+    animation-delay: 80ms;
   }
 
-  .leftCharacter {
-    --entry-offset: -28px;
+  .banner[data-reveal] .luffyWrapper {
+    animation-delay: 160ms;
   }
 
-  .rightCharacter {
-    --entry-offset: 28px;
+  .banner[data-reveal] .soundLines {
+    animation: soundLinesPop 360ms ease-out both;
+    animation-delay: 450ms;
   }
 
-  .banner[data-reveal] .rightCharacter {
-    animation-delay: var(--right-character-delay);
-  }
-
-  .banner[data-reveal] :is(.topBubble, .storyBubble, .cta) {
-    animation: messageEnter 360ms cubic-bezier(0.2, 0.8, 0.25, 1) both;
-  }
-
+  /* Step 2: "CURATED ?" pops up right after characters land */
   .banner[data-reveal] .topBubble {
-    animation-delay: var(--artwork-end);
+    animation: comicBubblePop 420ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
+    animation-delay: 480ms;
   }
 
+  /* Step 3: Wait 1s -> "The best loot all in one box, Captain !" (480ms + 1000ms = 1480ms) */
   .banner[data-reveal] .storyBubble {
-    animation-delay: calc(var(--artwork-end) + var(--message-interval));
+    animation: comicBubblePop 420ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
+    animation-delay: 1480ms;
   }
 
+  /* Step 4: Wait 1s -> "EXPLORE NOW!" (1480ms + 1000ms = 2480ms) */
   .banner[data-reveal] .cta {
-    animation-delay: calc(var(--artwork-end) + 2 * var(--message-interval));
+    animation: comicBubblePop 420ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
+    animation-delay: 2480ms;
   }
 }
 
-@keyframes artworkEnter {
-  from {
-    opacity: 0;
-    translate: var(--entry-offset, 0px) 20px;
-  }
-
-  to {
+@media (prefers-reduced-motion: reduce) {
+  .banner[data-reveal]
+    :is(.character, .luffyWrapper, .topBubble, .storyBubble, .cta) {
     opacity: 1;
-    translate: none;
+    visibility: visible;
   }
 }
 
-@keyframes messageEnter {
-  from {
-    visibility: hidden;
+@keyframes characterEntrance {
+  0% {
     opacity: 0;
-    scale: 0.92;
-    translate: 0 9px;
+    transform: translateY(32px) scale(0.94);
+    visibility: hidden;
   }
 
   65% {
     opacity: 1;
-    scale: 1.035;
+    transform: translateY(-4px) scale(1.02);
+    visibility: visible;
   }
 
-  to {
-    visibility: visible;
+  100% {
     opacity: 1;
-    scale: 1;
-    translate: none;
+    transform: translateY(0) scale(1);
+    visibility: visible;
+  }
+}
+
+@keyframes comicBubblePop {
+  0% {
+    opacity: 0;
+    transform: scale(0.2) translateY(12px);
+    visibility: hidden;
+  }
+
+  70% {
+    opacity: 1;
+    transform: scale(1.08) translateY(-2px);
+    visibility: visible;
+  }
+
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+    visibility: visible;
+  }
+}
+
+@keyframes soundLinesPop {
+  0% {
+    opacity: 0;
+    transform: scale(0.2);
+  }
+
+  100% {
+    opacity: 1;
+    transform: scale(1);
   }
 }

@@ -21,7 +21,7 @@ export function getS3AssetUrl(path?: string | null): string {
   }
   const cleanBase = appConfig.s3BaseUrl.replace(/\/+$/, "");
   const cleanPath = path.startsWith("/") ? path.slice(1) : path;
-  return `${cleanBase}/${cleanPath}`;
+  return `${cleanBase}/${encodeURI(cleanPath)}`;
 }
 
 export * from "./env";

@@ -2,7 +2,7 @@ import { apiClient } from "@/services/api-client";
 
 import { type ArrivalProduct, ProductCarousel } from "./NewArrivals";
 
-type NewArrival = {
+type LandingProduct = {
   id: string;
   name: string;
   shortDescription: string | null;
@@ -18,13 +18,31 @@ const rupees = new Intl.NumberFormat("en-IN", {
   maximumFractionDigits: 2,
 });
 
-export default async function LandingNewArrivals() {
+const sections = {
+  "new-arrivals": {
+    title: "NEW ARRIVALS",
+    empty: "No new arrivals yet.",
+    unavailable: "New arrivals are temporarily unavailable.",
+  },
+  accessories: {
+    title: "ACCESSORIES",
+    empty: "No accessories available yet.",
+    unavailable: "Accessories are temporarily unavailable.",
+  },
+};
+
+export default async function LandingProductCarousel({
+  section,
+}: {
+  section: keyof typeof sections;
+}) {
+  const { title, empty, unavailable } = sections[section];
   let products: ArrivalProduct[] = [];
-  let emptyMessage = "No new arrivals yet.";
+  let emptyMessage = empty;
 
   try {
-    const { data } = await apiClient<{ data: NewArrival[] }>(
-      "/products/new-arrivals",
+    const { data } = await apiClient<{ data: LandingProduct[] }>(
+      `/products/${section}`,
       { cache: "no-store", signal: AbortSignal.timeout(5000) },
     );
 
@@ -43,14 +61,14 @@ export default async function LandingNewArrivals() {
       };
     });
   } catch (error) {
-    console.error("Failed to load landing page new arrivals", error);
-    emptyMessage = "New arrivals are temporarily unavailable.";
+    console.error(`Failed to load landing page ${section}`, error);
+    emptyMessage = unavailable;
   }
 
   return (
     <ProductCarousel
-      id="new-arrivals"
-      title="NEW ARRIVALS"
+      id={section}
+      title={title}
       products={products}
       emptyMessage={emptyMessage}
     />
