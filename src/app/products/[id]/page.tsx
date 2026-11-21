@@ -52,6 +52,7 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
           <div className="lg:col-span-7 min-w-0">
             <ProductGallery
               key={product.id}
+              productId={product.id}
               productName={product.name}
               images={getProductImages(product)}
             />

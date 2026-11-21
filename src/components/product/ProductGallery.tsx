@@ -1,21 +1,29 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import toast from "react-hot-toast";
 import Image from "next/image";
 import { ChevronLeft, ChevronRight, Heart, Send } from "lucide-react";
 
+import { useWishlist } from "@/hooks/use-wishlist";
+import { addToWishlistApi, removeFromWishlistApi } from "@/services/wishlist";
+
 interface ProductGalleryProps {
+  productId: string;
   productName: string;
   images: string[];
 }
 
 export const ProductGallery: React.FC<ProductGalleryProps> = ({
+  productId,
   productName,
   images,
 }) => {
   const [selectedIndex, setSelectedIndex] = useState(0);
-  const [isWishlisted, setIsWishlisted] = useState(false);
+  const { productIds, loading } = useWishlist();
+  const [savingFavorite, setSavingFavorite] = useState(false);
+  const favoriteRequest = useRef(false);
+  const isWishlisted = productIds.includes(productId);
   const [manualShareUrl, setManualShareUrl] = useState<string | null>(null);
 
   const currentImage = images[selectedIndex];
@@ -30,16 +38,28 @@ export const ProductGallery: React.FC<ProductGalleryProps> = ({
     setSelectedIndex((previous) => (previous + 1) % images.length);
   };
 
-  const handleToggleWishlist = () => {
-    setIsWishlisted((prev) => {
-      const next = !prev;
-      if (next) {
-        toast.success("Added to your wishlist!");
+  const handleToggleWishlist = async () => {
+    if (favoriteRequest.current || loading) return;
+    favoriteRequest.current = true;
+    setSavingFavorite(true);
+    try {
+      if (isWishlisted) {
+        await removeFromWishlistApi(productId);
+        toast.success("Removed from your wishlist.");
       } else {
-        toast("Removed from wishlist", { icon: "💔" });
+        await addToWishlistApi(productId);
+        toast.success("Added to your wishlist.");
       }
-      return next;
-    });
+    } catch (error) {
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Could not update your wishlist.",
+      );
+    } finally {
+      favoriteRequest.current = false;
+      setSavingFavorite(false);
+    }
   };
 
   const handleShare = async () => {
@@ -132,7 +152,10 @@ export const ProductGallery: React.FC<ProductGalleryProps> = ({
         <div className="absolute top-3 right-3 sm:top-3.5 sm:right-3.5 z-20 flex items-center gap-2 sm:gap-2.5">
           {/* Wishlist Button */}
           <button
-            onClick={handleToggleWishlist}
+            type="button"
+            onClick={() => void handleToggleWishlist()}
+            disabled={loading || savingFavorite}
+            aria-pressed={isWishlisted}
             aria-label={
               isWishlisted ? "Remove from wishlist" : "Add to wishlist"
             }
@@ -144,7 +167,7 @@ export const ProductGallery: React.FC<ProductGalleryProps> = ({
           >
             <Heart
               className={`w-3.5 h-3.5 sm:w-5 sm:h-5 ${
-                isWishlisted ? "fill-white" : "fill-[#541B5C] text-[#541B5C]"
+                isWishlisted ? "fill-white" : "text-[#541B5C]"
               }`}
             />
           </button>
