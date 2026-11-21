@@ -1,5 +1,3 @@
-import { ShoppingCart } from "lucide-react";
-
 import styles from "./CartProductCard.module.css";
 
 interface CartProductCardProps {
@@ -22,21 +20,14 @@ export default function CartProductCard({
       <div className={styles.card}>
         <span className={styles.discount}>-20%</span>
         <img src={image} alt="" className={styles.productImage} />
-
-        <div className={styles.details}>
-          <h3>{name}</h3>
-
-          <p>
-            <del>{oldPrice}</del>
-            <strong>₹{price}</strong>
-          </p>
-        </div>
       </div>
-
-      <button type="button" className={styles.addButton} onClick={onAddToCart}>
-        <ShoppingCart size={15} />
-        Add to Cart
-      </button>
+      <div className={styles.details}>
+        <p>{name}</p>
+        <p>
+          <del>{oldPrice}</del>
+          <strong>₹{price}</strong>
+        </p>
+      </div>
     </article>
   );
 }

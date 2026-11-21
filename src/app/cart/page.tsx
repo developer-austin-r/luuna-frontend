@@ -36,21 +36,21 @@ const initialCart: CartItemType[] = [
     name: "Toy",
     price: 24,
     quantity: 1,
-    image: "/images/recommendation-toy.png",
+    image: "/images/shopping-cart/Toy1-cart.png",
   },
   {
     id: 2,
     name: "Toy",
     price: 24,
     quantity: 1,
-    image: "/images/recommendation-toy.png",
+    image: "/images/shopping-cart/Toy2-cart.png",
   },
   {
     id: 3,
     name: "Toy",
     price: 24,
     quantity: 1,
-    image: "/images/recommendation-toy.png",
+    image: "/images/shopping-cart/Toy3-cart.png",
   },
 ];
 
@@ -63,25 +63,25 @@ const pairProducts: ProductType[] = [
     id: 101,
     name: "God of War bundle",
     price: 2500,
-    image: "/images/recommendation-toy.png",
+    image: "/images/pairs-Image/pair1.png",
   },
   {
     id: 102,
     name: "God of War bundle",
     price: 2500,
-    image: "/images/recommendation-toy.png",
+    image: "/images/pairs-Image/pair2.png",
   },
   {
     id: 103,
     name: "God of War bundle",
     price: 2500,
-    image: "/images/recommendation-toy.png",
+    image: "/images/pairs-Image/pair3.png",
   },
   {
     id: 104,
     name: "God of War bundle",
     price: 2500,
-    image: "/images/recommendation-toy.png",
+    image: "/images/pairs-Image/pair4.png",
   },
   {
     id: 105,
@@ -106,25 +106,25 @@ const accessories: ProductType[] = [
     id: 201,
     name: "Chain",
     price: 2500,
-    image: "/images/chain.png",
+    image: "/images/pairs-Image/pair1.png",
   },
   {
     id: 202,
     name: "Chain",
     price: 2500,
-    image: "/images/chain.png",
+    image: "/images/pairs-Image/pair2.png",
   },
   {
     id: 203,
     name: "Chain",
     price: 2500,
-    image: "/images/chain.png",
+    image: "/images/pairs-Image/pair3.png",
   },
   {
     id: 204,
     name: "Chain",
     price: 2500,
-    image: "/images/chain.png",
+    image: "/images/pairs-Image/pair4.png",
   },
   {
     id: 205,
@@ -256,7 +256,7 @@ export default function CartPage() {
             PAIRS WELL WITH
         ====================== */}
 
-        <ProductSlider title="Pairs Well With...">
+        <ProductSlider title="PAIR'S WITH YOU">
           {pairProducts.map((product) => (
             <CartProductCard
               key={product.id}

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Black_Han_Sans } from "next/font/google";
 import localFont from "next/font/local";
 
 import { AppProviders } from "@/providers";
@@ -14,6 +15,12 @@ const geistSans = localFont({
 const geistMono = localFont({
   src: "../assets/fonts/geist-mono-latin.woff2",
   variable: "--font-geist-mono",
+  display: "swap",
+});
+
+const blackHanSans = Black_Han_Sans({
+  weight: "400",
+  variable: "--font-black-han-sans",
   display: "swap",
 });
 
@@ -35,7 +42,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} ${blackHanSans.variable} h-full antialiased`}
     >
       <body className="flex min-h-full flex-col" suppressHydrationWarning>
         <AppProviders>{children}</AppProviders>
