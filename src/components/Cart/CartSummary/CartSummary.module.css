@@ -80,6 +80,9 @@
 /* Checkout button */
 
 .checkoutButton {
+  display: grid;
+  place-items: center;
+  text-decoration: none;
   width: 100%;
   height: 54px;
 

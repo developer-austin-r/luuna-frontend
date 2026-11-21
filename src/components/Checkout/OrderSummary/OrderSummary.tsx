@@ -1,113 +1,136 @@
+import Image from "next/image";
+
+import {
+  type CartItemType,
+  formatCartPrice,
+} from "@/components/Cart/cart-items";
+
 import styles from "./OrderSummary.module.css";
 
-const products = [
-  {
-    id: 1,
-    name: "Toy",
-    quantity: 1,
-    price: "₹ 24.99",
-  },
-  {
-    id: 2,
-    name: "Toy",
-    quantity: 1,
-    price: "₹ 24.99",
-  },
-  {
-    id: 3,
-    name: "Toy",
-    quantity: 1,
-    price: "₹ 24.99",
-  },
+const paymentLogos = [
+  { name: "Paytm", file: "paytm", width: 62, height: 19 },
+  { name: "PhonePe", file: "phonepe", width: 27, height: 27 },
+  { name: "Google Pay", file: "google-pay", width: 68, height: 36 },
+  { name: "Mastercard", file: "mastercard", width: 30, height: 19 },
+  { name: "Visa", file: "visa", width: 70, height: 23 },
 ];
 
-export default function OrderSummary() {
+export default function OrderSummary({
+  items,
+  shipping,
+}: {
+  items: CartItemType[];
+  shipping: number;
+}) {
+  const subtotal = items.reduce(
+    (sum, item) => sum + item.price * item.quantity,
+    0,
+  );
+  const quantity = items.reduce((sum, item) => sum + item.quantity, 0);
+
   return (
-    <aside className={styles.summary}>
-      <h2>Order Summary</h2>
+    <aside className={styles.summary} aria-labelledby="checkout-summary">
+      <h2 id="checkout-summary">Order Summary</h2>
 
-      <div className={styles.titleLine}></div>
-
-      <div className={styles.productList}>
-        {products.map((product) => (
-          <div key={product.id} className={styles.product}>
-            <div className={styles.imagePlaceholder}></div>
-
-            <div className={styles.productInfo}>
-              <h3>{product.name}</h3>
-              <p>Qty: {product.quantity}</p>
-            </div>
-
-            <strong>{product.price}</strong>
-          </div>
-        ))}
-      </div>
+      {items.length ? (
+        <ul className={styles.productList}>
+          {items.map((item) => (
+            <li key={item.id} className={styles.product}>
+              {item.image ? (
+                <Image
+                  src={item.image}
+                  alt=""
+                  width={70}
+                  height={70}
+                  unoptimized
+                  className={styles.productImage}
+                />
+              ) : (
+                <div className={styles.productImage} aria-hidden="true" />
+              )}
+              <div>
+                <strong>{item.name}</strong>
+                <span>Qty: {item.quantity}</span>
+              </div>
+              <span>{formatCartPrice(item.price * item.quantity)}</span>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p className={styles.notice}>Your cart is empty.</p>
+      )}
 
       <div className={styles.promoSection}>
-        <h3>Apply Promo Code</h3>
-
+        <label htmlFor="checkout-promo">Apply Promo Code</label>
         <div className={styles.promoRow}>
-          <input type="text" placeholder="CODE20" />
-          <button type="button">Apply</button>
+          <input id="checkout-promo" placeholder="Enter promo code" disabled />
+          <button type="button" disabled>
+            Apply
+          </button>
         </div>
       </div>
 
-      <div className={styles.priceSection}>
-        <div className={styles.priceRow}>
-          <span>
-            Subtotal (3 items)
-            <small>Saved ₹60</small>
-          </span>
-
-          <div>
-            <del>₹ 250.00</del>
-            <strong>₹ 101.00</strong>
-          </div>
+      <dl className={styles.prices} aria-live="polite">
+        <div>
+          <dt>
+            Subtotal ({quantity} {quantity === 1 ? "item" : "items"})
+          </dt>
+          <dd>{formatCartPrice(subtotal)}</dd>
         </div>
-
-        <div className={styles.priceRow}>
-          <span>Estimated Shipping</span>
-          <strong className={styles.free}>FREE</strong>
+        <div>
+          <dt>Estimated Shipping</dt>
+          <dd>{quantity ? formatCartPrice(shipping) : "—"}</dd>
         </div>
-
-        <div className={styles.priceRow}>
-          <span>Estimated Tax</span>
-          <strong>₹ 8.08</strong>
+        <div>
+          <dt>Estimated Tax</dt>
+          <dd>Pending</dd>
         </div>
-
-        <div className={styles.divider}></div>
-
-        <div className={`${styles.priceRow} ${styles.grandTotal}`}>
-          <span>Grand Total</span>
-          <strong>₹ 109.08</strong>
+        <div className={styles.total}>
+          <dt>Estimated Total</dt>
+          <dd>{formatCartPrice(subtotal + (quantity ? shipping : 0))}</dd>
         </div>
+      </dl>
 
-        <a href="#" className={styles.savingsLink}>
-          Your total savings
-        </a>
-
-        <div className={styles.savingsRow}>
-          <span>Includes ₹30 savings through free delivery</span>
-          <strong>₹ 90</strong>
-        </div>
-      </div>
-
-      <button type="button" className={styles.placeOrder}>
-        Place Order →
+      <button
+        type="button"
+        className={styles.placeOrder}
+        disabled
+        aria-describedby="checkout-availability"
+      >
+        Place Order
+        <Image
+          src="/images/checkout/order-arrow.svg"
+          alt=""
+          width={16}
+          height={16}
+          unoptimized
+        />
       </button>
-
-      <p className={styles.secureText}>SSL Encrypted Secure Payment</p>
+      <p className={styles.notice} id="checkout-availability">
+        Online ordering and promo codes are currently unavailable.
+      </p>
+      <p className={styles.secureText}>
+        <Image
+          src="/images/checkout/lock.svg"
+          alt=""
+          width={11}
+          height={13}
+          unoptimized
+        />
+        Secure payment with Razorpay
+      </p>
       <div className={styles.paymentLogos}>
-        <span className={styles.paytmLogo}>Paytm</span>
-        <span className={styles.phonepeLogo}>PhonePe</span>
-        <span className={styles.gpayLogo}>G Pay</span>
-
-        <span className={styles.mastercardLogo}>
-          <i></i>
-          <b></b>
-        </span>
-
-        <span className={styles.visaLogo}>VISA</span>
+        {paymentLogos.map(({ name, file, width, height }) => (
+          <Image
+            key={file}
+            src={`/images/checkout/${file}.svg`}
+            alt={name}
+            width={width}
+            height={height}
+            className={file === "google-pay" ? styles.googlePay : undefined}
+            unoptimized
+          />
+        ))}
       </div>
     </aside>
   );

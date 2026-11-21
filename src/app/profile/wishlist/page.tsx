@@ -467,7 +467,7 @@ export default function WishlistPage() {
                       {/* Card Bottom CTA */}
                       <div className="mt-4 pt-3 border-t border-gray-50 flex gap-2">
                         <Link
-                          href={`/products/${product.slug}`}
+                          href={`/products/${product.id}`}
                           className="flex-1 inline-flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-xl bg-[#6B21A8] hover:bg-[#581c87] text-white text-xs font-semibold shadow-sm transition-colors cursor-pointer"
                         >
                           <Package size={14} />

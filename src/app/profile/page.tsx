@@ -25,6 +25,7 @@ import { ProfileActions } from "@/components/profile/ProfileActions/ProfileActio
 import { ProfileHeader } from "@/components/profile/ProfileHeader/ProfileHeader";
 import { ProfileInput } from "@/components/profile/ProfileInput/ProfileInput";
 import { ProfileSelect } from "@/components/profile/ProfileSelect/ProfileSelect";
+import { INDIAN_STATES } from "@/constants/indian-states";
 import { logoutApi } from "@/services/auth";
 import {
   fetchDistricts,
@@ -71,45 +72,6 @@ const emptyForm: ProfileFormData = {
   state: "",
   pincode: "",
 };
-
-const FALLBACK_STATES = [
-  "Andaman And Nicobar Islands",
-  "Andhra Pradesh",
-  "Arunachal Pradesh",
-  "Assam",
-  "Bihar",
-  "Chandigarh",
-  "Chhattisgarh",
-  "Delhi",
-  "Goa",
-  "Gujarat",
-  "Haryana",
-  "Himachal Pradesh",
-  "Jammu And Kashmir",
-  "Jharkhand",
-  "Karnataka",
-  "Kerala",
-  "Ladakh",
-  "Lakshadweep",
-  "Madhya Pradesh",
-  "Maharashtra",
-  "Manipur",
-  "Meghalaya",
-  "Mizoram",
-  "Nagaland",
-  "Odisha",
-  "Puducherry",
-  "Punjab",
-  "Rajasthan",
-  "Sikkim",
-  "Tamil Nadu",
-  "Telangana",
-  "The Dadra And Nagar Haveli And Daman And Diu",
-  "Tripura",
-  "Uttar Pradesh",
-  "Uttarakhand",
-  "West Bengal",
-];
 
 export default function ProfilePage() {
   const router = useRouter();
@@ -594,7 +556,7 @@ export default function ProfilePage() {
                     options={
                       states.length > 0
                         ? states.map((s) => ({ value: s.name, label: s.name }))
-                        : FALLBACK_STATES.map((s) => ({ value: s, label: s }))
+                        : INDIAN_STATES.map((s) => ({ value: s, label: s }))
                     }
                   />
                   <ProfileSelect
