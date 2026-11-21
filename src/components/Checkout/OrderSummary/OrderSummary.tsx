@@ -18,15 +18,20 @@ const paymentLogos = [
 export default function OrderSummary({
   items,
   shipping,
+  busy,
+  disabled,
 }: {
   items: CartItemType[];
   shipping: number;
+  busy: boolean;
+  disabled: boolean;
 }) {
   const subtotal = items.reduce(
     (sum, item) => sum + item.price * item.quantity,
     0,
   );
   const quantity = items.reduce((sum, item) => sum + item.quantity, 0);
+  const tax = items.reduce((sum, item) => sum + item.tax, 0);
 
   return (
     <aside className={styles.summary} aria-labelledby="checkout-summary">
@@ -83,21 +88,21 @@ export default function OrderSummary({
         </div>
         <div>
           <dt>Estimated Tax</dt>
-          <dd>Pending</dd>
+          <dd>{formatCartPrice(tax)}</dd>
         </div>
         <div className={styles.total}>
           <dt>Estimated Total</dt>
-          <dd>{formatCartPrice(subtotal + (quantity ? shipping : 0))}</dd>
+          <dd>{formatCartPrice(subtotal + tax + (quantity ? shipping : 0))}</dd>
         </div>
       </dl>
 
       <button
-        type="button"
+        type="submit"
         className={styles.placeOrder}
-        disabled
+        disabled={busy || disabled}
         aria-describedby="checkout-availability"
       >
-        Place Order
+        {busy ? "Processing…" : "Place Order"}
         <Image
           src="/images/checkout/order-arrow.svg"
           alt=""
@@ -107,7 +112,7 @@ export default function OrderSummary({
         />
       </button>
       <p className={styles.notice} id="checkout-availability">
-        Online ordering and promo codes are currently unavailable.
+        You’ll review and confirm payment in Razorpay.
       </p>
       <p className={styles.secureText}>
         <Image
