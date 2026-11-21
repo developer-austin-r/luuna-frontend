@@ -2,14 +2,13 @@ import { Suspense } from "react";
 import localFont from "next/font/local";
 import Image from "next/image";
 import Link from "next/link";
-import { CarFront } from "lucide-react";
 
-import CollectibleFigure from "@/components/landing/CollectibleFigure";
 import LandingProductCarousel from "@/components/landing/NewArrivals/LandingProductCarousel";
+import { getS3AssetUrl } from "@/config";
 
 import styles from "./LandingStorySections.module.css";
 
-const categoryFont = localFont({
+const headingFont = localFont({
   src: "../../assets/fonts/black-han-sans.ttf",
   display: "swap",
   weight: "400",
@@ -54,32 +53,22 @@ const categories = [
   },
 ];
 
-function ArtworkBanner({
-  id,
-  title,
-  scene,
-}: {
-  id: string;
-  title: string;
-  scene: "new" | "nostalgia" | "wheels";
-}) {
+function WhatsNewBanner() {
   return (
-    <section className={styles.posterSection} id={id} aria-label={title}>
-      <div className={`${styles.poster} ${styles[`poster${scene}`]}`}>
-        <div className={styles.posterArt} aria-hidden="true">
-          {scene === "wheels" ? (
-            <CarFront size={150} strokeWidth={1.1} />
-          ) : (
-            <CollectibleFigure
-              className={styles.posterFigure}
-              variant={scene === "new" ? "sunburst" : "warrior"}
-            />
-          )}
-        </div>
-        <div className={styles.posterLabel}>
-          <h2>{title}</h2>
-        </div>
-      </div>
+    <section
+      id="whats-new"
+      aria-labelledby="whats-new-title"
+      className={`${styles.whatsNew} ${headingFont.className}`}
+    >
+      <h2 id="whats-new-title">WHAT’S NEW</h2>
+      <Image
+        src={getS3AssetUrl("assets/Lattest.png")}
+        alt="Naruto overlooking a village framed by autumn leaves"
+        width={1440}
+        height={472}
+        unoptimized
+        className={styles.whatsNewImage}
+      />
     </section>
   );
 }
@@ -87,7 +76,7 @@ function ArtworkBanner({
 function CategoryGrid() {
   return (
     <section
-      className={`${styles.categorySection} ${categoryFont.className}`}
+      className={`${styles.categorySection} ${headingFont.className}`}
       aria-labelledby="category-title"
     >
       <div className={styles.contentWidth}>
@@ -124,7 +113,7 @@ export default function LandingStorySections() {
       <Suspense>
         <LandingProductCarousel section="accessories" />
       </Suspense>
-      <ArtworkBanner id="whats-new" title="WHAT’S NEW" scene="new" />
+      <WhatsNewBanner />
       <CategoryGrid />
     </>
   );

@@ -2,7 +2,14 @@ import localFont from "next/font/local";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ChevronDown, Shapes, SlidersHorizontal, Tag } from "lucide-react";
+import {
+  ArrowDownUp,
+  Check,
+  ChevronDown,
+  Shapes,
+  SlidersHorizontal,
+  Tag,
+} from "lucide-react";
 
 import Footer from "@/components/landing/Footer/Footer";
 import LoginOfferBar from "@/components/landing/LoginOfferBar/LoginOfferBar";
@@ -41,8 +48,12 @@ const price = new Intl.NumberFormat("en-IN", {
   maximumFractionDigits: 2,
 });
 
-const control =
-  "rounded-full bg-white px-3 py-1 text-xs font-semibold text-[#140824]";
+const sortLabels = {
+  latest: "Newest",
+  oldest: "Oldest",
+  "price-low": "Price: low to high",
+  "price-high": "Price: high to low",
+} satisfies Record<keyof typeof sorts, string>;
 
 const countFont = localFont({
   src: "../../../assets/fonts/black-han-sans.ttf",
@@ -51,10 +62,15 @@ const countFont = localFont({
 });
 
 const toolbarPill =
-  "flex h-[30px] cursor-pointer list-none items-center gap-1.5 rounded-full bg-white px-3 text-sm leading-none text-[#140824] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white sm:text-xl [&::-webkit-details-marker]:hidden";
+  "flex min-h-10 cursor-pointer list-none items-center gap-2 rounded-full bg-white px-3.5 text-sm font-medium leading-tight text-[#140824] hover:bg-purple-50 group-open:bg-purple-100 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white [&::-webkit-details-marker]:hidden";
 
 const pillChevron =
   "ml-auto shrink-0 transition-transform group-open:rotate-180 motion-reduce:transition-none";
+
+const dropdown =
+  "absolute top-full z-20 mt-2 rounded-xl border border-purple-200 bg-white p-2 text-sm text-[#140824] shadow-xl";
+const menuOption =
+  "flex min-h-10 items-center justify-between gap-3 rounded-lg px-3 py-2 hover:bg-purple-50 focus-visible:outline-2 focus-visible:outline-purple-700";
 
 function validPrice(value: string | string[] | undefined) {
   return typeof value === "string" && /^\d{1,10}(?:\.\d{1,2})?$/.test(value)
@@ -105,8 +121,9 @@ export default async function CategoryPage({
   const products = catalog?.products ?? [];
   const meta = catalog?.meta;
 
-  function pageHref(nextPage: number) {
-    const params = new URLSearchParams({ sort, page: String(nextPage) });
+  function pageHref(nextPage: number, nextSort = sort) {
+    const params = new URLSearchParams({ sort: nextSort });
+    if (nextPage > 1) params.set("page", String(nextPage));
     if (minPrice) params.set("minPrice", minPrice);
     if (maxPrice) params.set("maxPrice", maxPrice);
     return `${path}?${params}`;
@@ -138,103 +155,137 @@ export default async function CategoryPage({
         </div>
 
         <div className="mx-auto max-w-[1440px] px-4 pb-20 pt-4 sm:px-[5.5%] sm:pb-28">
-          <form
-            action={path}
-            className="relative mb-8 flex flex-wrap items-center gap-x-4 gap-y-3 text-xs sm:gap-x-6"
-          >
-            <details className="group relative">
-              <summary
-                className={`${toolbarPill} min-w-[105px] sm:min-w-[138px]`}
-              >
+          <div className="relative mb-8 flex flex-wrap items-center gap-3 border-b border-white/15 pb-4 sm:gap-4">
+            <details name="category-toolbar" className="group relative">
+              <summary className={`${toolbarPill} min-w-27`}>
                 <SlidersHorizontal size={17} aria-hidden="true" />
                 Filter
+                {(minPrice || maxPrice) && (
+                  <span className="rounded-full bg-purple-200 px-1.5 text-xs font-semibold">
+                    <span className="sr-only">Active price limits: </span>
+                    {Number(Boolean(minPrice)) + Number(Boolean(maxPrice))}
+                  </span>
+                )}
                 <ChevronDown
-                  size={20}
+                  size={16}
                   aria-hidden="true"
                   className={pillChevron}
                 />
               </summary>
-              <div className="absolute left-0 top-full z-10 mt-2 grid w-48 gap-2 rounded-lg bg-white p-3 text-[#140824] shadow-lg">
-                <label>
-                  Min price{" "}
-                  <input
-                    className="w-full rounded border px-2 py-1"
-                    name="minPrice"
-                    type="number"
-                    min="0"
-                    step="0.01"
-                    defaultValue={minPrice}
-                  />
-                </label>
-                <label>
-                  Max price{" "}
-                  <input
-                    className="w-full rounded border px-2 py-1"
-                    name="maxPrice"
-                    type="number"
-                    min="0"
-                    step="0.01"
-                    defaultValue={maxPrice}
-                  />
-                </label>
-                <button
-                  type="submit"
-                  className="rounded bg-[#140824] py-1 text-white"
-                >
-                  Apply filters
-                </button>
-              </div>
+              <form action={path} className={`${dropdown} left-0 w-64 p-4`}>
+                <input type="hidden" name="sort" value={sort} />
+                <fieldset>
+                  <legend className="mb-3 font-semibold">Price range</legend>
+                  <div className="grid grid-cols-2 gap-2">
+                    <label className="text-xs font-medium">
+                      Min price (?)
+                      <input
+                        className="mt-1 block w-full rounded-lg border border-purple-200 px-2 py-2"
+                        name="minPrice"
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        defaultValue={minPrice}
+                      />
+                    </label>
+                    <label className="text-xs font-medium">
+                      Max price (?)
+                      <input
+                        className="mt-1 block w-full rounded-lg border border-purple-200 px-2 py-2"
+                        name="maxPrice"
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        defaultValue={maxPrice}
+                      />
+                    </label>
+                  </div>
+                </fieldset>
+                <div className="mt-4 flex items-center justify-between gap-3">
+                  <Link
+                    href={`${path}?sort=${sort}`}
+                    className="rounded px-1 text-xs font-medium underline underline-offset-4"
+                  >
+                    Clear filters
+                  </Link>
+                  <button
+                    type="submit"
+                    className="rounded-full bg-[#140824] px-4 py-2 text-xs font-semibold text-white hover:bg-purple-950"
+                  >
+                    Apply filters
+                  </button>
+                </div>
+              </form>
             </details>
-            <details className="group relative">
-              <summary
-                className={`${toolbarPill} min-w-[125px] sm:min-w-[170px]`}
-              >
-                <Shapes size={18} aria-hidden="true" />
+
+            <details name="category-toolbar" className="group relative">
+              <summary className={`${toolbarPill} min-w-32`}>
+                <Shapes size={17} aria-hidden="true" />
                 Category
                 <ChevronDown
-                  size={20}
+                  size={16}
                   aria-hidden="true"
                   className={pillChevron}
                 />
               </summary>
-              <ul className="absolute left-0 top-full z-10 mt-2 min-w-32 rounded-lg bg-white p-2 text-[#140824] shadow-lg">
-                {Object.entries(categories).map(([key, label]) => (
-                  <li key={key}>
-                    <Link
-                      className="block rounded px-2 py-1 hover:bg-purple-100"
-                      href={`/categories/${key}`}
-                      aria-current={key === slug ? "page" : undefined}
-                    >
-                      {label}
-                    </Link>
-                  </li>
-                ))}
+              <ul className={`${dropdown} left-0 w-40`}>
+                {Object.entries(categories).map(([key, label]) => {
+                  const selected = key === slug || aliases[slug] === key;
+                  return (
+                    <li key={key}>
+                      <Link
+                        className={`${menuOption} ${selected ? "bg-purple-100 font-semibold" : ""}`}
+                        href={`/categories/${key}`}
+                        aria-current={selected ? "page" : undefined}
+                      >
+                        {label}
+                        {selected && <Check size={16} aria-hidden="true" />}
+                      </Link>
+                    </li>
+                  );
+                })}
               </ul>
             </details>
+
             <span
-              className={`${countFont.className} mr-auto inline-flex items-center gap-1.5 whitespace-nowrap text-sm leading-none text-[#8c69a8] sm:text-xl`}
+              className={`${countFont.className} order-last inline-flex w-full items-center gap-1.5 text-sm text-[#b391ce] sm:order-none sm:mr-auto sm:w-auto`}
             >
-              <Tag
-                size={20}
-                fill="currentColor"
-                stroke="#140824"
-                aria-hidden="true"
-              />
+              <Tag size={18} aria-hidden="true" />
               {meta?.total ?? 0} Products
             </span>
-            <label className="flex items-center gap-2">
-              Sort by
-              <select className={control} name="sort" defaultValue={sort}>
-                <option value="latest">Newest</option>
-                <option value="oldest">Oldest</option>
-                <option value="price-low">Price: low to high</option>
-                <option value="price-high">Price: high to low</option>
-              </select>
-            </label>
-            <button type="submit" className={control}>
-              Apply
-            </button>
-          </form>
+
+            <details
+              name="category-toolbar"
+              className="group sm:relative sm:ml-auto"
+            >
+              <summary className={toolbarPill}>
+                <ArrowDownUp size={16} aria-hidden="true" />
+                <span className="sr-only">Sort by:</span>
+                {sortLabels[sort]}
+                <ChevronDown
+                  size={16}
+                  aria-hidden="true"
+                  className={pillChevron}
+                />
+              </summary>
+              <ul className={`${dropdown} right-0 w-48`}>
+                {(Object.keys(sortLabels) as (keyof typeof sortLabels)[]).map(
+                  (key) => (
+                    <li key={key}>
+                      <Link
+                        className={`${menuOption} ${key === sort ? "bg-purple-100 font-semibold" : ""}`}
+                        href={pageHref(1, key)}
+                        aria-current={key === sort ? "true" : undefined}
+                      >
+                        {sortLabels[key]}
+                        {key === sort && <Check size={16} aria-hidden="true" />}
+                      </Link>
+                    </li>
+                  ),
+                )}
+              </ul>
+            </details>
+          </div>
 
           {products.length === 0 && (
             <p className="py-10 text-purple-100">
