@@ -230,10 +230,10 @@
     transform 0.2s ease,
     background 0.15s ease,
     box-shadow 0.2s ease;
-  animation: ctaPulse 2.8s ease-in-out 2.8s infinite;
 }
 
 @keyframes ctaPulse {
+
   0%,
   100% {
     transform: scale(1);
@@ -250,7 +250,6 @@
   background: #e69d00;
   transform: scale(1.05);
   box-shadow: 0 0.35cqw 0.75cqw rgba(180, 110, 0, 0.5);
-  animation-play-state: paused;
 }
 
 /* Responsive adjustments */
@@ -273,26 +272,21 @@
   }
 }
 
-/* Animation sequence:
-   1. Show anime images first (0s - 480ms)
-   2. Show curated message "CURATED ?" (starts 480ms)
-   3. Wait 1s after curated message, show "The best loot all in one box, Captain !" (starts 1480ms)
-   4. Wait 1s, show "EXPLORE NOW!" (starts 2480ms)
-*/
-.banner:not([data-reveal])
-  :is(.characterWrapper, .topBubble, .storyBubble, .cta) {
-  opacity: 0;
-  visibility: hidden;
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  /* Step 1: Characters entrance */
-  .banner[data-reveal] .characterWrapper {
-    animation: characterEntrance 480ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
+@media (prefers-reduced-motion: no-preference) and (scripting: enabled) {
+  .banner {
+    --character-duration: 480ms;
+    --last-character-delay: 160ms;
+    --message-gap: 1s;
+    --first-message: calc(var(--character-duration) + var(--last-character-delay));
+    --last-message: calc(var(--first-message) + 2 * var(--message-gap));
   }
 
-  .banner[data-reveal] .leftWrapper {
-    animation-delay: 0ms;
+  .banner:not([data-reveal]) :is(.characterWrapper, .topBubble, .storyBubble, .cta) {
+    visibility: hidden;
+  }
+
+  .banner[data-reveal] .characterWrapper {
+    animation: characterEntrance var(--character-duration) cubic-bezier(0.34, 1.56, 0.64, 1) both;
   }
 
   .banner[data-reveal] .centerWrapper {
@@ -300,37 +294,51 @@
   }
 
   .banner[data-reveal] .rightWrapper {
-    animation-delay: 160ms;
+    animation-delay: var(--last-character-delay);
   }
 
-  /* Step 2: "CURATED ?" pops up right after characters land */
+  .banner[data-reveal] :is(.topBubble, .storyBubble, .cta) {
+    animation: comicBubblePop 540ms ease-out both;
+  }
+
   .banner[data-reveal] .topBubble {
-    animation: comicBubblePop 420ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
-    animation-delay: 480ms;
+    --bubble-offset: 12px 16px;
+    --bubble-tilt: 5deg;
+    transform-origin: 84% 100%;
+    animation-delay: var(--first-message);
   }
 
-  /* Step 3: Wait 1s -> "The best loot all in one box, Captain !" (480ms + 1000ms = 1480ms) */
   .banner[data-reveal] .storyBubble {
-    animation: comicBubblePop 420ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
-    animation-delay: 1480ms;
+    --bubble-offset: -22px 6px;
+    --bubble-tilt: -4deg;
+    transform-origin: left 25%;
+    animation-delay: calc(var(--first-message) + var(--message-gap));
   }
 
-  /* Step 4: Wait 1s -> "EXPLORE NOW!" (1480ms + 1000ms = 2480ms) */
   .banner[data-reveal] .cta {
-    animation: comicBubblePop 420ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
-    animation-delay: 2480ms;
+    --bubble-offset: -24px 8px;
+    --bubble-tilt: -7deg;
+    transform-origin: left 70%;
+    animation-delay: var(--last-message);
+  }
+
+  .banner[data-reveal] .ctaButton {
+    animation: ctaPulse 1.5s ease-in-out calc(var(--last-message) + 650ms) 2;
+  }
+
+  .banner[data-reveal] .cta:is(:hover, :focus-visible) .ctaButton {
+    animation: none;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .banner[data-reveal] :is(.characterWrapper, .topBubble, .storyBubble, .cta) {
-    opacity: 1;
-    visibility: visible;
+  .characterFloat {
+    animation: none !important;
   }
 
-  .characterFloat,
+  .cta,
   .ctaButton {
-    animation: none !important;
+    transition: none;
   }
 }
 
@@ -356,20 +364,31 @@
 
 @keyframes comicBubblePop {
   0% {
-    opacity: 0;
-    transform: scale(0.2) translateY(12px);
     visibility: hidden;
+    opacity: 0;
+    translate: var(--bubble-offset);
+    rotate: var(--bubble-tilt);
+    scale: 0.64 0.5;
   }
 
-  70% {
+  53% {
     opacity: 1;
-    transform: scale(1.08) translateY(-2px);
-    visibility: visible;
+    translate: 0 -4px;
+    rotate: calc(var(--bubble-tilt) * -0.28);
+    scale: 1.055 1.085;
+  }
+
+  77% {
+    translate: 0 1px;
+    rotate: 0deg;
+    scale: 0.985 0.965;
   }
 
   100% {
-    opacity: 1;
-    transform: scale(1) translateY(0);
     visibility: visible;
+    opacity: 1;
+    translate: none;
+    rotate: none;
+    scale: none;
   }
 }
