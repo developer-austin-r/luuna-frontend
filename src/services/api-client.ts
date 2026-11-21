@@ -1,5 +1,15 @@
 import { appConfig } from "@/config";
 
+export class ApiRequestError extends Error {
+  constructor(
+    message: string,
+    readonly status: number,
+  ) {
+    super(message);
+    this.name = "ApiRequestError";
+  }
+}
+
 export async function apiClient<TResponse>(
   path: string,
   init?: RequestInit,
@@ -30,7 +40,7 @@ export async function apiClient<TResponse>(
         // Ignore parse errors
       }
     }
-    throw new Error(errorMessage);
+    throw new ApiRequestError(errorMessage, response.status);
   }
 
   return response.json() as Promise<TResponse>;

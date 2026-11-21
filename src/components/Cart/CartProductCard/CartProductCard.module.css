@@ -29,7 +29,7 @@
 .discount {
   position: absolute;
 
-  top: 12px;
+  top: 10px;
   left: 12px;
 
   z-index: 2;
@@ -38,41 +38,45 @@
 
   border-radius: 11px;
 
-  background: #ffffff;
+  background: #e0d9d9;
   color: #111111;
 
-  font-size: 12px;
+  font-size: 8px;
   font-weight: 700;
 }
 
 .details {
-  padding: 12px 24px 14px;
-
-  background: #746b7c;
-
+  padding: 10px 12px 12px;
   color: #ffffff;
-}
-
-.details h3 {
-  margin: 0 0 6px;
-
-  font-size: 19px;
-  font-weight: 600;
 }
 
 .details p {
   margin: 0;
+}
 
+.details p:first-child {
+  margin-bottom: 4px;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 18px;
+}
+
+.details p:last-child {
   display: flex;
   align-items: center;
-
   gap: 5px;
-
-  font-size: 15px;
+  font-size: 12px;
+  line-height: 16px;
 }
 
 .details strong {
-  font-size: 16px;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.details del {
+  color: #d4cfd8;
+  font-size: 12px;
 }
 
 .addButton {
@@ -105,28 +109,15 @@
 }
 
 @media (max-width: 600px) {
+  .productImage {
+    height: 220px;
+  }
+
   .addButton {
     width: 100%;
     min-height: 44px;
-
     padding: 0 14px;
-
     font-size: 13px;
+    min-width: 155px;
   }
-}
-
-.productImage {
-  height: 220px;
-}
-
-.details {
-  padding: 11px 18px 13px;
-}
-
-.details h3 {
-  font-size: 17px;
-}
-
-.addButton {
-  min-width: 155px;
 }

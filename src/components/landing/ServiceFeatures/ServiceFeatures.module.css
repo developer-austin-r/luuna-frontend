@@ -1,74 +1,52 @@
-.featuresSection {
+.section {
   width: 100%;
-  border-bottom: 1px solid #eee8f1;
-  background: #ffffff;
-  padding: 20px 0;
-}
-
-.featuresContainer {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  width: min(100% - 3rem, 1240px);
-  margin: 0 auto;
-  gap: 12px;
-}
-
-.featureCard {
-  display: grid;
-  grid-template-columns: auto 1fr;
+  background: #10051b;
+  padding: 0;
+  display: flex;
+  justify-content: center;
   align-items: center;
-  gap: 11px;
-  min-width: 0;
-  min-height: 62px;
-  padding: 10px 14px;
-  border: 1px solid #eee8f1;
-  border-radius: 7px;
-  background: #fff;
+  box-sizing: border-box;
+  overflow: hidden;
 }
 
-.icon {
-  display: grid;
-  place-items: center;
-  width: 34px;
-  height: 34px;
-  border-radius: 50%;
-  background: #f4edf8;
-  color: #5f3a72;
-  font-size: 20px;
-  font-weight: 600;
-  line-height: 1;
+.container {
+  width: 100%;
+  max-width: 100%;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-sizing: border-box;
 }
 
-.title {
-  color: #302535;
-  font-size: 0.81rem;
-  font-weight: 600;
+.brandStrip {
+  width: 100%;
+  height: auto;
+  min-height: clamp(140px, 16vw, 240px);
+  max-height: 280px;
+  display: block;
+  object-fit: cover;
+  object-position: center;
 }
 
-@media (max-width: 760px) {
-  .featuresSection {
-    padding: 14px 0;
-  }
-
-  .featuresContainer {
-    width: calc(100% - 2rem);
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 8px;
-  }
-
-  .featureCard {
-    min-height: 54px;
-    gap: 8px;
-    padding: 8px 10px;
+@media (max-width: 1024px) {
+  .brandStrip {
+    min-height: clamp(120px, 18vw, 190px);
+    object-fit: cover;
   }
 }
 
-@media (max-width: 390px) {
-  .title {
-    font-size: 0.72rem;
+@media (max-width: 768px) {
+  .brandStrip {
+    min-height: clamp(100px, 20vw, 150px);
+    object-fit: cover;
   }
+}
 
-  .featureCard {
-    padding: 7px;
+@media (max-width: 480px) {
+  .brandStrip {
+    min-height: 90px;
+    object-fit: cover;
   }
 }

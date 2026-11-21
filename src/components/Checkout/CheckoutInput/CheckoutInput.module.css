@@ -1,41 +1,34 @@
 .field {
-  width: 100%;
-  display: flex;
-  flex-direction: column;
+  display: grid;
   gap: 8px;
   min-width: 0;
 }
 
 .label {
+  margin-inline-start: 8px;
+  color: var(--checkout-muted);
   font-size: 14px;
-  font-weight: 500;
-  color: #555968;
 }
 
 .input {
   width: 100%;
-  height: 53px;
-
-  padding: 0 22px;
-
-  border: 1px solid #c8cce0;
-  border-radius: 28px;
-
-  outline: none;
-
-  background: #fafaff;
-  color: #17131d;
-
-  font-size: 14px;
-  font-family: inherit;
-
-  box-sizing: border-box;
+  min-height: 56px;
+  padding: 0 clamp(12px, 1.7vw, 24px);
+  border: 1px solid var(--checkout-border);
+  border-radius: 32px;
+  background: var(--checkout-field);
+  color: var(--checkout-ink);
+  font: inherit;
+  font-size: 15px;
 }
 
 .input::placeholder {
-  color: #777b8d;
+  color: #666e81;
 }
 
-.input:focus {
-  border-color: #160525;
+@media (max-width: 560px) {
+  .input {
+    min-height: 48px;
+    font-size: 16px;
+  }
 }

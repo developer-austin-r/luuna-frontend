@@ -1,221 +1,119 @@
 .section {
   width: 100%;
-  padding: 25px 55px 45px;
-  background: #ffffff;
+  padding: clamp(28px, 4vw, 56px) 0 clamp(32px, 4.5vw, 64px);
+  background: #10051b;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.container {
+  width: 100%;
+  max-width: 1360px;
+  margin: 0 auto;
+  padding: 0 clamp(16px, 4vw, 64px);
   box-sizing: border-box;
 }
 
-/* =========================
-   HEADER
-========================= */
-
-.sectionHeader {
-  width: 100%;
-  margin-bottom: 35px;
-}
-
-.titleWrapper {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.titleBar {
-  width: 12px;
-  height: 45px;
-  background: #19002d;
-  flex-shrink: 0;
-}
-
-.titleWrapper h2 {
-  margin: 0;
-  color: #111111;
-  font-size: 25px;
-  font-weight: 700;
+.title {
+  margin: 0 0 clamp(24px, 3.5vw, 44px);
+  color: #ffffff;
+  font-size: clamp(26px, 3.6vw, 42px);
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-align: center;
+  text-transform: uppercase;
   line-height: 1;
 }
 
-/* =========================
-   TOP PICKS GRID
-========================= */
-
 .picksGrid {
-  width: 100%;
-
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-
-  gap: 25px;
-
+  display: flex;
+  justify-content: space-evenly;
   align-items: center;
+  gap: clamp(16px, 2.5vw, 40px);
+  width: 100%;
+  box-sizing: border-box;
 }
-
-/* =========================
-   PICK ITEM
-========================= */
 
 .pickItem {
   display: flex;
   align-items: center;
-
-  min-width: 0;
+  position: relative;
+  flex: 0 1 auto;
 }
-
-/* =========================
-   RANK NUMBER
-========================= */
 
 .rank {
-  width: 90px;
-  flex-shrink: 0;
-
-  font-size: 150px;
-  font-weight: 800;
-
-  line-height: 0.8;
-
-  color: #ffffff;
-
-  -webkit-text-stroke: 2px #111111;
-
+  font-size: clamp(96px, 11vw, 160px);
+  font-weight: 900;
+  line-height: 0.78;
+  color: transparent;
+  -webkit-text-stroke: 2.2px #785a97;
   text-align: center;
+  user-select: none;
+  margin-right: -16px;
+  z-index: 1;
+  font-family: inherit;
 }
 
-/* =========================
-   PRODUCT IMAGE
-========================= */
+.productImageWrapper {
+  position: relative;
+  width: clamp(135px, 15vw, 205px);
+  height: clamp(155px, 17.5vw, 235px);
+  border-radius: 8px;
+  overflow: hidden;
+  background: #180b26;
+  flex-shrink: 0;
+  box-shadow:
+    0 10px 28px rgb(0 0 0 / 60%),
+    0 0 0 1px rgb(120 90 151 / 15%);
+  transition:
+    transform 0.25s ease,
+    box-shadow 0.25s ease;
+}
+
+.productImageWrapper:hover {
+  transform: translateY(-4px) scale(1.02);
+  box-shadow:
+    0 14px 34px rgb(117 91 148 / 35%),
+    0 0 0 1px rgb(167 122 197 / 35%);
+}
 
 .productImage {
-  width: 145px;
-  height: 170px;
-
-  overflow: hidden;
-
-  border-radius: 8px;
-
-  background: #e8e8e8;
-
-  flex-shrink: 0;
-}
-
-.productImage img {
-  width: 100%;
-  height: 100%;
-
-  display: block;
-
   object-fit: cover;
+  display: block;
 }
 
-/* =========================
-   DIVIDER
-========================= */
-
-.divider {
-  width: 100%;
-  height: 42px;
-
-  margin-top: 25px;
-
-  background: #e5e5e5;
-}
-
-/* =========================
-   TABLET
-========================= */
-
-@media (max-width: 1000px) {
-  .section {
-    padding: 25px 30px 40px;
-  }
-
+@media (max-width: 900px) {
   .picksGrid {
-    gap: 15px;
-  }
-
-  .rank {
-    width: 65px;
-    font-size: 105px;
-  }
-
-  .productImage {
-    width: 120px;
-    height: 145px;
-  }
-}
-
-/* =========================
-   MOBILE
-========================= */
-
-@media (max-width: 650px) {
-  .section {
-    padding: 20px 16px 35px;
-  }
-
-  .sectionHeader {
-    margin-bottom: 25px;
-  }
-
-  .titleBar {
-    width: 8px;
-    height: 34px;
-  }
-
-  .titleWrapper h2 {
-    font-size: 20px;
-  }
-
-  .picksGrid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 25px 12px;
-  }
-
-  .pickItem {
+    display: grid;
+    grid-template-columns: repeat(2, auto);
     justify-content: center;
+    gap: 28px 24px;
   }
 
   .rank {
-    width: 48px;
-    font-size: 75px;
+    font-size: clamp(80px, 14vw, 115px);
+    margin-right: -12px;
   }
 
-  .productImage {
-    width: 95px;
-    height: 120px;
-  }
-
-  .divider {
-    height: 25px;
-    margin-top: 25px;
+  .productImageWrapper {
+    width: clamp(125px, 24vw, 170px);
+    height: clamp(142px, 27vw, 192px);
   }
 }
 
-/* =========================
-   SMALL MOBILE
-========================= */
-
-@media (max-width: 400px) {
-  .section {
-    padding-left: 12px;
-    padding-right: 12px;
-  }
-
+@media (max-width: 540px) {
   .picksGrid {
-    gap: 20px 8px;
+    gap: 20px 12px;
   }
 
   .rank {
-    width: 38px;
-    font-size: 60px;
+    font-size: clamp(65px, 16vw, 90px);
+    -webkit-text-stroke: 1.8px #785a97;
+    margin-right: -8px;
   }
 
-  .productImage {
-    width: 82px;
-    height: 105px;
-  }
-
-  .divider {
-    height: 20px;
+  .productImageWrapper {
+    width: clamp(105px, 28vw, 135px);
+    height: clamp(120px, 32vw, 155px);
   }
 }

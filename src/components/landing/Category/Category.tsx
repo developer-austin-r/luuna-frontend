@@ -40,7 +40,7 @@ export default function Category() {
           >
             <h3>{category.name}</h3>
 
-            <div className={styles.imageBox}></div>
+            <h1 className={styles.imageBox}></h1>
           </div>
         ))}
       </div>

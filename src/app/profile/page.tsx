@@ -9,7 +9,6 @@ import {
   Camera,
   CheckCircle2,
   ChevronLeft,
-  Loader2,
   Lock,
   Mail,
   MapPin,
@@ -20,11 +19,16 @@ import {
 import Footer from "@/components/landing/Footer/Footer";
 import LoginOfferBar from "@/components/landing/LoginOfferBar/LoginOfferBar";
 import Navbar from "@/components/landing/Navbar/Navbar";
+import { AccountFormSkeleton } from "@/components/loading/AccountSkeletons";
 import { AccountMenu } from "@/components/profile/AccountMenu/AccountMenu";
+import { AvatarSelector } from "@/components/profile/AvatarSelector/AvatarSelector";
 import { ProfileActions } from "@/components/profile/ProfileActions/ProfileActions";
 import { ProfileHeader } from "@/components/profile/ProfileHeader/ProfileHeader";
+import { ProfileImageModal } from "@/components/profile/ProfileImageModal";
 import { ProfileInput } from "@/components/profile/ProfileInput/ProfileInput";
 import { ProfileSelect } from "@/components/profile/ProfileSelect/ProfileSelect";
+import { getS3AssetUrl } from "@/config";
+import { INDIAN_STATES } from "@/constants/indian-states";
 import { logoutApi } from "@/services/auth";
 import {
   fetchDistricts,
@@ -33,7 +37,13 @@ import {
   type LgdState,
 } from "@/services/location";
 import { uploadImage } from "@/services/media-upload";
-import { getProfileApi, updateProfileApi } from "@/services/profile";
+import {
+  type AvailableProfileImage,
+  getAvailableProfileImagesApi,
+  getProfileApi,
+  selectProfileImageApi,
+  updateProfileApi,
+} from "@/services/profile";
 
 function splitName(fullName: string | null | undefined): {
   firstName: string;
@@ -72,43 +82,22 @@ const emptyForm: ProfileFormData = {
   pincode: "",
 };
 
-const FALLBACK_STATES = [
-  "Andaman And Nicobar Islands",
-  "Andhra Pradesh",
-  "Arunachal Pradesh",
-  "Assam",
-  "Bihar",
-  "Chandigarh",
-  "Chhattisgarh",
-  "Delhi",
-  "Goa",
-  "Gujarat",
-  "Haryana",
-  "Himachal Pradesh",
-  "Jammu And Kashmir",
-  "Jharkhand",
-  "Karnataka",
-  "Kerala",
-  "Ladakh",
-  "Lakshadweep",
-  "Madhya Pradesh",
-  "Maharashtra",
-  "Manipur",
-  "Meghalaya",
-  "Mizoram",
-  "Nagaland",
-  "Odisha",
-  "Puducherry",
-  "Punjab",
-  "Rajasthan",
-  "Sikkim",
-  "Tamil Nadu",
-  "Telangana",
-  "The Dadra And Nagar Haveli And Daman And Diu",
-  "Tripura",
-  "Uttar Pradesh",
-  "Uttarakhand",
-  "West Bengal",
+const FALLBACK_PROFILE_AVATARS: AvailableProfileImage[] = [
+  {
+    key: "assets/Profile-img/Profile-1.jpg",
+    name: "Profile 1",
+    url: getS3AssetUrl("assets/Profile-img/Profile-1.jpg"),
+  },
+  {
+    key: "assets/Profile-img/Profile-2.jpg",
+    name: "Profile 2",
+    url: getS3AssetUrl("assets/Profile-img/Profile-2.jpg"),
+  },
+  {
+    key: "assets/Profile-img/Profile-3.jpg",
+    name: "Profile 3",
+    url: getS3AssetUrl("assets/Profile-img/Profile-3.jpg"),
+  },
 ];
 
 export default function ProfilePage() {
@@ -116,6 +105,7 @@ export default function ProfilePage() {
 
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [isSavingAvatar, setIsSavingAvatar] = useState(false);
   const [statusMessage, setStatusMessage] = useState<{
     type: "success" | "error";
     text: string;
@@ -126,6 +116,14 @@ export default function ProfilePage() {
   const [savedData, setSavedData] = useState<ProfileFormData>(emptyForm);
 
   // Avatar State
+  const [availableAvatars, setAvailableAvatars] = useState<
+    AvailableProfileImage[]
+  >(FALLBACK_PROFILE_AVATARS);
+  const [isLoadingAvatars, setIsLoadingAvatars] = useState(false);
+  const [isAvatarModalOpen, setIsAvatarModalOpen] = useState(false);
+  const [selectedAvatarKey, setSelectedAvatarKey] = useState<string | null>(
+    null,
+  );
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [savedAvatar, setSavedAvatar] = useState<string | null>(null);
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
@@ -135,6 +133,33 @@ export default function ProfilePage() {
   const [districts, setDistricts] = useState<LgdDistrict[]>([]);
   const [isLoadingStates, setIsLoadingStates] = useState(false);
   const [isLoadingDistricts, setIsLoadingDistricts] = useState(false);
+
+  // Fetch available profile avatars from S3 via backend API on mount
+  useEffect(() => {
+    let isMounted = true;
+    async function loadAvatars() {
+      try {
+        setIsLoadingAvatars(true);
+        const images = await getAvailableProfileImagesApi();
+        if (isMounted && images && images.length > 0) {
+          setAvailableAvatars(images);
+        }
+      } catch (err) {
+        console.warn(
+          "Could not load avatars from API, using fallback options",
+          err,
+        );
+      } finally {
+        if (isMounted) {
+          setIsLoadingAvatars(false);
+        }
+      }
+    }
+    loadAvatars();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   // Fetch logged in user profile on mount
   useEffect(() => {
@@ -165,10 +190,11 @@ export default function ProfilePage() {
         setFormData(initialForm);
         setSavedData(initialForm);
 
-        if (data.profile?.profileImageUrl) {
-          setAvatarPreview(data.profile.profileImageUrl);
-          setSavedAvatar(data.profile.profileImageUrl);
-        }
+        const profileKey =
+          data.profile?.profileImageUrl || "assets/Profile-img/Profile-1.jpg";
+        setSelectedAvatarKey(profileKey);
+        setAvatarPreview(getS3AssetUrl(profileKey));
+        setSavedAvatar(profileKey);
       } catch (err: any) {
         if (!isMounted) return;
         const msg = err?.message || "";
@@ -296,6 +322,47 @@ export default function ProfilePage() {
     }
   };
 
+  const handleSelectPresetAvatar = async (url: string, key?: string) => {
+    const chosenKey =
+      key || availableAvatars.find((a) => a.url === url)?.key || url;
+    setSelectedAvatarKey(chosenKey);
+    setAvatarPreview(getS3AssetUrl(chosenKey));
+    setAvatarFile(null);
+
+    try {
+      setIsSavingAvatar(true);
+      const res = await selectProfileImageApi(chosenKey);
+      const newKey = res.profileImageUrl || chosenKey;
+      setSelectedAvatarKey(newKey);
+      setSavedAvatar(newKey);
+      setAvatarPreview(getS3AssetUrl(newKey));
+      setStatusMessage({
+        type: "success",
+        text: "Profile image updated successfully!",
+      });
+    } catch (err: any) {
+      console.error("Failed to auto-save avatar:", err);
+      setStatusMessage({
+        type: "error",
+        text: err?.message || "Failed to auto-save avatar. Please try again.",
+      });
+    } finally {
+      setIsSavingAvatar(false);
+    }
+  };
+
+  const handleSaveAvatarFromModal = async (chosenKey: string) => {
+    const res = await selectProfileImageApi(chosenKey);
+    const newKey = res.profileImageUrl || chosenKey;
+    setSelectedAvatarKey(newKey);
+    setSavedAvatar(newKey);
+    setAvatarPreview(getS3AssetUrl(newKey));
+    setStatusMessage({
+      type: "success",
+      text: "Profile image updated successfully!",
+    });
+  };
+
   const handleSubmit = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
 
@@ -319,13 +386,13 @@ export default function ProfilePage() {
     setStatusMessage(null);
 
     try {
-      let finalAvatarUrl = savedAvatar;
+      let finalAvatarPath = selectedAvatarKey || savedAvatar;
 
       // Upload image if a new file was chosen
       if (avatarFile) {
         try {
           const uploadRes = await uploadImage(avatarFile);
-          finalAvatarUrl = uploadRes.displayUrl || uploadRes.originalUrl;
+          finalAvatarPath = uploadRes.displayUrl || uploadRes.originalUrl;
         } catch (uploadErr) {
           console.warn("Avatar upload failed:", uploadErr);
         }
@@ -341,7 +408,7 @@ export default function ProfilePage() {
         district: formData.district.trim() || undefined,
         state: formData.state.trim() || undefined,
         pincode: formData.pincode.trim() || undefined,
-        profileImageUrl: finalAvatarUrl || undefined,
+        profileImageUrl: finalAvatarPath || undefined,
       });
 
       const { firstName, lastName } = splitName(updated.name);
@@ -364,9 +431,11 @@ export default function ProfilePage() {
       setSavedData(syncedForm);
       setAvatarFile(null);
 
-      if (updated.profile?.profileImageUrl) {
-        setAvatarPreview(updated.profile.profileImageUrl);
-        setSavedAvatar(updated.profile.profileImageUrl);
+      const returnedKey = updated.profile?.profileImageUrl || finalAvatarPath;
+      if (returnedKey) {
+        setSelectedAvatarKey(returnedKey);
+        setAvatarPreview(getS3AssetUrl(returnedKey));
+        setSavedAvatar(returnedKey);
       }
 
       setStatusMessage({
@@ -385,7 +454,8 @@ export default function ProfilePage() {
 
   const handleCancel = () => {
     setFormData({ ...savedData });
-    setAvatarPreview(savedAvatar);
+    setSelectedAvatarKey(savedAvatar);
+    setAvatarPreview(getS3AssetUrl(savedAvatar));
     setAvatarFile(null);
     setStatusMessage(null);
   };
@@ -420,50 +490,82 @@ export default function ProfilePage() {
           </Link>
         </div>
 
-        <div className="max-w-6xl mx-auto flex flex-col md:flex-row gap-6">
+        <div className="max-w-6xl mx-auto flex flex-col md:flex-row gap-4 sm:gap-6">
           {/* Left Sidebar Navigation */}
-          <div className="w-full md:w-72 shrink-0">
-            <h2 className="text-xl font-bold text-white mb-4 px-1 tracking-tight">
+          <div className="w-full md:w-64 lg:w-72 shrink-0">
+            <h2 className="text-xl font-bold text-white mb-4 px-1 tracking-tight hidden md:block">
               Manage My Account
             </h2>
             <AccountMenu onLogout={handleLogout} />
           </div>
 
           {/* Right Main Content area */}
-          <div className="flex-1 bg-white rounded-3xl shadow-2xl p-6 sm:p-8">
-            <div className="flex justify-between items-start mb-6">
-              <ProfileHeader
-                title={
-                  displayFullName
-                    ? `Hello, ${displayFullName}`
-                    : "Edit Your Profile"
-                }
-                subtitle="Update your personal information and account details"
-              />
+          <div className="flex-1 bg-white rounded-2xl sm:rounded-3xl shadow-2xl p-4 sm:p-6 lg:p-8 min-w-0">
+            <div className="flex items-start justify-between gap-3 sm:gap-4 mb-6">
+              <div className="min-w-0 flex-1">
+                <ProfileHeader
+                  title={
+                    displayFullName
+                      ? `Hello, ${displayFullName}`
+                      : "Edit Your Profile"
+                  }
+                  subtitle="Update your personal information and account details"
+                />
+              </div>
 
               {/* Avatar Section at Top Right */}
-              <div className="relative shrink-0 ml-4">
-                <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-gray-50 flex items-center justify-center overflow-hidden border-2 border-white shadow-md">
-                  <img
-                    src={avatarPreview || "/images/recommendation-toy.png"}
-                    alt="Profile preview"
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-                <label
-                  htmlFor="avatar-upload"
-                  className="absolute bottom-1 right-1 p-1.5 bg-[#6B21A8] rounded-full text-white cursor-pointer hover:bg-[#4C1D95] transition-colors shadow-lg border-2 border-white"
+              <div className="relative shrink-0">
+                <button
+                  type="button"
+                  onClick={() => setIsAvatarModalOpen(true)}
+                  className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 rounded-full bg-gray-50 flex items-center justify-center overflow-hidden border-2 border-white shadow-md hover:ring-4 hover:ring-purple-300 transition-all cursor-pointer group focus:outline-none"
+                  title="Click to change profile picture"
                 >
-                  <Camera size={14} />
-                  <input
-                    id="avatar-upload"
-                    type="file"
-                    accept="image/*"
-                    className="hidden"
-                    onChange={handleImageChange}
+                  <img
+                    src={
+                      avatarPreview ||
+                      getS3AssetUrl(selectedAvatarKey) ||
+                      "/images/recommendation-toy.png"
+                    }
+                    alt="Profile preview"
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform"
                   />
-                </label>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setIsAvatarModalOpen(true)}
+                  className="absolute bottom-0 right-0 p-1.5 bg-[#6B21A8] rounded-full text-white cursor-pointer hover:bg-[#4C1D95] transition-colors shadow-lg border-2 border-white focus:outline-none"
+                  title="Choose profile picture from S3"
+                >
+                  <Camera size={13} />
+                </button>
               </div>
+            </div>
+
+            {/* Profile Image Modal Popup */}
+            <ProfileImageModal
+              isOpen={isAvatarModalOpen}
+              onClose={() => setIsAvatarModalOpen(false)}
+              images={availableAvatars}
+              currentSelectedKey={selectedAvatarKey}
+              onSave={handleSaveAvatarFromModal}
+              isLoadingOptions={isLoadingAvatars}
+            />
+
+            {/* Avatar Selector Section */}
+            <div className="mb-6">
+              <AvatarSelector
+                options={availableAvatars.map((img) => ({
+                  id: img.key,
+                  label: img.name,
+                  url: getS3AssetUrl(img.key),
+                  key: img.key,
+                }))}
+                selectedUrl={selectedAvatarKey || avatarPreview}
+                onSelect={handleSelectPresetAvatar}
+                onOpenModal={() => setIsAvatarModalOpen(true)}
+                isLoading={isSavingAvatar}
+              />
             </div>
 
             {statusMessage && (
@@ -484,12 +586,7 @@ export default function ProfilePage() {
             )}
 
             {isLoading ? (
-              <div className="flex flex-col items-center justify-center py-24 gap-3">
-                <Loader2 size={32} className="animate-spin text-[#6B21A8]" />
-                <p className="text-sm font-medium text-gray-500">
-                  Loading profile information...
-                </p>
-              </div>
+              <AccountFormSkeleton />
             ) : (
               <form onSubmit={handleSubmit} className="flex flex-col gap-4">
                 {/* Row 1: First Name | Last Name */}
@@ -592,7 +689,7 @@ export default function ProfilePage() {
                     options={
                       states.length > 0
                         ? states.map((s) => ({ value: s.name, label: s.name }))
-                        : FALLBACK_STATES.map((s) => ({ value: s, label: s }))
+                        : INDIAN_STATES.map((s) => ({ value: s, label: s }))
                     }
                   />
                   <ProfileSelect

@@ -4,27 +4,46 @@
 }
 
 .header {
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
   align-items: center;
-  justify-content: space-between;
 
   margin-bottom: 24px;
 }
 
 .header h2 {
+  grid-column: 2;
+
   margin: 0;
 
   color: #ffffff;
 
-  font-size: 20px;
-  font-weight: 600;
+  font-family: var(--font-black-han-sans), sans-serif;
+  font-size: 50px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 60px;
+  letter-spacing: 0.04em;
+  text-align: center;
+  text-transform: uppercase;
+  vertical-align: middle;
+}
+
+.sliderContainer {
+  position: relative;
+  width: 100%;
 }
 
 .controls {
+  position: absolute;
+  z-index: 3;
+  top: 127px;
+  right: 0;
+  left: 0;
   display: flex;
   align-items: center;
-
-  gap: 8px;
+  justify-content: space-between;
+  pointer-events: none;
 }
 
 .controls button {
@@ -42,12 +61,21 @@
 
   background: transparent;
   color: #ffffff;
+  pointer-events: auto;
 
   cursor: pointer;
 }
 
+.previousButton {
+  transform: translateX(10%);
+}
+
+.nextButton {
+  transform: translateX(10%);
+}
+
 .controls button:hover {
-  background: rgba(255, 255, 255, 0.12);
+  background: #64748b;
 }
 
 .slider {
@@ -81,10 +109,15 @@
 
   .header h2 {
     font-size: 18px;
+    line-height: 24px;
   }
 
   .slider {
     gap: 16px;
+  }
+
+  .controls {
+    top: 110px;
   }
 
   .controls button {

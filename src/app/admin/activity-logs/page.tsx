@@ -58,7 +58,7 @@ export default function ActivityLogsPage() {
   const [endDate, setEndDate] = useState("");
 
   // UI States
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [showFilters, setShowFilters] = useState(false);
   const [selectedLog, setSelectedLog] = useState<any>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);

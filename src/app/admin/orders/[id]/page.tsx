@@ -23,6 +23,7 @@ import {
   Select,
   StatusBadge,
 } from "@/components/admin";
+import { AdminDetailSkeleton } from "@/components/admin/LoadingSkeleton";
 import { useAppDispatch } from "@/redux/hooks";
 import { addActivityLog } from "@/redux/slices/admin-slice";
 import { apiClient } from "@/services/api-client";
@@ -112,13 +113,7 @@ export default function OrderDetailsPage() {
     fetchOrderDetails();
   }, [id, setValue]);
 
-  if (loading) {
-    return (
-      <div className="py-12 text-center text-sm font-semibold text-text-custom/50">
-        Loading order details...
-      </div>
-    );
-  }
+  if (loading) return <AdminDetailSkeleton label="Loading order details" />;
 
   if (!order) {
     return (

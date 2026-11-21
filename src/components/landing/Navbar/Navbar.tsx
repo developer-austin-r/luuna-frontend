@@ -5,6 +5,9 @@ import Image from "next/image";
 import Link from "next/link";
 import { Heart, Menu, Search, ShoppingBag, UserRound, X } from "lucide-react";
 
+import { useCart } from "@/components/Cart/cart-items";
+import { useWishlist } from "@/hooks/use-wishlist";
+
 import styles from "./Navbar.module.css";
 
 const links = [
@@ -13,11 +16,19 @@ const links = [
   { href: "#top-picks", label: "Top Picks" },
 ];
 
-export default function Navbar() {
+export default function Navbar({ checkout = false }: { checkout?: boolean }) {
   const [menuOpen, setMenuOpen] = useState(false);
+  const { cart } = useCart();
+  const wishlistCount = useWishlist().productIds.length;
+  const itemCount =
+    cart?.items.reduce((total, item) => total + item.quantity, 0) ?? 0;
 
   return (
-    <header className={styles.header}>
+    <header
+      className={
+        checkout ? `${styles.header} ${styles.checkout}` : styles.header
+      }
+    >
       <nav className={styles.navbar}>
         <button
           className={styles.menuButton}
@@ -35,7 +46,7 @@ export default function Navbar() {
             type="search"
             name="q"
             aria-label="Search collectibles"
-            placeholder="Find your favorite toy..."
+            placeholder={checkout ? "Search toys" : "Find your favorite toy..."}
           />
           <kbd>↵</kbd>
         </form>
@@ -52,14 +63,32 @@ export default function Navbar() {
         </Link>
 
         <div className={styles.actions}>
-          <Link href="/profile/wishlist" aria-label="Wishlist">
-            <Heart size={20} />
+          <Link
+            href="/profile/wishlist"
+            className={styles.cartLink}
+            aria-label={`Wishlist, ${wishlistCount} ${wishlistCount === 1 ? "favorite" : "favorites"}`}
+          >
+            <Heart size={20} aria-hidden="true" />
+            {wishlistCount > 0 && (
+              <span className={styles.cartCount} aria-hidden="true">
+                {wishlistCount > 99 ? "99+" : wishlistCount}
+              </span>
+            )}
           </Link>
           <Link href="/profile" aria-label="Your account">
             <UserRound size={21} />
           </Link>
-          <Link href="/cart" aria-label="Shopping bag">
-            <ShoppingBag size={21} />
+          <Link
+            href="/cart"
+            className={styles.cartLink}
+            aria-label={`Shopping bag, ${itemCount} ${itemCount === 1 ? "item" : "items"}`}
+          >
+            <ShoppingBag size={21} aria-hidden="true" />
+            {itemCount > 0 && (
+              <span className={styles.cartCount} aria-hidden="true">
+                {itemCount > 99 ? "99+" : itemCount}
+              </span>
+            )}
           </Link>
         </div>
       </nav>
@@ -70,7 +99,7 @@ export default function Navbar() {
       >
         {links.map((link) => (
           <Link
-            href={link.href}
+            href={checkout ? `/${link.href}` : link.href}
             key={link.href}
             onClick={() => setMenuOpen(false)}
           >

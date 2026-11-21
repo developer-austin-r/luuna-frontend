@@ -23,6 +23,7 @@ import { Breadcrumb, Button, Card } from "@/components/admin";
 import { BarcodeScanner } from "@/components/admin/BarcodeScanner";
 import { BillItemsTable } from "@/components/admin/BillItemsTable";
 import { BillPrintView } from "@/components/admin/BillPrintView";
+import { LoadingSkeletonTable } from "@/components/admin/LoadingSkeleton";
 import { useAppSelector } from "@/redux/hooks";
 import {
   type Bill,
@@ -535,7 +536,7 @@ function HistoryPanel() {
   const [statusFilter, setStatusFilter] = useState("");
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [viewBill, setViewBill] = useState<Bill | null>(null);
 
   const load = useCallback(
@@ -658,10 +659,7 @@ function HistoryPanel() {
 
         {/* Table */}
         {loading ? (
-          <div className="flex items-center justify-center py-16 gap-2 text-text-custom/50 text-xs">
-            <Loader2 className="w-4 h-4 animate-spin" />
-            Loading bills…
-          </div>
+          <LoadingSkeletonTable label="Loading bills" />
         ) : bills.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 text-text-custom/40">
             <FileText className="w-10 h-10 mb-3" />

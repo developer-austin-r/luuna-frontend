@@ -1,20 +1,19 @@
+import type { ComponentPropsWithoutRef } from "react";
+
 import styles from "./CheckoutInput.module.css";
 
-interface CheckoutInputProps {
+interface CheckoutInputProps extends ComponentPropsWithoutRef<"input"> {
   label: string;
-  placeholder?: string;
-  type?: string;
 }
 
 export default function CheckoutInput({
   label,
-  placeholder,
-  type = "text",
+  ...inputProps
 }: CheckoutInputProps) {
   return (
-    <div className={styles.field}>
-      <label className={styles.label}>{label}</label>
-      <input className={styles.input} type={type} placeholder={placeholder} />
-    </div>
+    <label className={styles.field}>
+      <span className={styles.label}>{label}</span>
+      <input className={styles.input} {...inputProps} />
+    </label>
   );
 }

@@ -7,7 +7,6 @@ import {
   Calendar,
   Clock,
   CreditCard,
-  Loader2,
   Mail,
   MapPin,
   Phone,
@@ -24,6 +23,7 @@ import {
   StatusBadge,
   Tabs,
 } from "@/components/admin";
+import { AdminDetailSkeleton } from "@/components/admin/LoadingSkeleton";
 import { useToast } from "@/providers/toast-provider";
 import { type DetailedCustomer, getCustomerById } from "@/services/customer";
 import { type Order } from "@/types/admin";
@@ -58,24 +58,7 @@ export default function CustomerDetailsPage() {
     fetchDetails();
   }, [id, toast]);
 
-  if (loading) {
-    return (
-      <div className="space-y-6">
-        <Breadcrumb
-          items={[
-            { label: "Customers", href: "/admin/customers" },
-            { label: "Loading..." },
-          ]}
-        />
-        <Card className="text-center py-20 flex flex-col items-center justify-center space-y-3">
-          <Loader2 className="w-8 h-8 animate-spin text-primary" />
-          <p className="text-sm font-medium text-text-custom/60">
-            Loading customer profile...
-          </p>
-        </Card>
-      </div>
-    );
-  }
+  if (loading) return <AdminDetailSkeleton label="Loading customer profile" />;
 
   if (!customer) {
     return (

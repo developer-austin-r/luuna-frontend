@@ -1,160 +1,74 @@
+import { Suspense } from "react";
+import localFont from "next/font/local";
+import Image from "next/image";
 import Link from "next/link";
-import { CarFront } from "lucide-react";
 
-import CollectibleFigure from "@/components/landing/CollectibleFigure";
-import {
-  type ArrivalProduct,
-  ProductCard,
-  ProductCarousel,
-} from "@/components/landing/NewArrivals/NewArrivals";
+import LandingProductCarousel from "@/components/landing/NewArrivals/LandingProductCarousel";
+import { getS3AssetUrl } from "@/config";
 
 import styles from "./LandingStorySections.module.css";
 
-const accessories: ArrivalProduct[] = [
-  {
-    name: "God of War bundle",
-    description: "Collectible set · 2 pieces",
-    price: "₹2500",
-    oldPrice: "₹3500",
-    variant: "web",
-  },
-  {
-    name: "God of War bundle",
-    description: "Shelf accessory · 1 piece",
-    price: "₹2500",
-    oldPrice: "₹3500",
-    variant: "warrior",
-  },
-  {
-    name: "God of War bundle",
-    description: "Mini figure · 10 cm",
-    price: "₹2500",
-    oldPrice: "₹3500",
-    variant: "sunburst",
-  },
-  {
-    name: "God of War bundle",
-    description: "Enamel pins · Set of 3",
-    price: "₹2500",
-    oldPrice: "₹3500",
-    variant: "ninja",
-  },
-];
-
-const topPicks: ArrivalProduct[] = [
-  {
-    name: "God of War bundle",
-    description: "Collector figure · 18 cm",
-    price: "₹2500",
-    oldPrice: "₹3500",
-    variant: "warrior",
-    image: "/images/recommendation-toy.png",
-  },
-  {
-    name: "God of War bundle",
-    description: "Vinyl figures · Set of 2",
-    price: "₹2500",
-    oldPrice: "₹3500",
-    variant: "web",
-  },
-  {
-    name: "God of War bundle",
-    description: "Anime figure · 16 cm",
-    price: "₹2500",
-    oldPrice: "₹3500",
-    variant: "sunburst",
-  },
-  {
-    name: "God of War bundle",
-    description: "Anime figure · 15 cm",
-    price: "₹2500",
-    oldPrice: "₹3500",
-    variant: "ninja",
-  },
-  {
-    name: "God of War bundle",
-    description: "Fantasy figure · 18 cm",
-    price: "₹2500",
-    oldPrice: "₹3500",
-    variant: "warrior",
-  },
-  {
-    name: "God of War bundle",
-    description: "Collector figure · 17 cm",
-    price: "₹2500",
-    oldPrice: "₹3500",
-    variant: "web",
-  },
-  {
-    name: "God of War bundle",
-    description: "Fantasy figure · 16 cm",
-    price: "₹2500",
-    oldPrice: "₹3500",
-    variant: "ninja",
-  },
-  {
-    name: "God of War bundle",
-    description: "Anime figure · 15 cm",
-    price: "₹2500",
-    oldPrice: "₹3500",
-    variant: "sunburst",
-  },
-];
+const headingFont = localFont({
+  src: "../../assets/fonts/black-han-sans.ttf",
+  display: "swap",
+  weight: "400",
+});
 
 const categories = [
   {
-    name: "ANIME",
-    tone: "anime",
-    variant: "sunburst" as const,
-  },
-  {
-    name: "ANIME",
-    tone: "classics",
-    variant: "ninja" as const,
+    name: "Anime",
+    s3Path: "assets/Categories-img/Anime.png",
+    href: "/categories/anime",
+    hotspot: styles.hotspotAnime,
   },
   {
     name: "DC",
-    tone: "dc",
-    variant: "warrior" as const,
+    s3Path: "assets/Categories-img/Dc.png",
+    href: "/categories/dc",
+    hotspot: styles.hotspotDC,
   },
   {
-    name: "MARVEL",
-    tone: "marvel",
-    variant: "web" as const,
+    name: "Marvel",
+    s3Path: "assets/Categories-img/Marvel.png",
+    href: "/categories/marvel",
+    hotspot: styles.hotspotMarvel,
   },
   {
-    name: "K-POP",
-    tone: "kpop",
-    variant: "sunburst" as const,
+    name: "K-Pop",
+    s3Path: "assets/Categories-img/K-Pop.png",
+    href: "/categories/kpop",
+    hotspot: styles.hotspotKpop,
+  },
+  {
+    name: "Nostalgia",
+    s3Path: "assets/Categories-img/Nostalogia.png",
+    href: "/categories/nostalgia",
+    hotspot: styles.hotspotNostalgia,
+  },
+  {
+    name: "Wheels",
+    s3Path: "assets/Categories-img/Wheels.PNG",
+    href: "/categories/wheels",
+    hotspot: styles.hotspotWheels,
   },
 ];
 
-function ArtworkBanner({
-  id,
-  title,
-  scene,
-}: {
-  id: string;
-  title: string;
-  scene: "new" | "nostalgia" | "wheels";
-}) {
+function WhatsNewBanner() {
   return (
-    <section className={styles.posterSection} id={id} aria-label={title}>
-      <div className={`${styles.poster} ${styles[`poster${scene}`]}`}>
-        <div className={styles.posterArt} aria-hidden="true">
-          {scene === "wheels" ? (
-            <CarFront size={150} strokeWidth={1.1} />
-          ) : (
-            <CollectibleFigure
-              className={styles.posterFigure}
-              variant={scene === "new" ? "sunburst" : "warrior"}
-            />
-          )}
-        </div>
-        <div className={styles.posterLabel}>
-          <h2>{title}</h2>
-        </div>
-      </div>
+    <section
+      id="whats-new"
+      aria-labelledby="whats-new-title"
+      className={`${styles.whatsNew} ${headingFont.className}`}
+    >
+      <h2 id="whats-new-title">WHAT’S NEW</h2>
+      <Image
+        src={getS3AssetUrl("assets/Lattest.png")}
+        alt="Naruto overlooking a village framed by autumn leaves"
+        width={1440}
+        height={472}
+        unoptimized
+        className={styles.whatsNewImage}
+      />
     </section>
   );
 }
@@ -162,55 +76,31 @@ function ArtworkBanner({
 function CategoryGrid() {
   return (
     <section
-      className={styles.categorySection}
+      className={`${styles.categorySection} ${headingFont.className}`}
       aria-labelledby="category-title"
     >
       <div className={styles.contentWidth}>
         <div className={styles.sectionTitle}>
           <h2 id="category-title">CATEGORY</h2>
         </div>
-        <div className={styles.categoryGrid}>
-          {categories.map((category) => (
+
+        <div className={styles.categoryArtwork}>
+          {categories.map(({ name, s3Path, href, hotspot }) => (
             <Link
-              href="#top-picks"
-              className={`${styles.categoryCard} ${styles[category.tone]}`}
-              key={`${category.tone}-${category.name}`}
+              key={href}
+              href={href}
+              className={`${styles.categoryHotspot} ${hotspot}`}
             >
-              <span className={styles.categoryCopy}>
-                <span className={styles.categoryName}>{category.name}</span>
-              </span>
-              <CollectibleFigure
-                className={styles.categoryFigure}
-                variant={category.variant}
+              <Image
+                src={getS3AssetUrl(s3Path)}
+                alt={name}
+                fill
+                unoptimized
+                sizes="(min-width: 1440px) 1280px, 89vw"
+                className={styles.categoryArtworkImage}
               />
+              <span className={styles.categoryLabel}>{name}</span>
             </Link>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-function BrandStrip() {
-  return <div className={styles.brandStrip} aria-hidden="true" />;
-}
-
-function ProductGrid() {
-  return (
-    <section
-      className={styles.productGridSection}
-      aria-label="Featured products"
-    >
-      <div className={styles.contentWidth}>
-        <div className={styles.productGrid}>
-          {topPicks.map((product, index) => (
-            <ProductCard
-              key={`favorite-${index}-${product.name}`}
-              product={product}
-              index={index}
-              total={topPicks.length}
-              className={styles.gridCard}
-            />
           ))}
         </div>
       </div>
@@ -221,18 +111,11 @@ function ProductGrid() {
 export default function LandingStorySections() {
   return (
     <>
-      <ProductCarousel
-        id="accessories"
-        title="ACCESSORIES"
-        products={accessories}
-      />
-      <ArtworkBanner id="whats-new" title="WHAT’S NEW" scene="new" />
+      <Suspense>
+        <LandingProductCarousel section="accessories" />
+      </Suspense>
+      <WhatsNewBanner />
       <CategoryGrid />
-      <ArtworkBanner id="nostalgia" title="NOSTALGIA" scene="nostalgia" />
-      <ArtworkBanner id="wheels" title="WHEELS" scene="wheels" />
-      <BrandStrip />
-      <ProductCarousel id="top-picks" title="TOP PICKS" products={topPicks} />
-      <ProductGrid />
     </>
   );
 }

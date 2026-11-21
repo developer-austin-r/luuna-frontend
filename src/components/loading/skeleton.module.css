@@ -1,0 +1,44 @@
+.region {
+  --skeleton-base: #eee6f6;
+  --skeleton-highlight: #fbf7ff;
+}
+
+.dark {
+  --skeleton-base: #3f2b57;
+  --skeleton-highlight: #573d75;
+}
+
+@layer components {
+  .block {
+    position: relative;
+    overflow: hidden;
+    border-radius: 8px;
+    background: var(--skeleton-base, #eee6f6);
+  }
+}
+
+.block::after {
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--skeleton-highlight, #fbf7ff),
+    transparent
+  );
+  animation: shimmer 1.65s ease-in-out infinite;
+  content: "";
+}
+
+@keyframes shimmer {
+  to {
+    transform: translateX(100%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .block::after {
+    animation: none;
+  }
+}

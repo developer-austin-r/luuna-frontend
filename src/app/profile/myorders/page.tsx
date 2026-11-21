@@ -26,7 +26,9 @@ import {
 import Footer from "@/components/landing/Footer/Footer";
 import LoginOfferBar from "@/components/landing/LoginOfferBar/LoginOfferBar";
 import Navbar from "@/components/landing/Navbar/Navbar";
+import { AccountListSkeleton } from "@/components/loading/AccountSkeletons";
 import { AccountMenu } from "@/components/profile/AccountMenu/AccountMenu";
+import { useToast } from "@/providers/toast-provider";
 import { logoutApi } from "@/services/auth";
 import {
   cancelOrderApi,
@@ -60,6 +62,7 @@ function formatPrice(val: number | string | undefined): string {
 
 export default function MyOrdersPage() {
   const router = useRouter();
+  const { success, error: toastError } = useToast();
 
   const [orders, setOrders] = useState<Order[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -111,10 +114,34 @@ export default function MyOrdersPage() {
     }
   };
 
-  const handleCopy = (text: string, id: string) => {
-    navigator.clipboard.writeText(text);
-    setCopiedId(id);
-    setTimeout(() => setCopiedId(null), 2000);
+  const handleCopy = async (text: string, id: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopiedId(id);
+      success("Order ID copied to clipboard!");
+      setTimeout(() => setCopiedId(null), 2000);
+    } catch {
+      try {
+        const textarea = document.createElement("textarea");
+        textarea.value = text;
+        textarea.style.position = "fixed";
+        textarea.style.opacity = "0";
+        document.body.appendChild(textarea);
+        textarea.select();
+        const ok = document.execCommand("copy");
+        document.body.removeChild(textarea);
+        if (ok) {
+          setCopiedId(id);
+          success("Order ID copied to clipboard!");
+          setTimeout(() => setCopiedId(null), 2000);
+          return;
+        }
+      } catch {
+        // Fallback failed
+      }
+      setCopiedId(null);
+      toastError("Unable to copy to clipboard.");
+    }
   };
 
   const handleConfirmCancelOrder = async () => {
@@ -249,17 +276,17 @@ export default function MyOrdersPage() {
           </Link>
         </div>
 
-        <div className="max-w-6xl mx-auto flex flex-col md:flex-row gap-8 items-start">
+        <div className="max-w-6xl mx-auto flex flex-col md:flex-row gap-4 sm:gap-6 lg:gap-8 items-start">
           {/* Left Sidebar Navigation */}
-          <div className="w-full md:w-72 shrink-0">
-            <h2 className="text-xl font-bold text-white mb-4 px-1 tracking-tight">
+          <div className="w-full md:w-64 lg:w-72 shrink-0">
+            <h2 className="text-xl font-bold text-white mb-4 px-1 tracking-tight hidden md:block">
               Manage My Account
             </h2>
             <AccountMenu onLogout={handleLogout} />
           </div>
 
           {/* Right Main Content area */}
-          <div className="flex-1 bg-white rounded-3xl shadow-2xl p-6 sm:p-8 w-full border border-gray-100 min-h-[500px]">
+          <div className="flex-1 bg-white rounded-2xl sm:rounded-3xl shadow-2xl p-4 sm:p-6 lg:p-8 w-full border border-gray-100 min-h-[500px] min-w-0">
             {/* Header */}
             <div className="pb-6 border-b border-gray-100">
               <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2.5">
@@ -322,18 +349,7 @@ export default function MyOrdersPage() {
 
             {/* Content States */}
             {isLoading ? (
-              <div className="py-20 flex flex-col items-center justify-center text-center">
-                <Loader2
-                  size={36}
-                  className="animate-spin text-[#6B21A8] mb-4"
-                />
-                <p className="text-gray-600 font-medium">
-                  Loading your orders...
-                </p>
-                <p className="text-xs text-gray-400 mt-1">
-                  Please wait while we retrieve your order history.
-                </p>
-              </div>
+              <AccountListSkeleton label="Loading your orders" />
             ) : error ? (
               <div className="py-16 flex flex-col items-center justify-center text-center max-w-md mx-auto">
                 <div className="h-12 w-12 rounded-full bg-red-50 text-red-600 flex items-center justify-center mb-4">
@@ -383,7 +399,7 @@ export default function MyOrdersPage() {
                   return (
                     <div
                       key={order.id}
-                      className="border border-gray-200 hover:border-purple-200 rounded-2xl p-5 sm:p-6 transition-all bg-white hover:shadow-md flex flex-col gap-4"
+                      className="border border-gray-200 hover:border-purple-200 rounded-2xl p-4 sm:p-6 transition-all bg-white hover:shadow-md flex flex-col gap-4"
                     >
                       {/* Card Header */}
                       <div className="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-gray-100">
@@ -542,18 +558,18 @@ export default function MyOrdersPage() {
 
       {/* ORDER DETAILS MODAL */}
       {selectedOrder && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4">
           <div
             className="fixed inset-0 bg-slate-900/50 backdrop-blur-xs transition-opacity duration-200"
             onClick={() => setSelectedOrder(null)}
           />
 
-          <div className="relative w-full max-w-2xl bg-white rounded-3xl shadow-2xl border border-gray-100 z-10 overflow-hidden flex flex-col max-h-[90vh] animate-in fade-in zoom-in-95 duration-150">
+          <div className="relative w-full max-w-2xl bg-white rounded-2xl sm:rounded-3xl shadow-2xl border border-gray-100 z-10 overflow-hidden flex flex-col max-h-[92vh] sm:max-h-[90vh] animate-in fade-in zoom-in-95 duration-150">
             {/* Modal Header */}
-            <div className="px-6 py-5 border-b border-gray-100 flex items-center justify-between bg-gray-50/70">
+            <div className="px-4 sm:px-6 py-4 sm:py-5 border-b border-gray-100 flex items-center justify-between bg-gray-50/70">
               <div>
                 <div className="flex items-center gap-2.5">
-                  <h3 className="text-lg font-bold text-gray-900">
+                  <h3 className="text-base sm:text-lg font-bold text-gray-900">
                     Order #{selectedOrder.orderNumber}
                   </h3>
                   {getStatusBadge(selectedOrder.orderStatus)}
@@ -573,7 +589,7 @@ export default function MyOrdersPage() {
             </div>
 
             {/* Modal Body */}
-            <div className="p-6 overflow-y-auto flex-1 flex flex-col gap-6 text-sm">
+            <div className="p-4 sm:p-6 overflow-y-auto flex-1 flex flex-col gap-5 sm:gap-6 text-sm">
               {/* Order Tracking Stepper */}
               {selectedOrder.orderStatus !== "CANCELLED" &&
                 selectedOrder.orderStatus !== "REFUNDED" && (
@@ -581,7 +597,7 @@ export default function MyOrdersPage() {
                     <h4 className="text-xs font-bold text-[#6B21A8] uppercase tracking-wider mb-4">
                       Delivery Status
                     </h4>
-                    <div className="grid grid-cols-4 gap-2 text-center text-xs relative">
+                    <div className="grid grid-cols-4 gap-1 sm:gap-2 text-center text-[10px] sm:text-xs relative">
                       {[
                         {
                           label: "Placed",

@@ -218,17 +218,17 @@ export default function ChangePasswordPage() {
           </Link>
         </div>
 
-        <div className="max-w-6xl mx-auto flex flex-col md:flex-row gap-6">
+        <div className="max-w-6xl mx-auto flex flex-col md:flex-row gap-4 sm:gap-6">
           {/* Left Sidebar Navigation */}
-          <div className="w-full md:w-72 shrink-0">
-            <h2 className="text-xl font-bold text-white mb-4 px-1 tracking-tight">
+          <div className="w-full md:w-64 lg:w-72 shrink-0">
+            <h2 className="text-xl font-bold text-white mb-4 px-1 tracking-tight hidden md:block">
               Manage My Account
             </h2>
             <AccountMenu onLogout={handleLogout} />
           </div>
 
           {/* Right Main Content area */}
-          <div className="flex-1 bg-white rounded-3xl shadow-2xl p-6 sm:p-8">
+          <div className="flex-1 bg-white rounded-2xl sm:rounded-3xl shadow-2xl p-4 sm:p-6 lg:p-8 min-w-0">
             <div className="mb-6">
               <ProfileHeader
                 title="Change Password"

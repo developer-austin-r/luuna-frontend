@@ -1,7 +1,36 @@
-import React from "react";
-import Link from "next/link";
+"use client";
 
-export const LoginOfferBar: React.FC = () => {
+import { useEffect, useState } from "react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+
+import { ApiRequestError } from "@/services/api-client";
+import { getProfileApi } from "@/services/profile";
+
+export function LoginOfferBar() {
+  const pathname = usePathname();
+  const [guestPath, setGuestPath] = useState<string | null>(null);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    void getProfileApi({ signal: controller.signal, cache: "no-store" })
+      .then(() => {
+        if (!controller.signal.aborted) setGuestPath(null);
+      })
+      .catch((error: unknown) => {
+        if (!controller.signal.aborted) {
+          setGuestPath(
+            error instanceof ApiRequestError && error.status === 401
+              ? pathname
+              : null,
+          );
+        }
+      });
+    return () => controller.abort();
+  }, [pathname]);
+
+  if (guestPath !== pathname) return null;
+
   return (
     <div className="relative z-50 w-full border-b border-gray-100 bg-white px-3 py-1 text-gray-900">
       <div className="mx-auto flex max-w-7xl flex-row flex-wrap items-center justify-center gap-x-2 text-center text-[10px] font-medium leading-4 sm:text-xs">
@@ -18,6 +47,6 @@ export const LoginOfferBar: React.FC = () => {
       </div>
     </div>
   );
-};
+}
 
 export default LoginOfferBar;
