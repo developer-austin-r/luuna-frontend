@@ -17,37 +17,37 @@ const headingFont = localFont({
 const categories = [
   {
     name: "Anime",
-    image: "anime.png",
+    s3Path: "assets/Categories-img/Anime.png",
     href: "/categories/anime",
     hotspot: styles.hotspotAnime,
   },
   {
     name: "DC",
-    image: "dc.png",
+    s3Path: "assets/Categories-img/Dc.png",
     href: "/categories/dc",
     hotspot: styles.hotspotDC,
   },
   {
     name: "Marvel",
-    image: "marvel.png",
+    s3Path: "assets/Categories-img/Marvel.png",
     href: "/categories/marvel",
     hotspot: styles.hotspotMarvel,
   },
   {
     name: "K-Pop",
-    image: "kpop.png",
+    s3Path: "assets/Categories-img/K-Pop.png",
     href: "/categories/kpop",
     hotspot: styles.hotspotKpop,
   },
   {
     name: "Nostalgia",
-    image: "nostalgia.png",
+    s3Path: "assets/Categories-img/Nostalogia.png",
     href: "/categories/nostalgia",
     hotspot: styles.hotspotNostalgia,
   },
   {
     name: "Wheels",
-    image: "wheels.png",
+    s3Path: "assets/Categories-img/Wheels.PNG",
     href: "/categories/wheels",
     hotspot: styles.hotspotWheels,
   },
@@ -85,16 +85,17 @@ function CategoryGrid() {
         </div>
 
         <div className={styles.categoryArtwork}>
-          {categories.map(({ name, image, href, hotspot }) => (
+          {categories.map(({ name, s3Path, href, hotspot }) => (
             <Link
               key={href}
               href={href}
               className={`${styles.categoryHotspot} ${hotspot}`}
             >
               <Image
-                src={`/images/category-collage/${image}`}
-                alt=""
+                src={getS3AssetUrl(s3Path)}
+                alt={name}
                 fill
+                unoptimized
                 sizes="(min-width: 1440px) 1280px, 89vw"
                 className={styles.categoryArtworkImage}
               />
