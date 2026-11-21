@@ -17,9 +17,9 @@
 .title {
   margin: 0 0 clamp(28px, 4vw, 48px);
   color: #ffffff;
-  font-size: clamp(26px, 3.6vw, 44px);
+  font-size: clamp(26px, 3.6vw, 42px);
   font-weight: 400;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.05em;
   text-align: center;
   text-transform: uppercase;
   line-height: 1;
@@ -29,7 +29,7 @@
   display: flex;
   justify-content: space-between;
   align-items: flex-end;
-  gap: clamp(12px, 2vw, 36px);
+  gap: clamp(12px, 2.5vw, 48px);
   width: 100%;
   box-sizing: border-box;
 }
@@ -41,31 +41,31 @@
   flex: 0 1 auto;
 }
 
-/* Big outlined rank number placed strictly ABOVE (in front of / on top of) the image */
+/* Outlined rank number standing directly alongside the image card matching Figma */
 .rank {
-  position: relative;
-  z-index: 2;
-  font-size: clamp(100px, 12vw, 175px);
-  line-height: 0.82;
+  font-family:
+    var(--font-geist-mono), ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  font-size: clamp(96px, 11.5vw, 168px);
+  font-weight: 700;
+  line-height: 0.85;
   color: transparent;
-  -webkit-text-stroke: 2px #7d5da1;
+  -webkit-text-stroke: 1.8px #7a589c;
   text-align: center;
   user-select: none;
-  margin-right: clamp(-38px, -4.2vw, -62px);
-  pointer-events: none;
-  filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.45));
+  margin-right: -4px;
+  flex-shrink: 0;
+  display: inline-block;
 }
 
 .productImageWrapper {
   position: relative;
-  z-index: 1;
-  width: clamp(130px, 15vw, 205px);
-  aspect-ratio: 95 / 108;
+  width: clamp(125px, 14.5vw, 195px);
+  aspect-ratio: 140 / 162;
   border-radius: 4px;
   overflow: hidden;
   background: #180b26;
   flex-shrink: 0;
-  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.6);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.65);
   transition:
     transform 0.25s ease,
     box-shadow 0.25s ease;
@@ -74,8 +74,8 @@
 .productImageWrapper:hover {
   transform: translateY(-4px) scale(1.02);
   box-shadow:
-    0 14px 34px rgba(125, 93, 161, 0.35),
-    0 0 0 1px rgba(167, 122, 197, 0.35);
+    0 14px 34px rgba(122, 88, 156, 0.4),
+    0 0 0 1px rgba(167, 122, 197, 0.4);
 }
 
 .productImage {
@@ -92,8 +92,8 @@
   }
 
   .rank {
-    font-size: clamp(90px, 16vw, 130px);
-    margin-right: -32px;
+    font-size: clamp(86px, 15vw, 125px);
+    margin-right: -4px;
   }
 
   .productImageWrapper {
@@ -107,9 +107,9 @@
   }
 
   .rank {
-    font-size: clamp(72px, 18vw, 95px);
-    -webkit-text-stroke: 1.8px #7d5da1;
-    margin-right: -24px;
+    font-size: clamp(68px, 17vw, 92px);
+    -webkit-text-stroke: 1.5px #7a589c;
+    margin-right: -2px;
   }
 
   .productImageWrapper {
