@@ -1,6 +1,6 @@
 .section {
   width: 100%;
-  padding: clamp(32px, 4.5vw, 64px) 0 clamp(36px, 5vw, 72px);
+  padding: clamp(36px, 5vw, 68px) 0 clamp(36px, 5vw, 68px);
   background: #10051b;
   box-sizing: border-box;
   overflow: hidden;
@@ -10,16 +10,16 @@
   width: 100%;
   max-width: 1360px;
   margin: 0 auto;
-  padding: 0 clamp(16px, 3vw, 48px);
+  padding: 0 clamp(16px, 3.5vw, 48px);
   box-sizing: border-box;
 }
 
 .title {
   margin: 0 0 clamp(28px, 4vw, 48px);
   color: #ffffff;
-  font-size: clamp(26px, 3.6vw, 42px);
-  font-weight: 900;
-  letter-spacing: 0.08em;
+  font-size: clamp(26px, 3.6vw, 44px);
+  font-weight: 400;
+  letter-spacing: 0.06em;
   text-align: center;
   text-transform: uppercase;
   line-height: 1;
@@ -28,44 +28,44 @@
 .picksGrid {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  gap: clamp(12px, 2vw, 32px);
+  align-items: flex-end;
+  gap: clamp(12px, 2vw, 36px);
   width: 100%;
   box-sizing: border-box;
 }
 
 .pickItem {
   display: flex;
-  align-items: center;
+  align-items: flex-end;
   position: relative;
   flex: 0 1 auto;
 }
 
+/* Big outlined rank number placed strictly ABOVE (in front of / on top of) the image */
 .rank {
-  font-size: clamp(84px, 10vw, 150px);
-  font-weight: 900;
-  line-height: 0.8;
+  position: relative;
+  z-index: 2;
+  font-size: clamp(100px, 12vw, 175px);
+  line-height: 0.82;
   color: transparent;
-  -webkit-text-stroke: 2px #785a97;
+  -webkit-text-stroke: 2px #7d5da1;
   text-align: center;
   user-select: none;
-  margin-right: -14px;
-  z-index: 1;
-  font-family:
-    system-ui,
-    -apple-system,
-    sans-serif;
+  margin-right: clamp(-38px, -4.2vw, -62px);
+  pointer-events: none;
+  filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.45));
 }
 
 .productImageWrapper {
   position: relative;
-  width: clamp(130px, 14.5vw, 195px);
-  height: clamp(130px, 14.5vw, 195px);
-  border-radius: 6px;
+  z-index: 1;
+  width: clamp(130px, 15vw, 205px);
+  aspect-ratio: 95 / 108;
+  border-radius: 4px;
   overflow: hidden;
   background: #180b26;
   flex-shrink: 0;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.55);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.6);
   transition:
     transform 0.25s ease,
     box-shadow 0.25s ease;
@@ -74,8 +74,8 @@
 .productImageWrapper:hover {
   transform: translateY(-4px) scale(1.02);
   box-shadow:
-    0 12px 30px rgba(117, 91, 148, 0.4),
-    0 0 0 1px rgba(167, 122, 197, 0.4);
+    0 14px 34px rgba(125, 93, 161, 0.35),
+    0 0 0 1px rgba(167, 122, 197, 0.35);
 }
 
 .productImage {
@@ -88,33 +88,31 @@
     display: grid;
     grid-template-columns: repeat(2, auto);
     justify-content: center;
-    gap: 28px 24px;
+    gap: 32px 28px;
   }
 
   .rank {
-    font-size: clamp(80px, 14vw, 115px);
-    margin-right: -12px;
+    font-size: clamp(90px, 16vw, 130px);
+    margin-right: -32px;
   }
 
   .productImageWrapper {
-    width: clamp(125px, 24vw, 170px);
-    height: clamp(125px, 24vw, 170px);
+    width: clamp(120px, 24vw, 170px);
   }
 }
 
 @media (max-width: 540px) {
   .picksGrid {
-    gap: 20px 12px;
+    gap: 24px 16px;
   }
 
   .rank {
-    font-size: clamp(65px, 16vw, 90px);
-    -webkit-text-stroke: 1.8px #785a97;
-    margin-right: -8px;
+    font-size: clamp(72px, 18vw, 95px);
+    -webkit-text-stroke: 1.8px #7d5da1;
+    margin-right: -24px;
   }
 
   .productImageWrapper {
-    width: clamp(105px, 28vw, 135px);
-    height: clamp(105px, 28vw, 135px);
+    width: clamp(100px, 28vw, 130px);
   }
 }
