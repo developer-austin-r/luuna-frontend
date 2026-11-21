@@ -96,34 +96,24 @@
   border: max(1.5px, 0.28cqw) solid #160b24;
   background: #ffffff;
   box-shadow: 0 0.3cqw 0.6cqw rgba(0, 0, 0, 0.15);
+  overflow: visible;
 }
 
-/* Speech bubble tails via pseudo-element */
-.topBubble::after,
-.storyBubble::after,
-.cta::after {
-  position: absolute;
-  border: inherit;
-  border-top: 0;
-  border-left: 0;
-  background: inherit;
-  content: "";
-}
-
-/* Top Bubble: "CURATED ?" */
+/* Top Bubble: "CURATED ?" (Pill speech bubble with tail pointing to Luffy) */
 .topBubble {
-  inset: 6% 24% auto 33%;
+  inset: 4% 22% auto 35%;
   min-height: 20%;
   border-radius: 9999px;
-  padding: 0.8cqw 2.5cqw;
+  padding: 0.8cqw 2.8cqw;
 }
 
-.topBubble::after {
-  bottom: -9%;
+.topTail {
+  position: absolute;
+  bottom: calc(-1 * max(14px, 2.5cqw));
   right: 14%;
-  width: max(8px, 1.8cqw);
-  aspect-ratio: 1;
-  transform: rotate(45deg) skew(-10deg);
+  width: max(32px, 4.8cqw);
+  height: auto;
+  pointer-events: none;
 }
 
 .topBubble h2 {
@@ -140,25 +130,27 @@
   color: #160b24;
 }
 
-/* Story Bubble: "The best loot all in one box, Captain !" */
+/* Story Bubble: "The best loot all in one box, Captain !" (Tail pointing up-left to Zoro) */
 .storyBubble {
-  inset: 48% 24.5% auto 45%;
+  inset: 46% 23% auto 47%;
   min-height: 24%;
-  padding: 1.2cqw 2.2cqw;
-  border-radius: clamp(14px, 3cqw, 32px);
+  padding: 1cqw 1.8cqw;
+  border-radius: clamp(16px, 2.8cqw, 32px);
+  text-align: center;
 }
 
-.storyBubble::after {
-  top: 40%;
-  left: -3%;
-  width: max(8px, 1.8cqw);
-  aspect-ratio: 1;
-  transform: rotate(135deg) skew(-10deg);
+.storyTail {
+  position: absolute;
+  top: 10%;
+  left: calc(-1 * max(16px, 2.6cqw));
+  width: max(26px, 3.8cqw);
+  height: auto;
+  pointer-events: none;
 }
 
 .storyBubble p {
   margin: 0;
-  font-size: clamp(0.75rem, 2.7cqw, 2.15rem);
+  font-size: clamp(0.72rem, 2.5cqw, 1.95rem);
   font-weight: 850;
   line-height: 1.18;
   color: #160b24;
@@ -170,12 +162,12 @@
     sans-serif;
 }
 
-/* CTA: "EXPLORE NOW!" */
+/* CTA: "EXPLORE NOW!" (Compact bubble with tail pointing down-left to Nami) */
 .cta {
-  inset: 48% 68% auto 16.5%;
+  inset: 48.5% 67% auto 16%;
   min-height: 15%;
-  padding: 0.45cqw 0.75cqw;
-  border-radius: 9999px;
+  padding: 0.35cqw 0.45cqw;
+  border-radius: clamp(14px, 2.5cqw, 28px);
   text-decoration: none;
   cursor: pointer;
   transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
@@ -185,34 +177,41 @@
   transform: scale(1.05);
 }
 
-.cta::after {
-  top: 38%;
-  left: -3.5%;
-  width: max(8px, 1.6cqw);
-  aspect-ratio: 1;
-  transform: rotate(135deg) skew(-10deg);
+.ctaTail {
+  position: absolute;
+  bottom: 14%;
+  left: calc(-1 * max(14px, 2.2cqw));
+  width: max(20px, 3.2cqw);
+  height: auto;
+  pointer-events: none;
 }
 
-.cta span {
+.ctaButton {
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   width: 100%;
-  padding: 0.65cqw 1.5cqw;
-  border-radius: 9999px;
-  background: #ffb800;
-  box-shadow: 0 0.25cqw 0.5cqw rgba(80, 50, 0, 0.35);
-  font-size: clamp(0.55rem, 1.55cqw, 1.25rem);
-  font-weight: 900;
-  line-height: 1;
-  letter-spacing: 0.05em;
-  color: #ffffff;
-  white-space: nowrap;
+  padding: 0.5cqw 1.1cqw;
+  border-radius: clamp(10px, 2cqw, 22px);
+  background: #ffae00;
+  box-shadow: 0 0.2cqw 0.4cqw rgba(180, 110, 0, 0.35);
   transition: background 0.15s ease;
 }
 
-.cta:hover span {
-  background: #e6a500;
+.cta:hover .ctaButton {
+  background: #e69d00;
+}
+
+.ctaTopText,
+.ctaBottomText {
+  display: block;
+  font-size: clamp(0.5rem, 1.35cqw, 1.1rem);
+  font-weight: 900;
+  line-height: 1.05;
+  letter-spacing: 0.04em;
+  color: #ffffff;
+  white-space: nowrap;
 }
 
 /* Responsive adjustments */
@@ -226,11 +225,12 @@
   }
 
   .storyBubble p {
-    font-size: clamp(0.65rem, 2.6cqw, 1.2rem);
+    font-size: clamp(0.65rem, 2.5cqw, 1.2rem);
   }
 
-  .cta span {
-    font-size: clamp(0.5rem, 1.5cqw, 0.85rem);
+  .ctaTopText,
+  .ctaBottomText {
+    font-size: clamp(0.48rem, 1.3cqw, 0.85rem);
   }
 }
 
