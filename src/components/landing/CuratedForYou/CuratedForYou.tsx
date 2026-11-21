@@ -157,10 +157,7 @@ export default function CuratedForYou() {
 
         {/* Message 3: EXPLORE NOW! (1 sec after Message 2) */}
         <Link className={styles.cta} href="/products#new-arrivals">
-          <span className={styles.ctaButton}>
-            <span className={styles.ctaTopText}>EXPLORE</span>
-            <span className={styles.ctaBottomText}>NOW!</span>
-          </span>
+          <span className={styles.ctaButton}>EXPLORE NOW!</span>
           <svg
             viewBox="0 0 38 34"
             fill="none"
