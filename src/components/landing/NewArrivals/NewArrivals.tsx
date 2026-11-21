@@ -11,59 +11,15 @@ import styles from "./NewArrivals.module.css";
 type FigureVariant = "warrior" | "ninja" | "sunburst" | "web";
 
 export type ArrivalProduct = {
+  id?: string;
   name: string;
   description: string;
   price: string;
-  oldPrice: string;
-  variant: FigureVariant;
-  image?: string;
+  oldPrice?: string | undefined;
+  discount?: number;
+  variant?: FigureVariant;
+  image?: string | undefined;
 };
-
-const arrivals: ArrivalProduct[] = [
-  {
-    name: "God of War bundle",
-    description: "Collector figure · 18 cm",
-    price: "₹2500",
-    oldPrice: "₹3500",
-    variant: "warrior",
-    image: "/images/recommendation-toy.png",
-  },
-  {
-    name: "God of War bundle",
-    description: "Anime figure · 15 cm",
-    price: "₹2500",
-    oldPrice: "₹3500",
-    variant: "ninja",
-  },
-  {
-    name: "God of War bundle",
-    description: "Anime figure · 16 cm",
-    price: "₹2500",
-    oldPrice: "₹3500",
-    variant: "sunburst",
-  },
-  {
-    name: "God of War bundle",
-    description: "Vinyl figures · Set of 2",
-    price: "₹2500",
-    oldPrice: "₹3500",
-    variant: "web",
-  },
-  {
-    name: "God of War bundle",
-    description: "Collector figure · 17 cm",
-    price: "₹2500",
-    oldPrice: "₹3500",
-    variant: "web",
-  },
-  {
-    name: "God of War bundle",
-    description: "Fantasy figure · 18 cm",
-    price: "₹2500",
-    oldPrice: "₹3500",
-    variant: "warrior",
-  },
-];
 
 export function ProductCard({
   product,
@@ -76,6 +32,9 @@ export function ProductCard({
   total: number;
   className?: string | undefined;
 }) {
+  const [failedImage, setFailedImage] = useState<string>();
+  const discount = product.discount ?? (product.variant ? 20 : 0);
+
   return (
     <article
       className={`${styles.productCard} ${className ?? ""}`}
@@ -84,27 +43,34 @@ export function ProductCard({
       aria-label={`${index + 1} of ${total}: ${product.name}`}
     >
       <div className={styles.artwork}>
-        <span className={styles.discount}>-20%</span>
-        {product.image ? (
+        {discount > 0 && <span className={styles.discount}>-{discount}%</span>}
+        {product.image && product.image !== failedImage ? (
           <Image
             src={product.image}
             alt={product.name}
             fill
             sizes="(max-width: 520px) 72vw, (max-width: 850px) 42vw, 24vw"
             loading="lazy"
+            unoptimized={!product.image.startsWith("/")}
+            onError={() => setFailedImage(product.image)}
           />
-        ) : (
+        ) : product.variant ? (
           <CollectibleFigure
             className={`${styles.figure} ${styles[`figure${product.variant}`]}`}
             variant={product.variant}
           />
-        )}
+        ) : null}
         <span className={styles.imageGlow} aria-hidden="true" />
       </div>
       <div className={styles.productInfo}>
         <h3>{product.name}</h3>
+        {!product.variant && product.description && (
+          <p>{product.description}</p>
+        )}
         <div className={styles.priceRow}>
-          <span className={styles.oldPrice}>{product.oldPrice}</span>
+          {product.oldPrice && (
+            <span className={styles.oldPrice}>{product.oldPrice}</span>
+          )}
           <strong>{product.price}</strong>
         </div>
       </div>
@@ -116,10 +82,12 @@ export function ProductCarousel({
   id,
   title,
   products,
+  emptyMessage = "No products available yet.",
 }: {
   id: string;
   title: string;
   products: ArrivalProduct[];
+  emptyMessage?: string;
 }) {
   const viewportRef = useRef<HTMLDivElement>(null);
   const trackRef = useRef<HTMLDivElement>(null);
@@ -166,69 +134,67 @@ export function ProductCarousel({
         <h2 id={`${id}-title`}>{title}</h2>
       </div>
 
-      <div className={styles.carouselWrap}>
-        <button
-          className={`${styles.arrow} ${styles.previous}`}
-          type="button"
-          aria-label={`Scroll to previous ${title.toLowerCase()}`}
-          onClick={() => moveCarousel(-1)}
-        >
-          <ChevronLeft size={19} />
-        </button>
-        <div
-          className={styles.viewport}
-          ref={viewportRef}
-          onScroll={updateActiveIndex}
-          role="region"
-          aria-label={title}
-          aria-roledescription="carousel"
-        >
-          <div className={styles.track} ref={trackRef}>
+      {products.length === 0 ? (
+        <p className={styles.emptyMessage}>{emptyMessage}</p>
+      ) : (
+        <>
+          <div className={styles.carouselWrap}>
+            <button
+              className={`${styles.arrow} ${styles.previous}`}
+              type="button"
+              aria-label={`Scroll to previous ${title.toLowerCase()}`}
+              onClick={() => moveCarousel(-1)}
+            >
+              <ChevronLeft size={19} />
+            </button>
+            <div
+              className={styles.viewport}
+              ref={viewportRef}
+              onScroll={updateActiveIndex}
+              role="region"
+              aria-label={title}
+              aria-roledescription="carousel"
+            >
+              <div className={styles.track} ref={trackRef}>
+                {products.map((product, index) => (
+                  <ProductCard
+                    key={product.id ?? `${index}-${product.name}`}
+                    product={product}
+                    index={index}
+                    total={products.length}
+                  />
+                ))}
+              </div>
+            </div>
+            <button
+              className={`${styles.arrow} ${styles.next}`}
+              type="button"
+              aria-label={`Scroll to next ${title.toLowerCase()}`}
+              onClick={() => moveCarousel(1)}
+            >
+              <ChevronRight size={19} />
+            </button>
+          </div>
+
+          <div
+            className={styles.pagination}
+            aria-label={`Choose a ${title.toLowerCase()} product`}
+          >
             {products.map((product, index) => (
-              <ProductCard
-                key={`${index}-${product.name}`}
-                product={product}
-                index={index}
-                total={products.length}
+              <button
+                className={
+                  index === activeIndex ? styles.activeDot : styles.dot
+                }
+                key={product.id ?? `${index}-${product.name}`}
+                type="button"
+                aria-label={`Show ${product.name}`}
+                aria-current={index === activeIndex ? "true" : undefined}
+                onClick={() => goToCard(index)}
               />
             ))}
           </div>
-        </div>
-        <button
-          className={`${styles.arrow} ${styles.next}`}
-          type="button"
-          aria-label={`Scroll to next ${title.toLowerCase()}`}
-          onClick={() => moveCarousel(1)}
-        >
-          <ChevronRight size={19} />
-        </button>
-      </div>
-
-      <div
-        className={styles.pagination}
-        aria-label={`Choose a ${title.toLowerCase()} product`}
-      >
-        {products.map((product, index) => (
-          <button
-            className={index === activeIndex ? styles.activeDot : styles.dot}
-            key={`${index}-${product.name}`}
-            type="button"
-            aria-label={`Show ${product.name}`}
-            aria-current={index === activeIndex ? "true" : undefined}
-            onClick={() => goToCard(index)}
-          />
-        ))}
-      </div>
+        </>
+      )}
     </section>
-  );
-}
-
-export default function NewArrivals() {
-  return (
-    <ProductCarousel
-      id="new-arrivals"
-      title="NEW ARRIVALS"
-      products={arrivals}
-    />
   );
 }
