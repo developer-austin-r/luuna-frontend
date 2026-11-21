@@ -1,435 +1,210 @@
 "use client";
 
-import React, { useState } from "react";
-import toast from "react-hot-toast";
+import { useEffect, useState } from "react";
 import Image from "next/image";
-import { Camera, ChevronRight, Star, X } from "lucide-react";
+import { Star } from "lucide-react";
 
-interface ReviewItem {
-  id: string;
-  title: string;
-  rating: number;
-  comment: string;
-  author: string;
-  date: string;
-  images?: string[];
-}
+import {
+  getProductReviews,
+  type ProductReviewPage,
+} from "@/services/product-reviews";
 
-const defaultReviews: ReviewItem[] = [
-  {
-    id: "1",
-    title: "Love it",
-    rating: 5,
-    comment: "Amazing quality Toy!! Thanks For Luuna...",
-    author: "Venkatesh kumar",
-    date: "2 Days ago",
-    images: ["/images/hero-1.jpg", "/images/hero-2.jpg"],
-  },
-  {
-    id: "2",
-    title: "Love it",
-    rating: 5,
-    comment: "Amazing quality Toy!! Thanks For Luuna...",
-    author: "Venkatesh kumar",
-    date: "2 Days ago",
-    images: ["/images/hero-3.jpg", "/images/hero-4.jpg"],
-  },
-  {
-    id: "3",
-    title: "Love it",
-    rating: 5,
-    comment: "Amazing quality Toy!! Thanks For Luuna...",
-    author: "Venkatesh kumar",
-    date: "2 Days ago",
-    images: ["/images/hero-4.jpg", "/images/hero-5.jpg"],
-  },
-  {
-    id: "4",
-    title: "Love it",
-    rating: 5,
-    comment: "Amazing quality Toy!! Thanks For Luuna...",
-    author: "Venkatesh kumar",
-    date: "2 Days ago",
-    images: ["/images/hero-2.jpg", "/images/hero-3.jpg"],
-  },
-];
+import ProductReviewForm from "./ProductReviewForm";
 
-const customerPhotos = [
-  "/images/hero-1.jpg",
-  "/images/hero-2.jpg",
-  "/images/hero-3.jpg",
-  "/images/hero-4.jpg",
-  "/images/hero-5.jpg",
-  "/images/recommendation-toy.png",
-];
+const dateFormatter = new Intl.DateTimeFormat("en-IN", { dateStyle: "medium" });
 
-const ratingBreakdown = [
-  { label: "Excellent", percentage: 80 },
-  { label: "Very Good", percentage: 60 },
-  { label: "Average", percentage: 20 },
-  { label: "Poor", percentage: 10 },
-  { label: "Terrible", percentage: 0 },
-];
+export default function ProductReviews({ productId }: { productId: string }) {
+  const [page, setPage] = useState(1);
+  const [result, setResult] = useState<ProductReviewPage | null>(null);
+  const [error, setError] = useState(false);
+  const [retry, setRetry] = useState(0);
 
-export const ProductReviews: React.FC = () => {
-  // Form State
-  const [selectedRating, setSelectedRating] = useState<number>(4);
-  const [hoverRating, setHoverRating] = useState<number>(0);
-  const [reviewTitle, setReviewTitle] = useState("");
-  const [reviewBody, setReviewBody] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  useEffect(() => {
+    const controller = new AbortController();
+    getProductReviews(productId, page, controller.signal)
+      .then((response) => {
+        if (!controller.signal.aborted) setResult(response);
+      })
+      .catch(() => {
+        if (!controller.signal.aborted) setError(true);
+      });
+    return () => controller.abort();
+  }, [productId, page, retry]);
 
-  // Gallery Modal State
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [activeModalImage, setActiveModalImage] = useState<string | null>(null);
-
-  // Pagination state
-  const [currentPage, setCurrentPage] = useState(1);
-  const totalPages = 3;
-
-  const handleSubmitReview = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!selectedRating) {
-      toast.error("Please select a rating star");
-      return;
-    }
-    if (!reviewTitle.trim()) {
-      toast.error("Please enter a review title");
-      return;
-    }
-    if (!reviewBody.trim()) {
-      toast.error("Please write your review");
-      return;
-    }
-
-    setIsSubmitting(true);
-    setTimeout(() => {
-      setIsSubmitting(false);
-      setReviewTitle("");
-      setReviewBody("");
-      setSelectedRating(5);
-      toast.success("Thank you! Your review has been submitted for approval.");
-    }, 600);
-  };
-
-  const handleNextPage = () => {
-    setCurrentPage((prev) => (prev < totalPages ? prev + 1 : 1));
-  };
+  function goToPage(nextPage: number) {
+    setResult(null);
+    setError(false);
+    setPage(nextPage);
+  }
 
   return (
-    <section className="w-full bg-[#10051b] text-white pt-8 sm:pt-12 pb-14 sm:pb-20">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        {/* Section Heading */}
-        <div className="mb-8 sm:mb-10 text-center">
-          <h2 className="text-3xl sm:text-4xl md:text-5xl font-black uppercase tracking-wider font-['Impact','Arial_Black',sans-serif]">
-            REVIEWS
-          </h2>
-        </div>
-
-        {/* Reviews Two-Column Layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start">
-          {/* ================= LEFT COLUMN (8 cols) ================= */}
-          <div className="lg:col-span-8 flex flex-col gap-6">
-            {/* 1. Rating Overview & Breakdown Card */}
-            <div className="bg-white text-gray-900 rounded-2xl p-5 sm:p-7 shadow-sm">
-              <div className="flex flex-col sm:flex-row items-center sm:items-stretch gap-6 sm:gap-8">
-                {/* Overall Score */}
-                <div className="flex flex-col items-center justify-center text-center sm:w-52 shrink-0">
-                  <div className="text-5xl sm:text-6xl font-black text-gray-950 tracking-tight">
-                    4.5
-                  </div>
-                  <div className="flex items-center gap-1 my-2 text-purple-600">
-                    {[1, 2, 3, 4].map((star) => (
-                      <Star
-                        key={star}
-                        className="w-5 h-5 fill-purple-600 text-purple-600"
-                      />
-                    ))}
-                    <Star className="w-5 h-5 text-purple-600" />
-                  </div>
-                  <div className="text-xs text-gray-600 leading-snug">
-                    5.0 out of 5 Stars
-                    <br />
-                    (based on 100 review)
-                  </div>
-                </div>
-
-                {/* Vertical Divider */}
-                <div className="hidden sm:block w-px bg-gray-200 self-stretch" />
-
-                {/* Breakdown Bars */}
-                <div className="flex-1 w-full flex flex-col justify-center gap-2.5">
-                  {ratingBreakdown.map((item) => (
-                    <div
-                      key={item.label}
-                      className="flex items-center gap-3 text-xs"
-                    >
-                      <span className="w-20 text-gray-800 font-medium truncate">
-                        {item.label}
-                      </span>
-                      {/* Pill Progress Bar */}
-                      <div className="flex-1 h-3 rounded-full border border-gray-300 bg-gray-50 p-0.5 overflow-hidden">
-                        <div
-                          className="h-full rounded-full bg-purple-600 transition-all duration-300"
-                          style={{ width: `${item.percentage}%` }}
-                        />
-                      </div>
-                      <span className="w-10 text-right font-semibold text-gray-700">
-                        {item.percentage}%
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            {/* 2. Customer Uploaded Images Strip */}
-            <div className="flex flex-col gap-2.5">
-              <div className="grid grid-cols-4 gap-2.5 sm:gap-3.5">
-                {customerPhotos.slice(0, 4).map((photo, idx) => {
-                  const isLast = idx === 3;
-                  return (
-                    <div
-                      key={idx}
-                      onClick={() => {
-                        setActiveModalImage(photo);
-                        setIsModalOpen(true);
-                      }}
-                      className="relative aspect-4/3 rounded-xl overflow-hidden cursor-pointer group bg-[#160B2A] border border-white/10"
-                    >
-                      <Image
-                        src={photo}
-                        alt={`Customer photo ${idx + 1}`}
-                        fill
-                        sizes="(max-width: 640px) 25vw, 180px"
-                        className="object-cover transition-transform duration-300 group-hover:scale-105"
-                      />
-                      {isLast && (
-                        <div className="absolute inset-0 bg-black/55 backdrop-blur-2xs flex items-center justify-center text-white font-bold text-xs sm:text-sm">
-                          + More
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-
-              {/* View All Images Button */}
-              <button
-                type="button"
-                onClick={() => {
-                  setActiveModalImage(customerPhotos[0] ?? null);
-                  setIsModalOpen(true);
-                }}
-                className="flex items-center gap-1.5 text-white hover:text-purple-300 text-xs sm:text-sm font-semibold transition-colors w-fit cursor-pointer mt-1"
+    <section
+      id="reviews"
+      aria-labelledby="product-reviews-title"
+      className="scroll-mt-6 bg-[#160b2a] py-8 sm:py-12"
+    >
+      <div className="mx-auto max-w-7xl px-3 sm:px-6 lg:px-8">
+        <h2
+          id="product-reviews-title"
+          className="mb-6 text-2xl font-black uppercase text-white sm:text-3xl"
+        >
+          Reviews
+        </h2>
+        <div className="grid items-start gap-6 lg:grid-cols-12">
+          <div className="grid min-w-0 gap-5 lg:col-span-8">
+            {error && (
+              <div
+                role="alert"
+                className="rounded-2xl bg-white p-5 text-gray-950"
               >
-                <Camera className="w-4 h-4" />
-                <span>View All Images</span>
-                <ChevronRight className="w-3.5 h-3.5" />
-              </button>
-            </div>
-
-            {/* 3. Customer Reviews Cards (2x2 Grid) */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {defaultReviews.map((review) => (
-                <div
-                  key={review.id}
-                  className="bg-white text-gray-900 rounded-xl p-4 sm:p-5 shadow-sm flex flex-col justify-between border border-gray-100"
+                Reviews couldn’t be loaded.{" "}
+                <button
+                  type="button"
+                  className="font-semibold underline"
+                  onClick={() => {
+                    setError(false);
+                    setRetry((value) => value + 1);
+                  }}
                 >
-                  <div>
-                    <h3 className="font-bold text-sm text-gray-950">
-                      {review.title}
-                    </h3>
-                    <div className="flex items-center gap-1 my-1.5 text-purple-600">
-                      {[...Array(review.rating)].map((_, i) => (
-                        <Star
-                          key={i}
-                          className="w-3.5 h-3.5 fill-purple-600 text-purple-600"
-                        />
-                      ))}
-                    </div>
-
-                    {/* Attached Photos */}
-                    {review.images && review.images.length > 0 && (
-                      <div className="flex gap-2 my-2.5">
-                        {review.images.map((img, i) => (
+                  Try again
+                </button>
+              </div>
+            )}
+            {!error && !result && <p role="status">Loading reviews…</p>}
+            {result && (
+              <>
+                <div className="grid gap-5 rounded-2xl bg-white p-5 text-gray-950 sm:grid-cols-[auto_1fr] sm:p-7">
+                  {result.summary.count ? (
+                    <>
+                      <div className="min-w-32 text-center">
+                        <div className="text-5xl font-black">
+                          {result.summary.average.toFixed(1)}
+                        </div>
+                        <p className="mt-2 text-sm text-gray-700">
+                          out of 5 · {result.summary.count}{" "}
+                          {result.summary.count === 1 ? "review" : "reviews"}
+                        </p>
+                      </div>
+                      <div className="grid gap-2">
+                        {result.summary.breakdown.map(({ stars, count }) => (
                           <div
-                            key={i}
-                            onClick={() => {
-                              setActiveModalImage(img);
-                              setIsModalOpen(true);
-                            }}
-                            className="relative w-14 h-14 rounded-lg overflow-hidden border border-gray-200 cursor-pointer"
+                            className="flex items-center gap-3 text-xs"
+                            key={stars}
                           >
-                            <Image
-                              src={img}
-                              alt="Customer review photo"
-                              fill
-                              sizes="56px"
-                              className="object-cover"
+                            <span className="w-12">
+                              {stars} {stars === 1 ? "star" : "stars"}
+                            </span>
+                            <progress
+                              className="min-w-0 flex-1 accent-violet-700"
+                              value={count}
+                              max={result.summary.count}
+                              aria-label={`${stars} star ratings`}
                             />
+                            <span className="min-w-6 text-right">{count}</span>
                           </div>
                         ))}
                       </div>
-                    )}
-
-                    <p className="text-xs text-gray-700 leading-relaxed mt-2">
-                      {review.comment}
+                    </>
+                  ) : (
+                    <p className="sm:col-span-2">
+                      No reviews yet. Be the first to write one.
                     </p>
-                  </div>
-
-                  <div className="text-[11px] text-gray-500 mt-3 pt-2 border-t border-gray-100 flex items-center justify-between">
-                    <span>-{review.author}</span>
-                    <span>{review.date}</span>
-                  </div>
+                  )}
                 </div>
-              ))}
-            </div>
-
-            {/* Pagination Controls */}
-            <div className="flex items-center gap-3 text-xs sm:text-sm text-white/90 font-medium pl-1">
-              <span>
-                Page {currentPage}/{totalPages}
-              </span>
-              <button
-                type="button"
-                onClick={handleNextPage}
-                className="underline hover:text-purple-300 cursor-pointer font-semibold"
-              >
-                Next
-              </button>
-            </div>
-          </div>
-
-          {/* ================= RIGHT COLUMN (4 cols) ================= */}
-          <div className="lg:col-span-4">
-            <div className="bg-white text-gray-900 rounded-2xl p-5 sm:p-7 shadow-sm">
-              <h3 className="text-xl sm:text-2xl font-black text-gray-950 text-center mb-6">
-                Write a Review
-              </h3>
-
-              <form
-                onSubmit={handleSubmitReview}
-                className="flex flex-col gap-4"
-              >
-                {/* Rating Input */}
-                <div>
-                  <label className="block text-xs sm:text-sm font-semibold text-gray-800 mb-1.5">
-                    Rate your Experience
-                  </label>
-                  <div className="flex items-center gap-1.5 text-purple-600">
-                    {[1, 2, 3, 4, 5].map((star) => (
-                      <button
-                        key={star}
-                        type="button"
-                        onClick={() => setSelectedRating(star)}
-                        onMouseEnter={() => setHoverRating(star)}
-                        onMouseLeave={() => setHoverRating(0)}
-                        aria-label={`Rate ${star} star`}
-                        className="cursor-pointer transition-transform hover:scale-110 p-0.5"
+                {result.reviews.length > 0 && (
+                  <ul className="grid gap-4 sm:grid-cols-2">
+                    {result.reviews.map((review) => (
+                      <li
+                        key={review.id}
+                        className="min-w-0 rounded-2xl bg-white p-5 text-gray-950"
                       >
-                        <Star
-                          className={`w-5 h-5 ${
-                            star <= (hoverRating || selectedRating)
-                              ? "fill-purple-600 text-purple-600"
-                              : "text-purple-300"
-                          }`}
-                        />
-                      </button>
+                        <div className="flex flex-wrap items-center justify-between gap-2 text-sm">
+                          <span className="font-semibold">{review.author}</span>
+                          <time
+                            className="text-gray-600"
+                            dateTime={review.createdAt}
+                          >
+                            {dateFormatter.format(new Date(review.createdAt))}
+                          </time>
+                        </div>
+                        <p className="my-2 flex items-center gap-1 text-sm font-semibold text-violet-800">
+                          <Star
+                            className="size-4 fill-current"
+                            aria-hidden="true"
+                          />{" "}
+                          {review.starRate}/5
+                        </p>
+                        {review.title && (
+                          <h3 className="break-words font-bold">
+                            {review.title}
+                          </h3>
+                        )}
+                        {review.review && (
+                          <p className="mt-1 whitespace-pre-wrap break-words text-sm text-gray-700">
+                            {review.review}
+                          </p>
+                        )}
+                        {review.images.length > 0 && (
+                          <div className="mt-3 flex flex-wrap gap-2">
+                            {review.images.map((image, index) => (
+                              <a
+                                key={image}
+                                href={image}
+                                target="_blank"
+                                rel="noreferrer"
+                                aria-label={`Open review photo ${index + 1} in a new tab`}
+                                className="relative block size-16 overflow-hidden rounded-lg bg-gray-100"
+                              >
+                                <Image
+                                  src={image}
+                                  alt=""
+                                  fill
+                                  unoptimized
+                                  sizes="64px"
+                                  className="object-cover"
+                                />
+                              </a>
+                            ))}
+                          </div>
+                        )}
+                      </li>
                     ))}
-                  </div>
-                </div>
-
-                {/* Review Title Input */}
-                <div>
-                  <label className="block text-xs sm:text-sm font-semibold text-gray-800 mb-1.5">
-                    Tittle of your review
-                  </label>
-                  <input
-                    type="text"
-                    value={reviewTitle}
-                    onChange={(e) => setReviewTitle(e.target.value)}
-                    placeholder="Summarize your review or highlight an interesting detail"
-                    className="w-full border border-gray-300 rounded-lg px-3.5 py-2.5 text-xs text-gray-800 placeholder:text-gray-400 focus:outline-none focus:border-purple-600 focus:ring-1 focus:ring-purple-600 transition-colors"
-                  />
-                </div>
-
-                {/* Review Body Textarea */}
-                <div>
-                  <label className="block text-xs sm:text-sm font-semibold text-gray-800 mb-1.5">
-                    Your review
-                  </label>
-                  <textarea
-                    rows={6}
-                    value={reviewBody}
-                    onChange={(e) => setReviewBody(e.target.value)}
-                    placeholder="Tell people your review"
-                    className="w-full border border-gray-300 rounded-lg px-3.5 py-2.5 text-xs text-gray-800 placeholder:text-gray-400 focus:outline-none focus:border-purple-600 focus:ring-1 focus:ring-purple-600 transition-colors resize-none min-h-[140px]"
-                  />
-                </div>
-
-                {/* Submit Review Button */}
-                <button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="w-full bg-[#10051b] hover:bg-[#200b34] text-white font-bold py-3 px-4 rounded-lg text-xs uppercase tracking-wider transition-all duration-150 active:scale-[0.99] shadow-md cursor-pointer mt-2 disabled:opacity-50"
-                >
-                  {isSubmitting ? "Submitting..." : "Submit Review"}
-                </button>
-              </form>
-            </div>
+                  </ul>
+                )}
+                {result.totalPages > 1 && (
+                  <nav
+                    aria-label="Review pages"
+                    className="flex flex-wrap items-center gap-3 text-sm"
+                  >
+                    <button
+                      type="button"
+                      disabled={page <= 1}
+                      onClick={() => goToPage(page - 1)}
+                      className="rounded-lg border border-white/40 px-3 py-2 disabled:opacity-40"
+                    >
+                      Previous
+                    </button>
+                    <span>
+                      Page {page} of {result.totalPages}
+                    </span>
+                    <button
+                      type="button"
+                      disabled={page >= result.totalPages}
+                      onClick={() => goToPage(page + 1)}
+                      className="rounded-lg border border-white/40 px-3 py-2 disabled:opacity-40"
+                    >
+                      Next
+                    </button>
+                  </nav>
+                )}
+              </>
+            )}
+          </div>
+          <div className="min-w-0 lg:col-span-4">
+            <ProductReviewForm productId={productId} />
           </div>
         </div>
       </div>
-
-      {/* Lightbox Modal for Customer Photos */}
-      {isModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="relative max-w-2xl w-full bg-[#160B2A] rounded-2xl p-4 border border-white/20 shadow-2xl flex flex-col items-center">
-            <button
-              onClick={() => setIsModalOpen(false)}
-              className="absolute top-3 right-3 text-white/80 hover:text-white p-1 cursor-pointer rounded-full bg-white/10"
-              aria-label="Close photo preview"
-            >
-              <X className="w-5 h-5" />
-            </button>
-
-            {activeModalImage && (
-              <div className="relative w-full aspect-4/3 rounded-xl overflow-hidden mt-6">
-                <Image
-                  src={activeModalImage}
-                  alt="Customer photo enlarged"
-                  fill
-                  className="object-contain"
-                />
-              </div>
-            )}
-
-            <div className="flex gap-2 overflow-x-auto w-full mt-4 pb-2">
-              {customerPhotos.map((p, idx) => (
-                <button
-                  key={idx}
-                  onClick={() => setActiveModalImage(p)}
-                  className={`relative w-14 h-14 rounded-lg overflow-hidden shrink-0 border-2 ${
-                    activeModalImage === p
-                      ? "border-purple-400"
-                      : "border-transparent opacity-60"
-                  }`}
-                >
-                  <Image
-                    src={p}
-                    alt="Thumbnail"
-                    fill
-                    className="object-cover"
-                  />
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
     </section>
   );
-};
-
-export default ProductReviews;
+}

@@ -27,7 +27,9 @@ interface UserReview {
     name: string;
   };
   starRate: number;
+  title: string | null;
   review: string | null;
+  images: string[];
   status: string;
   createdAt: string;
   updatedAt: string;
@@ -149,10 +151,24 @@ export default function UserReviewsPage() {
     {
       key: "review",
       label: "Review",
-      render: (value) => (
-        <span className="block max-w-md whitespace-pre-wrap text-text-custom/75">
-          {value || "No written review"}
-        </span>
+      render: (_, item) => (
+        <div className="max-w-md text-text-custom/75">
+          {item.title && <p className="font-semibold">{item.title}</p>}
+          <p className="whitespace-pre-wrap break-words">
+            {item.review || "No written review"}
+          </p>
+          {item.images?.map((image, index) => (
+            <a
+              key={image}
+              href={image}
+              target="_blank"
+              rel="noreferrer"
+              className="mr-3 inline-block underline"
+            >
+              View photo {index + 1}
+            </a>
+          ))}
+        </div>
       ),
     },
     {

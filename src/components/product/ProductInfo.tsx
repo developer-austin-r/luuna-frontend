@@ -12,54 +12,28 @@ import {
   Truck,
 } from "lucide-react";
 
+import type { StorefrontProduct } from "@/services/storefront-products";
+
 interface ProductInfoProps {
-  product?: {
-    name?: string;
-    subtitle?: string;
-    rating?: number;
-    reviewsCount?: number;
-    inStock?: boolean;
-    originalPrice?: number;
-    discountedPrice?: number;
-    size?: string;
-    brand?: string;
-    description?: string;
-  };
+  product: StorefrontProduct;
 }
 
-const defaultProduct = {
-  name: "Batman vs Joker | Arkham City Edition",
-  subtitle: "Gotham's Eternal Duel",
-  rating: 4,
-  reviewsCount: 150,
-  inStock: true,
-  originalPrice: 3500,
-  discountedPrice: 2500,
-  size: "10cm",
-  brand: "PVC statues",
-  description:
-    "Bring the legendary clash of Gotham's eternal rivals to life with this Batman vs. Joker – Arkham City Edition Figure. Captured in a dramatic mid-battle pose, this collectible showcases Batman's unyielding strength as he confronts the Joker with raw intensity. The sculpt highlights intricate detailing—from Batman's armoured suit and flowing cape to the Joker's iconic purple coat and chaotic expression. The gritty, industrial base enhances the scene, making it a striking centerpiece for any DC or gaming fan's collection.",
-};
+const priceFormatter = new Intl.NumberFormat("en-IN", {
+  style: "currency",
+  currency: "INR",
+});
 
-export const ProductInfo: React.FC<ProductInfoProps> = ({
-  product = defaultProduct,
-}) => {
+export const ProductInfo: React.FC<ProductInfoProps> = ({ product }) => {
   const router = useRouter();
-  const [quantity, setQuantity] = useState(2);
+  const [quantity, setQuantity] = useState(1);
   const [isExpanded, setIsExpanded] = useState(false);
 
-  const {
-    name = defaultProduct.name,
-    subtitle = defaultProduct.subtitle,
-    rating = defaultProduct.rating,
-    reviewsCount = defaultProduct.reviewsCount,
-    inStock = defaultProduct.inStock,
-    originalPrice = defaultProduct.originalPrice,
-    discountedPrice = defaultProduct.discountedPrice,
-    size = defaultProduct.size,
-    brand = defaultProduct.brand,
-    description = defaultProduct.description,
-  } = product;
+  const { name, shortDescription, rating, availableStock, productSize, brand } =
+    product;
+  const inStock = availableStock > 0;
+  const basePrice = Number(product.basePrice);
+  const finalPrice = Number(product.finalPrice);
+  const description = product.description ?? "";
 
   const handleDecrement = () => {
     if (quantity > 1) {
@@ -68,7 +42,7 @@ export const ProductInfo: React.FC<ProductInfoProps> = ({
   };
 
   const handleIncrement = () => {
-    setQuantity((q) => q + 1);
+    setQuantity((q) => Math.min(q + 1, availableStock));
   };
 
   const handleAddToCart = () => {
@@ -90,9 +64,11 @@ export const ProductInfo: React.FC<ProductInfoProps> = ({
         <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-extrabold tracking-tight leading-tight text-white">
           {name}
         </h1>
-        <p className="text-gray-300 italic text-xs sm:text-sm md:text-base mt-1 sm:mt-1.5 font-normal">
-          {subtitle}
-        </p>
+        {shortDescription && (
+          <p className="text-gray-300 italic text-xs sm:text-sm md:text-base mt-1 sm:mt-1.5 font-normal">
+            {shortDescription}
+          </p>
+        )}
       </div>
 
       {/* Ratings, Reviews & Stock Status */}
@@ -107,7 +83,9 @@ export const ProductInfo: React.FC<ProductInfoProps> = ({
             />
           ))}
         </div>
-        <span className="text-gray-300">({reviewsCount} Reviews)</span>
+        <span className="text-gray-300" aria-label={`Rated ${rating} out of 5`}>
+          {rating > 0 ? `${rating} / 5` : "No ratings yet"}
+        </span>
         <span className="text-gray-600">|</span>
         <span
           className={
@@ -122,22 +100,30 @@ export const ProductInfo: React.FC<ProductInfoProps> = ({
 
       {/* Pricing */}
       <div className="flex items-baseline gap-2.5 sm:gap-3 mt-3 sm:mt-4">
-        <span className="text-gray-400 line-through text-base sm:text-lg md:text-xl font-medium">
-          ₹ {originalPrice.toLocaleString()}
-        </span>
+        {basePrice > finalPrice && (
+          <del className="text-gray-400 text-base sm:text-lg md:text-xl font-medium">
+            {priceFormatter.format(basePrice)}
+          </del>
+        )}
         <span className="text-2xl sm:text-3xl font-black text-white tracking-tight">
-          ₹ {discountedPrice.toLocaleString()}
+          {priceFormatter.format(finalPrice)}
         </span>
       </div>
 
       {/* Specifications / Metadata */}
       <div className="mt-3 sm:mt-4 space-y-1 sm:space-y-1.5 text-xs sm:text-sm text-gray-200">
-        <div>
-          <span className="font-semibold text-white">Size:</span> {size}
-        </div>
-        <div>
-          <span className="font-semibold text-white">Brand:</span> {brand}
-        </div>
+        {productSize && (
+          <div>
+            <span className="font-semibold text-white">Size:</span>{" "}
+            {productSize}
+          </div>
+        )}
+        {brand && (
+          <div>
+            <span className="font-semibold text-white">Brand:</span>{" "}
+            {brand.name}
+          </div>
+        )}
       </div>
 
       {/* Description */}
@@ -157,50 +143,55 @@ export const ProductInfo: React.FC<ProductInfoProps> = ({
 
       {/* Quantity & Add to Cart Section */}
       <div className="mt-5 sm:mt-6 flex flex-col gap-2.5 sm:gap-3.5">
-        <div className="text-xs uppercase tracking-wider text-gray-300 font-semibold">
-          Quantity
-        </div>
+        {inStock && (
+          <>
+            <div className="text-xs uppercase tracking-wider text-gray-300 font-semibold">
+              Quantity
+            </div>
 
-        <div className="flex flex-row items-center gap-2 sm:gap-3">
-          {/* Quantity Selector */}
-          <div className="inline-flex items-center justify-between border border-white/40 rounded-lg px-2.5 sm:px-3 py-2 sm:py-2.5 w-28 sm:w-36 bg-[#160B2A] shrink-0">
+            <div className="flex flex-row items-center gap-2 sm:gap-3">
+              {/* Quantity Selector */}
+              <div className="inline-flex items-center justify-between border border-white/40 rounded-lg px-2.5 sm:px-3 py-2 sm:py-2.5 w-28 sm:w-36 bg-[#160B2A] shrink-0">
+                <button
+                  onClick={handleDecrement}
+                  disabled={quantity <= 1}
+                  aria-label="Decrease quantity"
+                  className="text-white/80 hover:text-white disabled:opacity-30 p-1 cursor-pointer transition-colors"
+                >
+                  <Minus className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                </button>
+                <span className="text-white font-bold text-sm sm:text-base px-2 sm:px-3 select-none">
+                  {quantity}
+                </span>
+                <button
+                  onClick={handleIncrement}
+                  disabled={quantity >= availableStock}
+                  aria-label="Increase quantity"
+                  className="text-white/80 hover:text-white p-1 cursor-pointer transition-colors"
+                >
+                  <Plus className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                </button>
+              </div>
+
+              {/* Add to Cart Button */}
+              <button
+                onClick={handleAddToCart}
+                className="flex-1 bg-white hover:bg-gray-100 text-black font-extrabold uppercase rounded-lg px-3 sm:px-6 py-2.5 sm:py-3 flex items-center justify-center gap-2 transition-all duration-150 active:scale-[0.98] shadow-md cursor-pointer text-xs sm:text-sm tracking-wider"
+              >
+                <ShoppingCart className="w-4 h-4 shrink-0" />
+                <span className="truncate">ADD TO CART</span>
+              </button>
+            </div>
+
+            {/* Buy Now Button */}
             <button
-              onClick={handleDecrement}
-              disabled={quantity <= 1}
-              aria-label="Decrease quantity"
-              className="text-white/80 hover:text-white disabled:opacity-30 p-1 cursor-pointer transition-colors"
+              onClick={handleBuyNow}
+              className="w-full bg-white hover:bg-gray-100 text-black font-extrabold uppercase rounded-lg py-2.5 sm:py-3 text-center transition-all duration-150 active:scale-[0.98] shadow-md cursor-pointer text-xs sm:text-sm tracking-wider mt-1"
             >
-              <Minus className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+              BUY NOW
             </button>
-            <span className="text-white font-bold text-sm sm:text-base px-2 sm:px-3 select-none">
-              {quantity}
-            </span>
-            <button
-              onClick={handleIncrement}
-              aria-label="Increase quantity"
-              className="text-white/80 hover:text-white p-1 cursor-pointer transition-colors"
-            >
-              <Plus className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-            </button>
-          </div>
-
-          {/* Add to Cart Button */}
-          <button
-            onClick={handleAddToCart}
-            className="flex-1 bg-white hover:bg-gray-100 text-black font-extrabold uppercase rounded-lg px-3 sm:px-6 py-2.5 sm:py-3 flex items-center justify-center gap-2 transition-all duration-150 active:scale-[0.98] shadow-md cursor-pointer text-xs sm:text-sm tracking-wider"
-          >
-            <ShoppingCart className="w-4 h-4 shrink-0" />
-            <span className="truncate">ADD TO CART</span>
-          </button>
-        </div>
-
-        {/* Buy Now Button */}
-        <button
-          onClick={handleBuyNow}
-          className="w-full bg-white hover:bg-gray-100 text-black font-extrabold uppercase rounded-lg py-2.5 sm:py-3 text-center transition-all duration-150 active:scale-[0.98] shadow-md cursor-pointer text-xs sm:text-sm tracking-wider mt-1"
-        >
-          BUY NOW
-        </button>
+          </>
+        )}
       </div>
 
       {/* Additional Information Badges */}
