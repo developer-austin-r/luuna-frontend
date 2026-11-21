@@ -1,6 +1,13 @@
+import localFont from "next/font/local";
 import Image from "next/image";
 
 import styles from "./TopPicks.module.css";
+
+const headingFont = localFont({
+  src: "../../../assets/fonts/black-han-sans.ttf",
+  display: "swap",
+  weight: "400",
+});
 
 const topPicks = [
   {
@@ -29,14 +36,20 @@ export default function TopPicks() {
   return (
     <section className={styles.section} aria-labelledby="top-picks-title">
       <div className={styles.container}>
-        <h2 id="top-picks-title" className={styles.title}>
+        <h2
+          id="top-picks-title"
+          className={`${styles.title} ${headingFont.className}`}
+        >
           TOP PICKS
         </h2>
 
         <div className={styles.picksGrid}>
           {topPicks.map((product) => (
             <div className={styles.pickItem} key={product.id}>
-              <span className={styles.rank} aria-hidden="true">
+              <span
+                className={`${styles.rank} ${headingFont.className}`}
+                aria-hidden="true"
+              >
                 {product.id}
               </span>
               <div className={styles.productImageWrapper}>
@@ -44,7 +57,7 @@ export default function TopPicks() {
                   src={product.image}
                   alt={product.alt}
                   fill
-                  sizes="(max-width: 540px) 35vw, (max-width: 900px) 25vw, 185px"
+                  sizes="(max-width: 540px) 42vw, (max-width: 900px) 25vw, 210px"
                   className={styles.productImage}
                 />
               </div>
