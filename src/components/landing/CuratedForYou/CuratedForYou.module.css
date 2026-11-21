@@ -104,21 +104,6 @@
   animation: characterFloat 3.5s ease-in-out 1.2s infinite alternate;
 }
 
-/* Sound lines next to Luffy's mouth */
-.soundLines {
-  position: absolute;
-  top: 31%;
-  left: -22%;
-  width: 25%;
-  aspect-ratio: 1;
-  pointer-events: none;
-}
-
-.soundLinesSvg {
-  width: 100%;
-  height: 100%;
-}
-
 /* Common bubble styles */
 .topBubble,
 .storyBubble,
@@ -319,11 +304,6 @@
     animation-delay: 160ms;
   }
 
-  .banner[data-reveal] .soundLines {
-    animation: soundLinesPop 360ms ease-out both;
-    animation-delay: 450ms;
-  }
-
   /* Step 2: "CURATED ?" pops up right after characters land */
   .banner[data-reveal] .topBubble {
     animation: comicBubblePop 420ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
@@ -392,17 +372,5 @@
     opacity: 1;
     transform: scale(1) translateY(0);
     visibility: visible;
-  }
-}
-
-@keyframes soundLinesPop {
-  0% {
-    opacity: 0;
-    transform: scale(0.2);
-  }
-
-  100% {
-    opacity: 1;
-    transform: scale(1);
   }
 }

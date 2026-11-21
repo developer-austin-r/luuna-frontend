@@ -76,7 +76,7 @@ export default function CuratedForYou() {
           </div>
         </div>
 
-        {/* Luffy - Right Character with laugh sound lines */}
+        {/* Luffy - Right Character */}
         <div className={`${styles.characterWrapper} ${styles.rightWrapper}`}>
           <div className={`${styles.characterFloat} ${styles.luffyFloat}`}>
             <img
@@ -92,37 +92,6 @@ export default function CuratedForYou() {
                 }
               }}
             />
-            <div className={styles.soundLines} aria-hidden="true">
-              <svg viewBox="0 0 32 32" className={styles.soundLinesSvg}>
-                <line
-                  x1="28"
-                  y1="16"
-                  x2="6"
-                  y2="5"
-                  stroke="#160B24"
-                  strokeWidth="2.5"
-                  strokeLinecap="round"
-                />
-                <line
-                  x1="28"
-                  y1="16"
-                  x2="2"
-                  y2="16"
-                  stroke="#160B24"
-                  strokeWidth="2.5"
-                  strokeLinecap="round"
-                />
-                <line
-                  x1="28"
-                  y1="16"
-                  x2="6"
-                  y2="27"
-                  stroke="#160B24"
-                  strokeWidth="2.5"
-                  strokeLinecap="round"
-                />
-              </svg>
-            </div>
           </div>
         </div>
 
