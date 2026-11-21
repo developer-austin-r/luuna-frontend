@@ -91,6 +91,7 @@ export default function WishlistPage() {
   const router = useRouter();
 
   const [wishlistItems, setWishlistItems] = useState<WishlistItem[]>([]);
+  const [authenticated, setAuthenticated] = useState<boolean | null>(null);
   const [pagination, setPagination] = useState<WishlistPagination | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
@@ -115,6 +116,7 @@ export default function WishlistPage() {
       setHasLoadError(false);
       const res = await getWishlistApi({ page: currentPage, limit: 12 });
       setWishlistItems(res.data);
+      setAuthenticated(res.authenticated ?? null);
       setPagination(res.pagination);
       setHasLoadError(false);
     } catch (err: any) {
@@ -246,15 +248,28 @@ export default function WishlistPage() {
 
         <div className="max-w-6xl mx-auto flex flex-col md:flex-row gap-4 sm:gap-6">
           {/* Left Sidebar Navigation */}
-          <div className="w-full md:w-64 lg:w-72 shrink-0">
-            <h2 className="text-xl font-bold text-white mb-4 px-1 tracking-tight hidden md:block">
-              Manage My Account
-            </h2>
-            <AccountMenu onLogout={handleLogout} />
-          </div>
+          {authenticated && (
+            <div className="w-full md:w-64 lg:w-72 shrink-0">
+              <h2 className="text-xl font-bold text-white mb-4 px-1 tracking-tight hidden md:block">
+                Manage My Account
+              </h2>
+              <AccountMenu onLogout={handleLogout} />
+            </div>
+          )}
 
           {/* Right Main Content area */}
           <div className="flex-1 bg-white rounded-2xl sm:rounded-3xl shadow-2xl p-4 sm:p-6 lg:p-8 min-h-[560px] flex flex-col min-w-0">
+            {authenticated === false && (
+              <p className="mb-4 text-sm text-gray-700">
+                <Link
+                  href="/login?redirect=/profile/wishlist"
+                  className="font-semibold underline"
+                >
+                  Sign in
+                </Link>{" "}
+                to save these favorites to your account.
+              </p>
+            )}
             {/* Header with Title and Actions */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 pb-4 border-b border-gray-100 mb-6">
               <div>

@@ -90,7 +90,10 @@ export function proxy(request: NextRequest) {
   // 2. Strict access control for /profile and its sub-routes (/profile/*)
   const isProfileRoute =
     lowerPathname === "/profile" || lowerPathname.startsWith("/profile/");
-  if (isProfileRoute) {
+  if (
+    isProfileRoute &&
+    (lowerPathname !== "/profile/wishlist" || isAuthenticated)
+  ) {
     // If not authenticated, redirect to /login with return URL
     if (!isAuthenticated) {
       const loginUrl = new URL("/login", request.url);

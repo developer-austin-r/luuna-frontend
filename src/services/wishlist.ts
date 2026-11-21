@@ -49,7 +49,7 @@ export interface WishlistProduct {
 
 export interface WishlistItem {
   id: string;
-  userId: string;
+  userId: string | null;
   productId: string;
   createdAt: string;
   product: WishlistProduct;
@@ -67,6 +67,7 @@ export interface WishlistPagination {
 export interface WishlistResponseData {
   data: WishlistItem[];
   pagination: WishlistPagination;
+  authenticated?: boolean;
 }
 
 interface ApiResponse<T> {
@@ -93,6 +94,7 @@ export async function getWishlistApi(params?: {
     ApiResponse<WishlistResponseData | WishlistItem[]>
   >(url, {
     method: "GET",
+    cache: "no-store",
   });
 
   const payload = res.data;
@@ -126,11 +128,12 @@ export async function addToWishlistApi(
   productId: string,
 ): Promise<{ message: string; item: WishlistItem }> {
   const res = await apiClient<
-    ApiResponse<{ message: string; item: WishlistItem }>
+    ApiResponse<{ message: string; item: WishlistItem; productIds: string[] }>
   >("/wishlist", {
     method: "POST",
     body: JSON.stringify({ productId }),
   });
+  publishWishlist(res.data.productIds);
   return res.data;
 }
 
@@ -141,10 +144,16 @@ export async function removeFromWishlistApi(
   productId: string,
 ): Promise<{ success: boolean; message: string; productId: string }> {
   const res = await apiClient<
-    ApiResponse<{ success: boolean; message: string; productId: string }>
+    ApiResponse<{
+      success: boolean;
+      message: string;
+      productId: string;
+      productIds: string[];
+    }>
   >(`/wishlist/${productId}`, {
     method: "DELETE",
   });
+  publishWishlist(res.data.productIds);
   return res.data;
 }
 
@@ -179,5 +188,22 @@ export async function clearWishlistApi(): Promise<{
   >("/wishlist", {
     method: "DELETE",
   });
+  publishWishlist([]);
   return res.data;
+}
+
+export const wishlistUpdatedEvent = "luuna:wishlist-updated";
+
+function publishWishlist(productIds: string[]) {
+  window.dispatchEvent(
+    new CustomEvent(wishlistUpdatedEvent, { detail: productIds }),
+  );
+}
+
+export async function getWishlistSummary() {
+  const response = await apiClient<ApiResponse<{ productIds: string[] }>>(
+    "/wishlist/summary",
+    { cache: "no-store" },
+  );
+  return response.data.productIds;
 }
