@@ -39,59 +39,90 @@ export default function CuratedForYou() {
         data-reveal={hasEntered ? "started" : undefined}
       >
         {/* Nami - Left Character */}
-        <img
-          src={getS3AssetUrl("assets/Curated-img/nami 1.png")}
-          alt="Nami"
-          className={`${styles.character} ${styles.leftCharacter}`}
-          loading="eager"
-        />
+        <div className={`${styles.characterWrapper} ${styles.leftWrapper}`}>
+          <div className={`${styles.characterFloat} ${styles.namiFloat}`}>
+            <img
+              src={getS3AssetUrl("assets/Curated-img/nami 1.png")}
+              alt="Nami"
+              className={styles.characterImg}
+              loading="eager"
+              onError={(e) => {
+                const target = e.currentTarget;
+                if (!target.dataset.triedFallback) {
+                  target.dataset.triedFallback = "true";
+                  target.src = getS3AssetUrl("assets/Curated/nami 1.png");
+                }
+              }}
+            />
+          </div>
+        </div>
 
         {/* Zoro - Center Character */}
-        <img
-          src={getS3AssetUrl("assets/Curated-img/zoro 1.png")}
-          alt="Zoro"
-          className={`${styles.character} ${styles.centerCharacter}`}
-          loading="eager"
-        />
+        <div className={`${styles.characterWrapper} ${styles.centerWrapper}`}>
+          <div className={`${styles.characterFloat} ${styles.zoroFloat}`}>
+            <img
+              src={getS3AssetUrl("assets/Curated-img/zoro 1.png")}
+              alt="Zoro"
+              className={styles.characterImg}
+              loading="eager"
+              onError={(e) => {
+                const target = e.currentTarget;
+                if (!target.dataset.triedFallback) {
+                  target.dataset.triedFallback = "true";
+                  target.src = getS3AssetUrl("assets/Curated/zoro 1.png");
+                }
+              }}
+            />
+          </div>
+        </div>
 
         {/* Luffy - Right Character with laugh sound lines */}
-        <div className={styles.luffyWrapper}>
-          <img
-            src={getS3AssetUrl("assets/Curated-img/luffy png 1.png")}
-            alt="Luffy"
-            className={`${styles.character} ${styles.rightCharacter}`}
-            loading="eager"
-          />
-          <div className={styles.soundLines} aria-hidden="true">
-            <svg viewBox="0 0 32 32" className={styles.soundLinesSvg}>
-              <line
-                x1="28"
-                y1="16"
-                x2="6"
-                y2="5"
-                stroke="#160B24"
-                strokeWidth="2.5"
-                strokeLinecap="round"
-              />
-              <line
-                x1="28"
-                y1="16"
-                x2="2"
-                y2="16"
-                stroke="#160B24"
-                strokeWidth="2.5"
-                strokeLinecap="round"
-              />
-              <line
-                x1="28"
-                y1="16"
-                x2="6"
-                y2="27"
-                stroke="#160B24"
-                strokeWidth="2.5"
-                strokeLinecap="round"
-              />
-            </svg>
+        <div className={`${styles.characterWrapper} ${styles.rightWrapper}`}>
+          <div className={`${styles.characterFloat} ${styles.luffyFloat}`}>
+            <img
+              src={getS3AssetUrl("assets/Curated-img/luffy png 1.png")}
+              alt="Luffy"
+              className={styles.characterImg}
+              loading="eager"
+              onError={(e) => {
+                const target = e.currentTarget;
+                if (!target.dataset.triedFallback) {
+                  target.dataset.triedFallback = "true";
+                  target.src = getS3AssetUrl("assets/Curated/luffy png 1.png");
+                }
+              }}
+            />
+            <div className={styles.soundLines} aria-hidden="true">
+              <svg viewBox="0 0 32 32" className={styles.soundLinesSvg}>
+                <line
+                  x1="28"
+                  y1="16"
+                  x2="6"
+                  y2="5"
+                  stroke="#160B24"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                />
+                <line
+                  x1="28"
+                  y1="16"
+                  x2="2"
+                  y2="16"
+                  stroke="#160B24"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                />
+                <line
+                  x1="28"
+                  y1="16"
+                  x2="6"
+                  y2="27"
+                  stroke="#160B24"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                />
+              </svg>
+            </div>
           </div>
         </div>
 
@@ -99,26 +130,26 @@ export default function CuratedForYou() {
         <div className={styles.topBubble}>
           <h2 id="curated-title">CURATED ?</h2>
           <svg
-            viewBox="0 0 50 42"
+            viewBox="0 0 52 42"
             fill="none"
             className={styles.topTail}
             aria-hidden="true"
           >
             <path
-              d="M2 1 C14 12 30 24 48 39 C40 24 34 10 28 1 Z"
+              d="M4 1 C16 14 32 26 50 39 C38 26 32 14 30 1 Z"
               fill="#ffffff"
               stroke="#160b24"
-              strokeWidth="2.8"
+              strokeWidth="3"
               strokeLinejoin="round"
               strokeLinecap="round"
             />
             <line
-              x1="1"
+              x1="3"
               y1="1"
-              x2="29"
+              x2="31"
               y2="1"
               stroke="#ffffff"
-              strokeWidth="4.5"
+              strokeWidth="5"
             />
           </svg>
         </div>
@@ -131,26 +162,26 @@ export default function CuratedForYou() {
             one box, Captain !
           </p>
           <svg
-            viewBox="0 0 44 40"
+            viewBox="0 0 44 42"
             fill="none"
             className={styles.storyTail}
             aria-hidden="true"
           >
             <path
-              d="M42 12 C28 9 16 5 2 2 C14 16 26 26 42 34 Z"
+              d="M43 14 C28 10 16 6 3 2 C16 20 28 32 43 38 Z"
               fill="#ffffff"
               stroke="#160b24"
-              strokeWidth="2.8"
+              strokeWidth="3"
               strokeLinejoin="round"
               strokeLinecap="round"
             />
             <line
-              x1="42"
-              y1="11"
-              x2="42"
-              y2="35"
+              x1="43"
+              y1="13"
+              x2="43"
+              y2="39"
               stroke="#ffffff"
-              strokeWidth="4.5"
+              strokeWidth="5"
             />
           </svg>
         </div>
@@ -162,26 +193,26 @@ export default function CuratedForYou() {
             <span className={styles.ctaBottomText}>NOW!</span>
           </span>
           <svg
-            viewBox="0 0 36 32"
+            viewBox="0 0 38 34"
             fill="none"
             className={styles.ctaTail}
             aria-hidden="true"
           >
             <path
-              d="M34 4 C24 10 14 18 2 28 C12 28 22 26 34 24 Z"
+              d="M37 6 C25 11 15 19 3 29 C14 29 26 28 37 27 Z"
               fill="#ffffff"
               stroke="#160b24"
-              strokeWidth="2.8"
+              strokeWidth="3"
               strokeLinejoin="round"
               strokeLinecap="round"
             />
             <line
-              x1="34"
-              y1="3"
-              x2="34"
-              y2="25"
+              x1="37"
+              y1="5"
+              x2="37"
+              y2="28"
               stroke="#ffffff"
-              strokeWidth="4.5"
+              strokeWidth="5"
             />
           </svg>
         </Link>
