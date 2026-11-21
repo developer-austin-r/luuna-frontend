@@ -1,43 +1,28 @@
 "use client";
 
-import { useSyncExternalStore } from "react";
+import { useEffect, useSyncExternalStore } from "react";
 
-export interface CartItemType {
-  id: number;
-  name: string;
-  price: number;
-  quantity: number;
-  image: string;
-}
+import { type CartSnapshot, getCart } from "@/services/cart";
 
-export const initialCart: CartItemType[] = [1, 2, 3].map((id) => ({
-  id,
-  name: "Toy",
-  price: 24,
-  quantity: 1,
-  image: `/images/checkout/toy-${id}.png`,
-}));
+export type { CartItemType } from "@/services/cart";
 
-const cartKey = "luuna:checkout-cart";
-const initialSnapshot = JSON.stringify(initialCart);
-let cartSnapshot = initialSnapshot;
+export const formatCartPrice = new Intl.NumberFormat("en-IN", {
+  style: "currency",
+  currency: "INR",
+}).format;
+
+const initial = {
+  cart: null as CartSnapshot | null,
+  error: "",
+  loading: true,
+  updating: false,
+};
+let state = initial;
 const listeners = new Set<() => void>();
 
-function readCart() {
-  try {
-    return sessionStorage.getItem(cartKey) ?? cartSnapshot;
-  } catch {
-    return cartSnapshot;
-  }
-}
-
-function parseCart(snapshot: string): CartItemType[] {
-  try {
-    const items: unknown = JSON.parse(snapshot);
-    return Array.isArray(items) ? items : initialCart;
-  } catch {
-    return initialCart;
-  }
+function setState(next: Partial<typeof state>) {
+  state = { ...state, ...next };
+  listeners.forEach((listener) => listener());
 }
 
 function subscribe(listener: () => void) {
@@ -47,26 +32,58 @@ function subscribe(listener: () => void) {
   };
 }
 
-export function useCartItems(): CartItemType[] {
+async function reload() {
+  if (requestPending || state.updating) return;
+  requestPending = true;
+  setState({ loading: true, error: "" });
+
+  try {
+    const cart = await getCart();
+    setState({ cart });
+  } catch (error) {
+    setState({
+      error:
+        error instanceof Error ? error.message : "Could not load your cart.",
+    });
+  } finally {
+    requestPending = false;
+    setState({ loading: false });
+  }
+}
+
+let requestPending = false;
+
+async function update(change: () => Promise<CartSnapshot>) {
+  if (state.updating || state.loading) return;
+  setState({ updating: true, error: "" });
+
+  try {
+    const data = await change();
+    setState({
+      cart: {
+        ...data,
+        notices: [...(state.cart?.notices ?? []), ...data.notices],
+      },
+    });
+  } catch (error) {
+    setState({
+      error:
+        error instanceof Error ? error.message : "Could not update your cart.",
+    });
+  } finally {
+    setState({ updating: false });
+  }
+}
+
+export function useCart() {
   const snapshot = useSyncExternalStore(
     subscribe,
-    readCart,
-    () => initialSnapshot,
+    () => state,
+    () => initial,
   );
-  return parseCart(snapshot);
-}
+  useEffect(() => {
+    void reload();
+  }, []);
 
-export function updateCart(edit: (items: CartItemType[]) => CartItemType[]) {
-  cartSnapshot = JSON.stringify(edit(parseCart(readCart())));
-  try {
-    sessionStorage.setItem(cartKey, cartSnapshot);
-  } catch {
-    // The in-memory snapshot still supports navigation in this tab.
-  }
-  listeners.forEach((listener) => listener());
+  return { ...snapshot, reload, update };
 }
-
-export const formatCartPrice = new Intl.NumberFormat("en-IN", {
-  style: "currency",
-  currency: "INR",
-}).format;

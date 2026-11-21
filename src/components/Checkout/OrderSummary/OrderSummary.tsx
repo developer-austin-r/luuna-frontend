@@ -36,13 +36,18 @@ export default function OrderSummary({
         <ul className={styles.productList}>
           {items.map((item) => (
             <li key={item.id} className={styles.product}>
-              <Image
-                src={item.image}
-                alt=""
-                width={70}
-                height={70}
-                className={styles.productImage}
-              />
+              {item.image ? (
+                <Image
+                  src={item.image}
+                  alt=""
+                  width={70}
+                  height={70}
+                  unoptimized
+                  className={styles.productImage}
+                />
+              ) : (
+                <div className={styles.productImage} aria-hidden="true" />
+              )}
               <div>
                 <strong>{item.name}</strong>
                 <span>Qty: {item.quantity}</span>

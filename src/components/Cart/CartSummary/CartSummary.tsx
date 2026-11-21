@@ -11,6 +11,9 @@ export default function CartSummary({ items }: { items: CartItemType[] }) {
     0,
   );
   const quantity = items.reduce((sum, item) => sum + item.quantity, 0);
+  const hasUnavailableItems = items.some(
+    (item) => item.quantity > item.availableStock,
+  );
 
   return (
     <aside className={styles.summary}>
@@ -42,7 +45,10 @@ export default function CartSummary({ items }: { items: CartItemType[] }) {
         <strong>{formatCartPrice(subtotal)}</strong>
       </div>
 
-      {quantity > 0 && (
+      {hasUnavailableItems && (
+        <p>Update or remove unavailable items before checkout.</p>
+      )}
+      {quantity > 0 && !hasUnavailableItems && (
         <Link href="/order-checkout" className={styles.checkoutButton}>
           Proceed to Checkout →
         </Link>

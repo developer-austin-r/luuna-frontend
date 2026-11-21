@@ -5,6 +5,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { Heart, Menu, Search, ShoppingBag, UserRound, X } from "lucide-react";
 
+import { useCart } from "@/components/Cart/cart-items";
+
 import styles from "./Navbar.module.css";
 
 const links = [
@@ -15,6 +17,9 @@ const links = [
 
 export default function Navbar({ checkout = false }: { checkout?: boolean }) {
   const [menuOpen, setMenuOpen] = useState(false);
+  const { cart } = useCart();
+  const itemCount =
+    cart?.items.reduce((total, item) => total + item.quantity, 0) ?? 0;
 
   return (
     <header
@@ -62,8 +67,17 @@ export default function Navbar({ checkout = false }: { checkout?: boolean }) {
           <Link href="/profile" aria-label="Your account">
             <UserRound size={21} />
           </Link>
-          <Link href="/cart" aria-label="Shopping bag">
-            <ShoppingBag size={21} />
+          <Link
+            href="/cart"
+            className={styles.cartLink}
+            aria-label={`Shopping bag, ${itemCount} ${itemCount === 1 ? "item" : "items"}`}
+          >
+            <ShoppingBag size={21} aria-hidden="true" />
+            {itemCount > 0 && (
+              <span className={styles.cartCount} aria-hidden="true">
+                {itemCount > 99 ? "99+" : itemCount}
+              </span>
+            )}
           </Link>
         </div>
       </nav>

@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import toast from "react-hot-toast";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
   Minus,
@@ -12,6 +13,8 @@ import {
   Truck,
 } from "lucide-react";
 
+import { useCart } from "@/components/Cart/cart-items";
+import { addCartItem } from "@/services/cart";
 import type { StorefrontProduct } from "@/services/storefront-products";
 
 interface ProductInfoProps {
@@ -27,6 +30,9 @@ export const ProductInfo: React.FC<ProductInfoProps> = ({ product }) => {
   const router = useRouter();
   const [quantity, setQuantity] = useState(1);
   const [isExpanded, setIsExpanded] = useState(false);
+  const { cart, error, loading, updating, update } = useCart();
+  const isInCart = cart?.items.some(({ id }) => id === product.id);
+  const cartBusy = loading || updating;
 
   const { name, shortDescription, rating, availableStock, productSize, brand } =
     product;
@@ -45,14 +51,13 @@ export const ProductInfo: React.FC<ProductInfoProps> = ({ product }) => {
     setQuantity((q) => Math.min(q + 1, availableStock));
   };
 
-  const handleAddToCart = () => {
-    toast.success(`Added ${quantity} item(s) to your cart!`);
-  };
-
-  const handleBuyNow = () => {
-    toast.success("Proceeding to checkout...");
-    router.push("/cart");
-  };
+  const handleAddToCart = (goToCart: boolean) =>
+    update(async () => {
+      const data = await addCartItem(product.id, quantity);
+      toast.success("Added to your cart.");
+      if (goToCart) router.push("/cart");
+      return data;
+    });
 
   const descriptionPreview =
     description.length > 280 ? description.slice(0, 280) + "..." : description;
@@ -143,7 +148,16 @@ export const ProductInfo: React.FC<ProductInfoProps> = ({ product }) => {
 
       {/* Quantity & Add to Cart Section */}
       <div className="mt-5 sm:mt-6 flex flex-col gap-2.5 sm:gap-3.5">
-        {inStock && (
+        {isInCart && (
+          <Link
+            href="/cart"
+            className="flex items-center justify-center gap-2 rounded-lg bg-white px-4 py-3 text-sm font-extrabold uppercase tracking-wider text-black hover:bg-gray-100"
+          >
+            <ShoppingCart className="size-4" aria-hidden="true" />
+            Go to Cart
+          </Link>
+        )}
+        {inStock && !isInCart && (
           <>
             <div className="text-xs uppercase tracking-wider text-gray-300 font-semibold">
               Quantity
@@ -175,7 +189,8 @@ export const ProductInfo: React.FC<ProductInfoProps> = ({ product }) => {
 
               {/* Add to Cart Button */}
               <button
-                onClick={handleAddToCart}
+                onClick={() => void handleAddToCart(false)}
+                disabled={cartBusy}
                 className="flex-1 bg-white hover:bg-gray-100 text-black font-extrabold uppercase rounded-lg px-3 sm:px-6 py-2.5 sm:py-3 flex items-center justify-center gap-2 transition-all duration-150 active:scale-[0.98] shadow-md cursor-pointer text-xs sm:text-sm tracking-wider"
               >
                 <ShoppingCart className="w-4 h-4 shrink-0" />
@@ -185,13 +200,24 @@ export const ProductInfo: React.FC<ProductInfoProps> = ({ product }) => {
 
             {/* Buy Now Button */}
             <button
-              onClick={handleBuyNow}
+              onClick={() => void handleAddToCart(true)}
+              disabled={cartBusy}
               className="w-full bg-white hover:bg-gray-100 text-black font-extrabold uppercase rounded-lg py-2.5 sm:py-3 text-center transition-all duration-150 active:scale-[0.98] shadow-md cursor-pointer text-xs sm:text-sm tracking-wider mt-1"
             >
               BUY NOW
             </button>
           </>
         )}
+        {error && (
+          <p role="alert" className="text-sm text-red-200">
+            {error}
+          </p>
+        )}
+        {cart?.notices.map((notice, index) => (
+          <p key={index} role="status" className="text-sm text-gray-300">
+            {notice}
+          </p>
+        ))}
       </div>
 
       {/* Additional Information Badges */}
