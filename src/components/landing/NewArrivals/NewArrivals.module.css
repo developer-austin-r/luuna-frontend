@@ -19,6 +19,12 @@
   letter-spacing: 0.035em;
 }
 
+.emptyMessage {
+  margin: 0 0 18px;
+  text-align: center;
+  color: #bcb0c5;
+}
+
 .carouselWrap {
   position: relative;
   width: min(100%, 1260px);

@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
@@ -8,7 +9,7 @@ import Hero from "@/components/landing/Hero/Hero";
 import LandingStorySections from "@/components/landing/LandingStorySections";
 import LoginOfferBar from "@/components/landing/LoginOfferBar/LoginOfferBar";
 import Navbar from "@/components/landing/Navbar/Navbar";
-import NewArrivals from "@/components/landing/NewArrivals/NewArrivals";
+import LandingNewArrivals from "@/components/landing/NewArrivals/LandingNewArrivals";
 import OfferBar from "@/components/landing/OfferBar/OfferBar";
 import Testimonials from "@/components/landing/Testimonials/Testmonials";
 
@@ -46,7 +47,9 @@ export default async function Home() {
       <Hero />
       <OfferBar />
       <CommunityBar />
-      <NewArrivals />
+      <Suspense>
+        <LandingNewArrivals />
+      </Suspense>
       <CuratedForYou />
       <LandingStorySections />
       <Testimonials />

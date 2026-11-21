@@ -8,6 +8,7 @@ import {
   ProductCard,
   ProductCarousel,
 } from "@/components/landing/NewArrivals/NewArrivals";
+import { getS3AssetUrl } from "@/config";
 
 import styles from "./LandingStorySections.module.css";
 
@@ -104,34 +105,40 @@ const topPicks: ArrivalProduct[] = [
 
 const categories = [
   {
-    name: "ANIME",
-    image: "/images/categories/anime.png",
+    name: "Anime",
+    image: "Anime.png",
     href: "/categories/anime",
+    hotspot: styles.hotspotAnime,
   },
   {
     name: "DC",
-    image: "/images/categories/dc.png",
+    image: "Dc.png",
     href: "/categories/dc",
+    hotspot: styles.hotspotDC,
   },
   {
-    name: "MARVEL",
-    image: "/images/categories/marvel.png",
+    name: "Marvel",
+    image: "Marvel.png",
     href: "/categories/marvel",
+    hotspot: styles.hotspotMarvel,
   },
   {
-    name: "K-POP",
-    image: "/images/categories/kpop.png",
+    name: "K-Pop",
+    image: "K-Pop.png",
     href: "/categories/kpop",
+    hotspot: styles.hotspotKpop,
   },
   {
-    name: "NOSTALGIA",
-    image: "/images/categories/nostalgia.png",
+    name: "Nostalgia",
+    image: "Nostalogia.png",
     href: "/categories/nostalgia",
+    hotspot: styles.hotspotNostalgia,
   },
   {
-    name: "WHEELS",
-    image: "/images/categories/wheels.png",
+    name: "Wheels",
+    image: "Wheels.PNG",
     href: "/categories/wheels",
+    hotspot: styles.hotspotWheels,
   },
 ];
 
@@ -177,50 +184,22 @@ function CategoryGrid() {
         </div>
 
         <div className={styles.categoryArtwork}>
-          <Image
-            src="/images/category.png"
-            alt="Explore Anime, DC, Marvel, K-Pop, Nostalgia, and Wheels"
-            fill
-            priority
-            sizes="(max-width: 1280px) 100vw, 1280px"
-            className={styles.categoryArtworkImage}
-          />
-
-          <Link
-            href="/categories/anime"
-            className={`${styles.categoryHotspot} ${styles.hotspotAnime}`}
-            aria-label="Explore Anime"
-          />
-
-          <Link
-            href="/categories/dc"
-            className={`${styles.categoryHotspot} ${styles.hotspotDC}`}
-            aria-label="Explore DC"
-          />
-
-          <Link
-            href="/categories/marvel"
-            className={`${styles.categoryHotspot} ${styles.hotspotMarvel}`}
-            aria-label="Explore Marvel"
-          />
-
-          <Link
-            href="/categories/kpop"
-            className={`${styles.categoryHotspot} ${styles.hotspotKpop}`}
-            aria-label="Explore K-Pop"
-          />
-
-          <Link
-            href="/categories/nostalgia"
-            className={`${styles.categoryHotspot} ${styles.hotspotNostalgia}`}
-            aria-label="Explore Nostalgia"
-          />
-
-          <Link
-            href="/categories/wheels"
-            className={`${styles.categoryHotspot} ${styles.hotspotWheels}`}
-            aria-label="Explore Wheels"
-          />
+          {categories.map(({ name, image, href, hotspot }) => (
+            <Link
+              key={href}
+              href={href}
+              className={`${styles.categoryHotspot} ${hotspot}`}
+              aria-label={`Explore ${name}`}
+            >
+              <Image
+                src={getS3AssetUrl(`assets/Categories-img/${image}`)}
+                alt=""
+                fill
+                unoptimized
+                className={styles.categoryArtworkImage}
+              />
+            </Link>
+          ))}
         </div>
       </div>
     </section>

@@ -195,8 +195,7 @@
 }
 
 .categoryArtworkImage {
-  z-index: 0;
-  object-fit: fill;
+  object-fit: cover;
 }
 
 .categoryHotspot {
