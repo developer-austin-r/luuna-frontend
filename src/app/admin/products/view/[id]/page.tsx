@@ -11,6 +11,7 @@ import {
   Card,
   StatusBadge,
 } from "@/components/admin";
+import { AdminDetailSkeleton } from "@/components/admin/LoadingSkeleton";
 import { appConfig } from "@/config";
 import { useAppSelector } from "@/redux/hooks";
 import { apiClient } from "@/services/api-client";
@@ -95,24 +96,10 @@ export default function ViewProductPage() {
     fetchProduct();
   }, [id, products]);
 
-  if (loading && !product) {
+  if (loading && !product)
     return (
-      <div className="space-y-6">
-        <Breadcrumb
-          items={[
-            { label: "Products", href: "/admin/products" },
-            { label: "Loading..." },
-          ]}
-        />
-        <Card className="text-center py-12">
-          <div className="w-8 h-8 rounded-full border-4 border-primary/20 border-t-primary animate-spin mx-auto" />
-          <p className="text-sm font-semibold text-text-custom/60 mt-4">
-            Loading product details...
-          </p>
-        </Card>
-      </div>
+      <AdminDetailSkeleton label="Loading product details" variant="product" />
     );
-  }
 
   if (!product) {
     return (

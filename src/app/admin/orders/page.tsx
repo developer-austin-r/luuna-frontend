@@ -382,13 +382,11 @@ export default function OrdersPage() {
             </div>
           </div>
 
-          {loading ? (
-            <div className="py-12 text-center text-sm font-semibold text-text-custom/50">
-              Loading orders...
-            </div>
-          ) : (
-            <DataTable columns={columns} data={paginatedOrders} />
-          )}
+          <DataTable
+            columns={columns}
+            data={paginatedOrders}
+            isLoading={loading}
+          />
 
           <Pagination
             currentPage={currentPage}

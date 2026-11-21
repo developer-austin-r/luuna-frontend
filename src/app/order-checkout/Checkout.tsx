@@ -12,6 +12,7 @@ import PaymentMethod from "@/components/Checkout/PaymentMethod/PaymentMethod";
 import ShippingMethod, {
   shippingOptions,
 } from "@/components/Checkout/ShippingMethod/ShippingMethod";
+import { CheckoutSkeleton } from "@/components/loading/StorefrontSkeletons";
 import { INDIAN_STATES } from "@/constants/indian-states";
 
 import { useCheckoutPayment } from "./use-checkout-payment";
@@ -80,11 +81,7 @@ export default function Checkout() {
           Check payment status
         </button>
       )}
-      {!paidOrder && loading && (
-        <p role="status" className="text-white">
-          Loading your cart…
-        </p>
-      )}
+      {!paidOrder && loading && <CheckoutSkeleton />}
       {!paidOrder && error && !loading && (
         <p role="alert" className="text-white">
           {error}{" "}

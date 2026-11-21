@@ -5,6 +5,11 @@ import Image from "next/image";
 import { Star } from "lucide-react";
 
 import {
+  Skeleton,
+  SkeletonLines,
+  SkeletonRegion,
+} from "@/components/loading/Skeleton";
+import {
   getProductReviews,
   type ProductReviewPage,
 } from "@/services/product-reviews";
@@ -70,7 +75,15 @@ export default function ProductReviews({ productId }: { productId: string }) {
                 </button>
               </div>
             )}
-            {!error && !result && <p role="status">Loading reviews…</p>}
+            {!error && !result && (
+              <SkeletonRegion
+                label="Loading reviews"
+                className="rounded-2xl bg-white p-5 sm:p-7"
+              >
+                <Skeleton className="mb-4 h-8 w-28" />
+                <SkeletonLines />
+              </SkeletonRegion>
+            )}
             {result && (
               <>
                 <div className="grid gap-5 rounded-2xl bg-white p-5 text-gray-950 sm:grid-cols-[auto_1fr] sm:p-7">

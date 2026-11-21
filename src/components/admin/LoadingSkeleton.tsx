@@ -1,66 +1,106 @@
-import React from "react";
+import {
+  Skeleton,
+  SkeletonCards,
+  SkeletonFields,
+  SkeletonLines,
+  SkeletonRegion,
+} from "@/components/loading/Skeleton";
 
-interface SkeletonProps {
-  className?: string;
-  variant?: "text" | "rect" | "circle";
+export function LoadingSkeletonTable({
+  columns = 5,
+  label = "Loading rows",
+}: {
+  columns?: number;
+  label?: string;
+}) {
+  const cells = Array.from({ length: columns }, (_, index) => index);
+  return (
+    <SkeletonRegion label={label}>
+      <div className="overflow-hidden rounded-xl border border-border-custom bg-white">
+        <div className="flex gap-4 border-b border-violet-100 bg-violet-50/70 px-4 py-4 sm:px-6">
+          {cells.map((index) => (
+            <div
+              key={index}
+              className={`min-w-0 flex-1 ${index > 2 ? "hidden sm:block" : ""}`}
+            >
+              <Skeleton className="h-3 w-3/4" />
+            </div>
+          ))}
+        </div>
+        <div className="divide-y divide-violet-50">
+          {Array.from({ length: 5 }, (_, row) => (
+            <div
+              key={row}
+              className="flex items-center gap-4 px-4 py-4 sm:px-6"
+            >
+              {cells.map((column) => (
+                <div
+                  key={column}
+                  className={`min-w-0 flex-1 ${column > 2 ? "hidden sm:block" : ""}`}
+                >
+                  <Skeleton
+                    className={`h-5 ${(row + column) % 2 ? "w-3/4" : "w-full"}`}
+                  />
+                </div>
+              ))}
+            </div>
+          ))}
+        </div>
+      </div>
+    </SkeletonRegion>
+  );
 }
 
-export const Skeleton: React.FC<SkeletonProps> = ({
-  className = "",
-  variant = "rect",
-}) => {
-  const variantStyles = {
-    text: "h-4 w-full rounded",
-    rect: "h-24 w-full rounded-xl",
-    circle: "h-10 w-10 rounded-full",
-  };
-
+export function LoadingSkeletonGrid() {
   return (
-    <div
-      className={`animate-pulse bg-slate-200/80 ${variantStyles[variant]} ${className}`}
-    />
+    <SkeletonRegion label="Loading overview">
+      <SkeletonCards />
+    </SkeletonRegion>
   );
-};
+}
 
-export const LoadingSkeletonTable: React.FC = () => {
+export function AdminDetailSkeleton({
+  label,
+  variant = "details",
+}: {
+  label: string;
+  variant?: "details" | "form" | "product";
+}) {
   return (
-    <div className="w-full bg-white rounded-xl border border-border-custom overflow-hidden">
-      <div className="px-6 py-4 border-b border-border-custom flex gap-4">
-        <Skeleton className="w-1/4 h-8" />
-        <Skeleton className="w-1/12 h-8 ml-auto" />
-      </div>
-      <div className="p-6 space-y-4">
-        {Array.from({ length: 5 }).map((_, i) => (
-          <div key={i} className="flex gap-4 items-center">
-            <Skeleton variant="circle" />
-            <div className="flex-1 space-y-2">
-              <Skeleton variant="text" className="w-1/3" />
-              <Skeleton variant="text" className="w-2/3" />
-            </div>
-            <Skeleton variant="text" className="w-24 h-6 rounded-full" />
+    <SkeletonRegion label={label}>
+      <div className="space-y-5">
+        <Skeleton className="h-4 w-36" />
+        <Skeleton className="h-8 w-56 max-w-full" />
+        <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
+          <div className="space-y-5 rounded-xl border border-violet-100 bg-white p-5">
+            {variant === "product" ? (
+              <Skeleton className="aspect-square max-h-72 w-full" />
+            ) : variant === "form" ? (
+              <SkeletonFields />
+            ) : (
+              <>
+                <SkeletonLines />
+                <SkeletonLines />
+                <SkeletonLines />
+              </>
+            )}
           </div>
-        ))}
-      </div>
-    </div>
-  );
-};
-
-export const LoadingSkeletonGrid: React.FC = () => {
-  return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-      {Array.from({ length: 4 }).map((_, i) => (
-        <div
-          key={i}
-          className="bg-white p-6 rounded-xl border border-border-custom space-y-4"
-        >
-          <div className="flex justify-between">
-            <Skeleton variant="text" className="w-1/2 h-4" />
-            <Skeleton variant="circle" className="w-8 h-8" />
+          <div className="space-y-5 rounded-xl border border-violet-100 bg-white p-5">
+            <SkeletonLines />
+            <SkeletonLines />
           </div>
-          <Skeleton variant="text" className="w-2/3 h-8" />
-          <Skeleton variant="text" className="w-3/4 h-3" />
         </div>
-      ))}
+      </div>
+    </SkeletonRegion>
+  );
+}
+
+export function AdminLoading() {
+  return (
+    <div className="space-y-5">
+      <Skeleton className="h-8 w-56 max-w-full" />
+      <LoadingSkeletonGrid />
+      <LoadingSkeletonTable />
     </div>
   );
-};
+}

@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { ArrowDown, ArrowUp, ArrowUpDown } from "lucide-react";
 
 import { EmptyState } from "./EmptyState";
-import { Skeleton } from "./LoadingSkeleton";
+import { LoadingSkeletonTable } from "./LoadingSkeleton";
 
 export interface Column<T> {
   key: keyof T | "actions";
@@ -46,20 +46,7 @@ export function DataTable<T extends { id: string | number }>({
   };
 
   if (isLoading) {
-    return (
-      <div className="w-full space-y-4">
-        {Array.from({ length: 5 }).map((_, idx) => (
-          <div
-            key={idx}
-            className="flex gap-4 p-4 border border-border-custom bg-white rounded-lg animate-pulse"
-          >
-            <Skeleton variant="circle" className="w-8 h-8" />
-            <Skeleton variant="text" className="w-1/4 h-6" />
-            <Skeleton variant="text" className="w-1/2 h-6 ml-auto" />
-          </div>
-        ))}
-      </div>
-    );
+    return <LoadingSkeletonTable columns={columns.length} />;
   }
 
   if (data.length === 0) {

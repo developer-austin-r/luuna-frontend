@@ -19,6 +19,7 @@ import {
 import Footer from "@/components/landing/Footer/Footer";
 import LoginOfferBar from "@/components/landing/LoginOfferBar/LoginOfferBar";
 import Navbar from "@/components/landing/Navbar/Navbar";
+import { AccountCardsSkeleton } from "@/components/loading/AccountSkeletons";
 import { AccountMenu } from "@/components/profile/AccountMenu/AccountMenu";
 import { useToast } from "@/providers/toast-provider";
 import { logoutApi } from "@/services/auth";
@@ -304,24 +305,7 @@ export default function ProfileCouponsPage() {
               </div>
             )}
 
-            {/* Loading Skeletons */}
-            {isLoading && (
-              <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
-                {[1, 2, 3, 4].map((idx) => (
-                  <div
-                    key={idx}
-                    className="border border-gray-100 rounded-2xl p-5 bg-gray-50/60 animate-pulse flex flex-col gap-3"
-                  >
-                    <div className="flex justify-between items-start">
-                      <div className="h-6 bg-gray-200 rounded w-1/3" />
-                      <div className="h-5 bg-gray-200 rounded w-16" />
-                    </div>
-                    <div className="h-4 bg-gray-200 rounded w-2/3" />
-                    <div className="h-10 bg-gray-200 rounded-xl w-full mt-2" />
-                  </div>
-                ))}
-              </div>
-            )}
+            {isLoading && <AccountCardsSkeleton label="Loading your coupons" />}
 
             {/* Empty State */}
             {!isLoading && filteredCoupons.length === 0 && (

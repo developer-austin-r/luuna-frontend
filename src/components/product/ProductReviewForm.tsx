@@ -11,6 +11,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Star } from "lucide-react";
 
+import { Skeleton, SkeletonRegion } from "@/components/loading/Skeleton";
 import { ApiRequestError } from "@/services/api-client";
 import { submitProductReview } from "@/services/product-reviews";
 import { getProfileApi } from "@/services/profile";
@@ -126,7 +127,11 @@ export default function ProductReviewForm({
       <h3 id="write-a-review" className="mb-4 text-xl font-bold">
         Write a Review
       </h3>
-      {session === "loading" && <p role="status">Checking sign-in…</p>}
+      {session === "loading" && (
+        <SkeletonRegion label="Checking sign-in">
+          <Skeleton className="h-12 w-full" />
+        </SkeletonRegion>
+      )}
       {session === "guest" && (
         <Link
           href={loginUrl}
