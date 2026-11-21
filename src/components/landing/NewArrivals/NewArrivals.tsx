@@ -2,6 +2,7 @@
 
 import { useRef, useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
 import CollectibleFigure from "@/components/landing/CollectibleFigure";
@@ -12,6 +13,7 @@ type FigureVariant = "warrior" | "ninja" | "sunburst" | "web";
 
 export type ArrivalProduct = {
   id?: string;
+  href?: string | undefined;
   name: string;
   description: string;
   price: string;
@@ -63,7 +65,19 @@ export function ProductCard({
         <span className={styles.imageGlow} aria-hidden="true" />
       </div>
       <div className={styles.productInfo}>
-        <h3>{product.name}</h3>
+        <h3>
+          {product.href ? (
+            <Link
+              className={styles.productLink}
+              href={product.href}
+              prefetch={false}
+            >
+              {product.name}
+            </Link>
+          ) : (
+            product.name
+          )}
+        </h3>
         {!product.variant && product.description && (
           <p>{product.description}</p>
         )}

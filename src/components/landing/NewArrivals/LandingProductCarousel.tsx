@@ -50,6 +50,10 @@ export default async function LandingProductCarousel({
       const hasDiscount = product.basePrice > product.finalPrice;
       return {
         id: product.id,
+        href:
+          section === "new-arrivals"
+            ? `/products/${encodeURIComponent(product.id)}`
+            : undefined,
         name: product.name,
         description: product.shortDescription ?? "",
         price: rupees.format(product.finalPrice),
@@ -64,6 +68,8 @@ export default async function LandingProductCarousel({
     console.error(`Failed to load landing page ${section}`, error);
     emptyMessage = unavailable;
   }
+
+  if (section === "accessories" && products.length === 0) return null;
 
   return (
     <ProductCarousel
