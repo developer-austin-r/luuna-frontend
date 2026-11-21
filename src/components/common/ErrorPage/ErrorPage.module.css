@@ -1,0 +1,317 @@
+.errorPageContainer {
+  min-height: 100vh;
+  min-height: 100dvh;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(28px, 5vw, 56px) clamp(16px, 4vw, 32px);
+  box-sizing: border-box;
+  position: relative;
+  overflow-x: hidden;
+  overflow-y: auto;
+  /* Full-page authentic Luuna light lavender & purple background */
+  background:
+    radial-gradient(
+      ellipse 85% 55% at 50% 0%,
+      rgba(216, 179, 233, 0.45) 0%,
+      transparent 70%
+    ),
+    radial-gradient(
+      circle 650px at 90% 85%,
+      rgba(200, 168, 223, 0.35) 0%,
+      transparent 65%
+    ),
+    radial-gradient(
+      circle 600px at 10% 85%,
+      rgba(224, 210, 240, 0.5) 0%,
+      transparent 65%
+    ),
+    linear-gradient(180deg, #f7f1fb 0%, #eee3f7 50%, #e6d5f2 100%);
+  color: #1f112e;
+}
+
+/* Luuna Background pattern across the ENTIRE viewport edge to edge from top to bottom */
+.errorPageContainer::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  background-image: url("/images/luuna-background-pattern.png");
+  background-position: center;
+  background-size: 380px;
+  background-repeat: repeat;
+  opacity: 0.06;
+  pointer-events: none;
+  mix-blend-mode: multiply;
+  z-index: 0;
+}
+
+/* Ambient glow orbs in Luuna purple/violet hues */
+.ambientGlowTop {
+  position: absolute;
+  top: -100px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(800px, 92vw);
+  height: 320px;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    rgba(142, 101, 166, 0.3) 0%,
+    rgba(216, 179, 233, 0.18) 50%,
+    transparent 70%
+  );
+  filter: blur(52px);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.ambientGlowBottom {
+  position: absolute;
+  bottom: -60px;
+  right: 10%;
+  width: 480px;
+  height: 300px;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    rgba(130, 95, 167, 0.25) 0%,
+    transparent 70%
+  );
+  filter: blur(58px);
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Error Content Section - Completely Card-Free: zero background, border, shadow, or backdrop filter */
+.contentWrapper {
+  position: relative;
+  z-index: 10;
+  width: 100%;
+  max-width: 620px;
+  margin: 0 auto;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  padding: 0;
+  box-shadow: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  box-sizing: border-box;
+}
+
+/* Logo Header */
+.logoLink {
+  display: inline-block;
+  margin-bottom: 24px;
+  text-decoration: none;
+  transition:
+    transform 0.2s ease,
+    opacity 0.2s ease;
+}
+
+.logoLink:hover {
+  transform: scale(1.03);
+  opacity: 0.95;
+}
+
+.logoImage {
+  width: clamp(130px, 18vw, 165px);
+  height: auto;
+  object-fit: contain;
+  display: block;
+}
+
+/* Illustration container directly on the background */
+.illustrationWrapper {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 4px;
+  width: 100%;
+}
+
+.illustrationSvg {
+  width: clamp(220px, 34vw, 300px);
+  height: auto;
+  max-height: 220px;
+  filter: drop-shadow(0 14px 24px rgba(130, 95, 167, 0.2));
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.illustrationSvg:hover {
+  transform: translateY(-3px) scale(1.02);
+}
+
+/* Status Code with Luuna Purple Gradient */
+.statusCode {
+  font-size: clamp(4.5rem, 12vw, 7.5rem);
+  font-weight: 900;
+  line-height: 0.95;
+  letter-spacing: -0.04em;
+  background: linear-gradient(135deg, #4a216d 0%, #825fa7 50%, #b285dc 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin: 12px 0 6px;
+  filter: drop-shadow(0 4px 14px rgba(130, 95, 167, 0.28));
+  font-family: inherit;
+}
+
+.heading {
+  font-size: clamp(1.5rem, 2.8vw, 2.1rem);
+  font-weight: 850;
+  letter-spacing: -0.025em;
+  color: #241138;
+  margin: 8px 0 12px;
+  line-height: 1.25;
+}
+
+.description {
+  font-size: clamp(0.95rem, 1.3vw, 1.1rem);
+  color: #554466;
+  line-height: 1.6;
+  max-width: 480px;
+  margin: 0 auto 32px;
+}
+
+/* Actions Group */
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  width: 100%;
+}
+
+/* Luuna Authentic Purple Primary Button */
+.primaryButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 13px 28px;
+  border-radius: 12px;
+  background: #825fa7;
+  color: #ffffff;
+  font-weight: 600;
+  font-size: 0.95rem;
+  line-height: 1.35;
+  text-decoration: none;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  cursor: pointer;
+  box-shadow:
+    0 4px 14px rgba(130, 95, 167, 0.38),
+    0 1px 2px rgba(0, 0, 0, 0.08);
+  transition:
+    background-color 0.2s ease,
+    transform 0.18s ease,
+    box-shadow 0.2s ease;
+}
+
+.primaryButton:hover {
+  background: #8e68b5;
+  transform: translateY(-2px);
+  box-shadow:
+    0 8px 22px rgba(130, 95, 167, 0.52),
+    0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.primaryButton:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(130, 95, 167, 0.35);
+}
+
+/* Secondary Complementary Button */
+.secondaryButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 13px 26px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.85);
+  color: #432b56;
+  font-weight: 600;
+  font-size: 0.95rem;
+  line-height: 1.35;
+  text-decoration: none;
+  border: 1.5px solid rgba(198, 164, 224, 0.85);
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(130, 95, 167, 0.1);
+  transition:
+    transform 0.18s ease,
+    background-color 0.18s ease,
+    border-color 0.18s ease,
+    color 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+.secondaryButton:hover {
+  background: #ffffff;
+  border-color: #825fa7;
+  color: #63368a;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(130, 95, 167, 0.18);
+}
+
+.secondaryButton:active {
+  transform: translateY(0);
+  box-shadow: 0 1px 3px rgba(130, 95, 167, 0.08);
+}
+
+/* Quick Footer Links */
+.footerLinks {
+  margin-top: 36px;
+  padding-top: 22px;
+  border-top: 1px solid rgba(198, 164, 224, 0.5);
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: clamp(12px, 3vw, 24px);
+  font-size: 0.8125rem;
+  color: #6e5782;
+}
+
+.footerLinks a {
+  color: #6b3e94;
+  text-decoration: none;
+  font-weight: 600;
+  transition: color 0.15s ease;
+}
+
+.footerLinks a:hover {
+  color: #825fa7;
+  text-decoration: underline;
+}
+
+@media (max-width: 640px) {
+  .logoImage {
+    width: 120px;
+  }
+
+  .actions {
+    flex-direction: column;
+    width: 100%;
+    gap: 12px;
+  }
+
+  .primaryButton,
+  .secondaryButton {
+    width: 100%;
+    max-width: 320px;
+  }
+
+  .description {
+    margin-bottom: 26px;
+  }
+}
