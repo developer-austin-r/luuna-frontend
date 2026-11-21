@@ -28,11 +28,13 @@ export function ProductCard({
   index,
   total,
   className,
+  asSlide = true,
 }: {
   product: ArrivalProduct;
   index: number;
   total: number;
   className?: string | undefined;
+  asSlide?: boolean;
 }) {
   const [failedImage, setFailedImage] = useState<string>();
   const discount = product.discount ?? (product.variant ? 20 : 0);
@@ -40,18 +42,28 @@ export function ProductCard({
   return (
     <article
       className={`${styles.productCard} ${className ?? ""}`}
-      role="group"
-      aria-roledescription="slide"
-      aria-label={`${index + 1} of ${total}: ${product.name}`}
+      role={asSlide ? "group" : undefined}
+      aria-roledescription={asSlide ? "slide" : undefined}
+      aria-label={
+        asSlide ? `${index + 1} of ${total}: ${product.name}` : undefined
+      }
     >
-      <div className={styles.artwork}>
+      <div
+        className={
+          asSlide ? styles.artwork : `${styles.artwork} ${styles.squareArtwork}`
+        }
+      >
         {discount > 0 && <span className={styles.discount}>-{discount}%</span>}
         {product.image && product.image !== failedImage ? (
           <Image
             src={product.image}
             alt={product.name}
             fill
-            sizes="(max-width: 520px) 72vw, (max-width: 850px) 42vw, 24vw"
+            sizes={
+              asSlide
+                ? "(max-width: 520px) 72vw, (max-width: 850px) 42vw, 24vw"
+                : "(max-width: 520px) 46vw, (max-width: 760px) 31vw, 23vw"
+            }
             loading="lazy"
             unoptimized={!product.image.startsWith("/")}
             onError={() => setFailedImage(product.image)}
@@ -64,7 +76,13 @@ export function ProductCard({
         ) : null}
         <span className={styles.imageGlow} aria-hidden="true" />
       </div>
-      <div className={styles.productInfo}>
+      <div
+        className={
+          asSlide
+            ? styles.productInfo
+            : `${styles.productInfo} ${styles.gridProductInfo}`
+        }
+      >
         <h3>
           {product.href ? (
             <Link

@@ -13,6 +13,13 @@ export interface StorefrontProduct {
   rating: number;
   productSize: string | null;
   brand: { name: string } | null;
+  productCategories?: {
+    category: {
+      id?: string;
+      name?: string;
+      slug?: string;
+    };
+  }[];
   images: {
     displayUrl: string;
     imageUrl: string | null;
@@ -68,6 +75,20 @@ export async function getProductCatalog(page: number) {
   );
   if (!catalog) throw new Error("Product catalog endpoint is unavailable");
   return catalog;
+}
+
+export async function getActiveProductPreview() {
+  const statuses = await fetchProductData<{ id: string; slug: string }[]>(
+    "/products/statuses/all",
+  );
+  if (!statuses) throw new Error("Product statuses endpoint is unavailable");
+  const active = statuses.find(({ slug }) => slug === "active");
+  if (!active) return [];
+
+  const query = new URLSearchParams({ statusId: active.id, limit: "8" });
+  const catalog = await fetchProductData<CatalogPage>(`/products?${query}`);
+  if (!catalog) throw new Error("Product catalog endpoint is unavailable");
+  return catalog.data;
 }
 
 export function getCategoryCatalog(slug: string, query: URLSearchParams) {

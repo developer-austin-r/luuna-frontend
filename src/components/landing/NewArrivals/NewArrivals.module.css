@@ -91,6 +91,10 @@
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
 }
 
+.squareArtwork {
+  aspect-ratio: 1;
+}
+
 .artwork > img {
   object-fit: cover;
   object-position: center bottom;
@@ -160,6 +164,10 @@
 
 .productInfo {
   padding: 7px 4px 10px;
+}
+
+.productInfo.gridProductInfo {
+  padding: 7px 0 0;
 }
 
 .productInfo h3 {

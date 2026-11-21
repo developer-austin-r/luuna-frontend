@@ -1,6 +1,8 @@
 "use client";
 
+import { useState } from "react";
 import Image from "next/image";
+import { Pause, Play } from "lucide-react";
 
 import styles from "./Testmonials.module.css";
 
@@ -41,38 +43,66 @@ function StarIcon() {
 }
 
 export default function Testimonials() {
+  const [paused, setPaused] = useState(false);
+
   return (
-    <section className={styles.testimonials} aria-label="Customer reviews">
-      {/* Background glowing red anime artwork in the center of the reviews section */}
+    <section
+      className={styles.testimonials}
+      aria-label="Customer reviews"
+      data-paused={paused}
+    >
       <div className={styles.centerArtWrapper} aria-hidden="true">
         <Image
           src="/images/testimonials-art.png"
           alt=""
           fill
-          unoptimized
+          sizes="100vw"
           className={styles.centerArt}
         />
         <div className={styles.artOverlay} />
       </div>
 
-      <div className={styles.contentContainer}>
-        <div className={styles.reviewGrid}>
-          {reviewCards.map((item) => (
-            <article className={styles.card} key={item.id}>
-              <div
-                className={styles.stars}
-                aria-label={`${item.rating} out of 5 stars`}
-              >
-                {Array.from({ length: item.rating }).map((_, i) => (
-                  <StarIcon key={i} />
-                ))}
-              </div>
-              <p className={styles.reviewText}>{item.review}</p>
-              <h3 className={styles.authorName}>{item.name}</h3>
-            </article>
-          ))}
-        </div>
+      <div className={styles.track}>
+        {[false, true].map((duplicate) => (
+          <div
+            key={duplicate ? "repeat" : "reviews"}
+            className={styles.reviewGroup}
+            aria-hidden={duplicate || undefined}
+          >
+            {reviewCards.map((item) => (
+              <article className={styles.card} key={item.id}>
+                <div
+                  className={styles.stars}
+                  role="img"
+                  aria-label={`${item.rating} out of 5 stars`}
+                >
+                  {Array.from({ length: item.rating }).map((_, i) => (
+                    <StarIcon key={i} />
+                  ))}
+                </div>
+                <blockquote className={styles.reviewText}>
+                  {item.review}
+                </blockquote>
+                <p className={styles.authorName}>{item.name}</p>
+              </article>
+            ))}
+          </div>
+        ))}
       </div>
+      <button
+        type="button"
+        className={styles.playback}
+        aria-label={
+          paused ? "Resume scrolling reviews" : "Pause scrolling reviews"
+        }
+        onClick={() => setPaused((value) => !value)}
+      >
+        {paused ? (
+          <Play size={15} aria-hidden="true" />
+        ) : (
+          <Pause size={15} aria-hidden="true" />
+        )}
+      </button>
     </section>
   );
 }

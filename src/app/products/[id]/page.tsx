@@ -4,9 +4,11 @@ import { notFound, redirect } from "next/navigation";
 import Footer from "@/components/landing/Footer/Footer";
 import LoginOfferBar from "@/components/landing/LoginOfferBar/LoginOfferBar";
 import Navbar from "@/components/landing/Navbar/Navbar";
+import BatmanBanner from "@/components/product/BatmanBanner";
 import ProductGallery from "@/components/product/ProductGallery";
 import ProductInfo from "@/components/product/ProductInfo";
 import ProductReviews from "@/components/product/ProductReviews";
+import RelatedItems from "@/components/product/RelatedItems";
 import {
   getProductById,
   getProductIdBySlug,
@@ -43,10 +45,23 @@ export async function generateMetadata({
 export default async function ProductDetailPage({ params }: ProductPageProps) {
   const product = await loadProduct((await params).id);
 
+  const isBatman =
+    product.name?.toLowerCase().includes("batman") ||
+    product.brand?.name?.toLowerCase().includes("batman") ||
+    product.brand?.name?.toLowerCase().includes("dc") ||
+    product.productCategories?.some(
+      (pc) =>
+        pc.category?.slug?.toLowerCase().includes("batman") ||
+        pc.category?.slug?.toLowerCase().includes("dc") ||
+        pc.category?.name?.toLowerCase().includes("batman") ||
+        pc.category?.name?.toLowerCase().includes("dc"),
+    );
+
   return (
     <div className="min-h-screen bg-[#10051b] flex flex-col font-sans text-white">
       <LoginOfferBar />
       <Navbar />
+      {isBatman && <BatmanBanner />}
       <main className="flex-1 w-full">
         <div className="mx-auto max-w-7xl px-3 sm:px-6 lg:px-8 py-6 sm:py-10 lg:py-12 grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8 lg:gap-10 xl:gap-12 items-start">
           <div className="lg:col-span-7 min-w-0">
@@ -61,6 +76,9 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
             <ProductInfo key={product.id} product={product} />
           </div>
         </div>
+
+        <RelatedItems productId={product.id} />
+
         <ProductReviews key={product.id} productId={product.id} />
       </main>
       <Footer />

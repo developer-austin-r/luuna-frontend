@@ -34,18 +34,18 @@ const topPicks = [
 
 export default function TopPicks() {
   return (
-    <section className={styles.section} aria-labelledby="top-picks-title">
+    <section
+      className={`${styles.section} ${headingFont.className}`}
+      aria-labelledby="top-picks-title"
+    >
       <div className={styles.container}>
-        <h2
-          id="top-picks-title"
-          className={`${styles.title} ${headingFont.className}`}
-        >
+        <h2 id="top-picks-title" className={styles.title}>
           TOP PICKS
         </h2>
 
-        <div className={styles.picksGrid}>
+        <ol className={styles.picksGrid} role="list">
           {topPicks.map((product) => (
-            <div className={styles.pickItem} key={product.id}>
+            <li className={styles.pickItem} key={product.id}>
               <span className={styles.rank} aria-hidden="true">
                 {product.id}
               </span>
@@ -54,13 +54,13 @@ export default function TopPicks() {
                   src={product.image}
                   alt={product.alt}
                   fill
-                  sizes="(max-width: 540px) 42vw, (max-width: 900px) 25vw, 210px"
+                  sizes="(max-width: 640px) 32vw, (max-width: 1440px) 15vw, 216px"
                   className={styles.productImage}
                 />
               </div>
-            </div>
+            </li>
           ))}
-        </div>
+        </ol>
       </div>
     </section>
   );
