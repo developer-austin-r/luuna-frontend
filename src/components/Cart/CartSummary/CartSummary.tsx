@@ -1,8 +1,17 @@
+import Link from "next/link";
 import { ShieldCheck, Truck } from "lucide-react";
+
+import { type CartItemType, formatCartPrice } from "../cart-items";
 
 import styles from "./CartSummary.module.css";
 
-export default function CartSummary() {
+export default function CartSummary({ items }: { items: CartItemType[] }) {
+  const subtotal = items.reduce(
+    (sum, item) => sum + item.price * item.quantity,
+    0,
+  );
+  const quantity = items.reduce((sum, item) => sum + item.quantity, 0);
+
   return (
     <aside className={styles.summary}>
       <h2 className={styles.title}>Order Summary</h2>
@@ -10,30 +19,34 @@ export default function CartSummary() {
       <div className={styles.line}></div>
 
       <div className={styles.row}>
-        <span>Subtotal (3 items)</span>
-        <span>₹101.00</span>
+        <span>
+          Subtotal ({quantity} {quantity === 1 ? "item" : "items"})
+        </span>
+        <span>{formatCartPrice(subtotal)}</span>
       </div>
 
       <div className={styles.row}>
         <span>Estimated Shipping</span>
-        <span className={styles.free}>FREE</span>
+        <span>Calculated at checkout</span>
       </div>
 
       <div className={styles.row}>
         <span>Estimated Tax</span>
-        <span>₹8.08</span>
+        <span>Pending</span>
       </div>
 
       <div className={styles.line}></div>
 
       <div className={styles.total}>
-        <span>Total</span>
-        <strong>₹109.08</strong>
+        <span>Total before shipping and tax</span>
+        <strong>{formatCartPrice(subtotal)}</strong>
       </div>
 
-      <button type="button" className={styles.checkoutButton}>
-        Proceed to Checkout →
-      </button>
+      {quantity > 0 && (
+        <Link href="/order-checkout" className={styles.checkoutButton}>
+          Proceed to Checkout →
+        </Link>
+      )}
 
       <div className={styles.featureRow}>
         <div className={styles.feature}>

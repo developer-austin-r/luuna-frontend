@@ -4,6 +4,27 @@
   background: #10051b;
 }
 
+.checkout {
+  background: #140824;
+}
+
+@media (min-width: 901px) {
+  .checkout .navbar {
+    width: min(100%, 1440px);
+    height: 96px;
+    margin: 0 auto;
+    padding-inline: var(--checkout-gutter);
+  }
+
+  .checkout .searchBox {
+    height: 46px;
+  }
+
+  .checkout .logoWrapper {
+    width: 210px;
+  }
+}
+
 .navbar {
   position: relative;
   display: flex;

@@ -1,7 +1,6 @@
 "use client";
 
-import { useState } from "react";
-
+import { updateCart, useCartItems } from "@/components/Cart/cart-items";
 import CartItem from "@/components/Cart/CartItem/CartItem";
 import CartProductCard from "@/components/Cart/CartProductCard/CartProductCard";
 import CartSummary from "@/components/Cart/CartSummary/CartSummary";
@@ -11,48 +10,12 @@ import Navbar from "@/components/landing/Navbar/Navbar";
 
 import styles from "./page.module.css";
 
-interface CartItemType {
-  id: number;
-  name: string;
-  price: number;
-  quantity: number;
-  image: string;
-}
-
 interface ProductType {
   id: number;
   name: string;
   price: number;
   image: string;
 }
-
-/* =========================
-   INITIAL CART PRODUCTS
-========================= */
-
-const initialCart: CartItemType[] = [
-  {
-    id: 1,
-    name: "Toy",
-    price: 24,
-    quantity: 1,
-    image: "/images/shopping-cart/Toy1-cart.png",
-  },
-  {
-    id: 2,
-    name: "Toy",
-    price: 24,
-    quantity: 1,
-    image: "/images/shopping-cart/Toy2-cart.png",
-  },
-  {
-    id: 3,
-    name: "Toy",
-    price: 24,
-    quantity: 1,
-    image: "/images/shopping-cart/Toy3-cart.png",
-  },
-];
 
 /* =========================
    PAIRS WELL WITH
@@ -141,14 +104,14 @@ const accessories: ProductType[] = [
 ];
 
 export default function CartPage() {
-  const [cartItems, setCartItems] = useState<CartItemType[]>(initialCart);
+  const cartItems = useCartItems();
 
   /* =========================
      INCREASE
   ========================= */
 
   const increaseQuantity = (id: number) => {
-    setCartItems((prevItems) =>
+    updateCart((prevItems) =>
       prevItems.map((item) =>
         item.id === id
           ? {
@@ -165,7 +128,7 @@ export default function CartPage() {
   ========================= */
 
   const decreaseQuantity = (id: number) => {
-    setCartItems((prevItems) =>
+    updateCart((prevItems) =>
       prevItems.map((item) =>
         item.id === id
           ? {
@@ -182,14 +145,14 @@ export default function CartPage() {
   ========================= */
 
   const deleteItem = (id: number) => {
-    setCartItems((prevItems) => prevItems.filter((item) => item.id !== id));
+    updateCart((prevItems) => prevItems.filter((item) => item.id !== id));
   };
 
   /* =========================
      ADD TO CART
   ========================= */
   const addToCart = (product: ProductType) => {
-    setCartItems((prevItems) => {
+    updateCart((prevItems) => {
       const existingProduct = prevItems.find((item) => item.id === product.id);
 
       if (existingProduct) {
@@ -249,7 +212,7 @@ export default function CartPage() {
             {cartItems.length === 0 && <p>Your cart is empty.</p>}
           </div>
 
-          <CartSummary />
+          <CartSummary items={cartItems} />
         </div>
 
         {/* =====================

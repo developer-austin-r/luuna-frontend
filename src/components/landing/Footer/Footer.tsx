@@ -20,49 +20,53 @@ const policyLinks = [
   { label: "Replacement Policy", href: "/replacement-policy" },
 ];
 
-export default function Footer() {
+export default function Footer({ compact = false }: { compact?: boolean }) {
   return (
-    <footer className={styles.footer}>
-      <section className={styles.welcome} aria-labelledby="footer-welcome">
-        <div className={styles.welcomeCopy}>
-          <h2 id="footer-welcome">
-            Welcome to
-            <br />
-            LÚUNA
-          </h2>
-          <p>
-            Discover unique Anime, Marvel, and DC products that blend elegance
-            with a funky twist for every fan.
-          </p>
-          <Link href="#top-picks" className={styles.shopButton}>
-            Shop
-          </Link>
-        </div>
+    <footer
+      className={compact ? `${styles.footer} ${styles.compact}` : styles.footer}
+    >
+      {!compact && (
+        <section className={styles.welcome} aria-labelledby="footer-welcome">
+          <div className={styles.welcomeCopy}>
+            <h2 id="footer-welcome">
+              Welcome to
+              <br />
+              LÚUNA
+            </h2>
+            <p>
+              Discover unique Anime, Marvel, and DC products that blend elegance
+              with a funky twist for every fan.
+            </p>
+            <Link href="#top-picks" className={styles.shopButton}>
+              Shop
+            </Link>
+          </div>
 
-        <div
-          className={styles.gallery}
-          aria-label="Luuna collection highlights"
-        >
-          <Image
-            src={`${landingAssetsBaseUrl}/wall_poster_image.png`}
-            alt="A fantasy collectible figure from the Luuna collection"
-            width={1325}
-            height={1187}
-            sizes="(max-width: 600px) 44vw, 230px"
-            loading="lazy"
-            unoptimized
-          />
-          <Image
-            src={`${landingAssetsBaseUrl}/car_truck_image.png`}
-            alt="An anime-inspired collector necklace"
-            width={1254}
-            height={1254}
-            sizes="(max-width: 600px) 44vw, 230px"
-            loading="lazy"
-            unoptimized
-          />
-        </div>
-      </section>
+          <div
+            className={styles.gallery}
+            aria-label="Luuna collection highlights"
+          >
+            <Image
+              src={`${landingAssetsBaseUrl}/wall_poster_image.png`}
+              alt="A fantasy collectible figure from the Luuna collection"
+              width={1325}
+              height={1187}
+              sizes="(max-width: 600px) 44vw, 230px"
+              loading="lazy"
+              unoptimized
+            />
+            <Image
+              src={`${landingAssetsBaseUrl}/car_truck_image.png`}
+              alt="An anime-inspired collector necklace"
+              width={1254}
+              height={1254}
+              sizes="(max-width: 600px) 44vw, 230px"
+              loading="lazy"
+              unoptimized
+            />
+          </div>
+        </section>
+      )}
 
       <div className={styles.footerContent}>
         <section className={styles.brandColumn} aria-labelledby="footer-brand">
@@ -70,7 +74,11 @@ export default function Footer() {
             <h2 id="footer-brand">VIBRANCE</h2>
             <span className={styles.brandIcon}>
               <Image
-                src={`${landingAssetsBaseUrl}/ellipse.png`}
+                src={
+                  compact
+                    ? "/images/checkout/vibrance.png"
+                    : `${landingAssetsBaseUrl}/ellipse.png`
+                }
                 alt=""
                 width={2122}
                 height={741}

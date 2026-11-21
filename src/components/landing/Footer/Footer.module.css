@@ -22,6 +22,36 @@
   padding: 54px 0 40px;
 }
 
+.compact {
+  background: transparent;
+}
+
+.compact .footerContent {
+  width: min(calc(100% - 2 * var(--checkout-gutter, 24px)), 1280px);
+  padding-bottom: 38px;
+}
+
+.compact .copyright {
+  padding: 16px 18px;
+  border-top: 1px solid #e2dbe8;
+  background: white;
+}
+
+.compact :is(.brandTitle, .footerColumn, .support) h2 {
+  font-size: clamp(14px, 1.5vw, 22px);
+}
+
+.compact :is(.brandColumn > p, .footerColumn a, .support > a) {
+  font-size: clamp(12px, 1vw, 14px);
+}
+
+.compact .brandIcon img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: none;
+}
+
 .welcomeCopy h2 {
   margin: 0 0 32px;
   color: #ffffff;

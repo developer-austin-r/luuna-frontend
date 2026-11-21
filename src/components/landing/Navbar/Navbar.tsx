@@ -13,11 +13,15 @@ const links = [
   { href: "#top-picks", label: "Top Picks" },
 ];
 
-export default function Navbar() {
+export default function Navbar({ checkout = false }: { checkout?: boolean }) {
   const [menuOpen, setMenuOpen] = useState(false);
 
   return (
-    <header className={styles.header}>
+    <header
+      className={
+        checkout ? `${styles.header} ${styles.checkout}` : styles.header
+      }
+    >
       <nav className={styles.navbar}>
         <button
           className={styles.menuButton}
@@ -35,7 +39,7 @@ export default function Navbar() {
             type="search"
             name="q"
             aria-label="Search collectibles"
-            placeholder="Find your favorite toy..."
+            placeholder={checkout ? "Search toys" : "Find your favorite toy..."}
           />
           <kbd>↵</kbd>
         </form>
@@ -70,7 +74,7 @@ export default function Navbar() {
       >
         {links.map((link) => (
           <Link
-            href={link.href}
+            href={checkout ? `/${link.href}` : link.href}
             key={link.href}
             onClick={() => setMenuOpen(false)}
           >
