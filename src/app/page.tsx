@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
@@ -8,7 +9,7 @@ import Hero from "@/components/landing/Hero/Hero";
 import LandingStorySections from "@/components/landing/LandingStorySections";
 import LoginOfferBar from "@/components/landing/LoginOfferBar/LoginOfferBar";
 import Navbar from "@/components/landing/Navbar/Navbar";
-import NewArrivals from "@/components/landing/NewArrivals/NewArrivals";
+import LandingProductCarousel from "@/components/landing/NewArrivals/LandingProductCarousel";
 import OfferBar from "@/components/landing/OfferBar/OfferBar";
 import ServiceFeatures from "@/components/landing/ServiceFeatures/ServiceFeatures";
 import Testimonials from "@/components/landing/Testimonials/Testmonials";
@@ -42,13 +43,15 @@ export default async function Home() {
   }
 
   return (
-    <main>
+    <main className="min-h-screen bg-[#10051b]">
       <LoginOfferBar />
       <Navbar />
       <Hero />
       <OfferBar />
       <CommunityBar />
-      <NewArrivals />
+      <Suspense>
+        <LandingProductCarousel section="new-arrivals" />
+      </Suspense>
       <CuratedForYou />
       <LandingStorySections />
       <ServiceFeatures />

@@ -21,10 +21,13 @@ import Footer from "@/components/landing/Footer/Footer";
 import LoginOfferBar from "@/components/landing/LoginOfferBar/LoginOfferBar";
 import Navbar from "@/components/landing/Navbar/Navbar";
 import { AccountMenu } from "@/components/profile/AccountMenu/AccountMenu";
+import { AvatarSelector } from "@/components/profile/AvatarSelector/AvatarSelector";
 import { ProfileActions } from "@/components/profile/ProfileActions/ProfileActions";
 import { ProfileHeader } from "@/components/profile/ProfileHeader/ProfileHeader";
+import { ProfileImageModal } from "@/components/profile/ProfileImageModal";
 import { ProfileInput } from "@/components/profile/ProfileInput/ProfileInput";
 import { ProfileSelect } from "@/components/profile/ProfileSelect/ProfileSelect";
+import { getS3AssetUrl } from "@/config";
 import { INDIAN_STATES } from "@/constants/indian-states";
 import { logoutApi } from "@/services/auth";
 import {
@@ -34,7 +37,13 @@ import {
   type LgdState,
 } from "@/services/location";
 import { uploadImage } from "@/services/media-upload";
-import { getProfileApi, updateProfileApi } from "@/services/profile";
+import {
+  type AvailableProfileImage,
+  getAvailableProfileImagesApi,
+  getProfileApi,
+  selectProfileImageApi,
+  updateProfileApi,
+} from "@/services/profile";
 
 function splitName(fullName: string | null | undefined): {
   firstName: string;
@@ -73,11 +82,30 @@ const emptyForm: ProfileFormData = {
   pincode: "",
 };
 
+const FALLBACK_PROFILE_AVATARS: AvailableProfileImage[] = [
+  {
+    key: "assets/Profile-img/Profile-1.jpg",
+    name: "Profile 1",
+    url: getS3AssetUrl("assets/Profile-img/Profile-1.jpg"),
+  },
+  {
+    key: "assets/Profile-img/Profile-2.jpg",
+    name: "Profile 2",
+    url: getS3AssetUrl("assets/Profile-img/Profile-2.jpg"),
+  },
+  {
+    key: "assets/Profile-img/Profile-3.jpg",
+    name: "Profile 3",
+    url: getS3AssetUrl("assets/Profile-img/Profile-3.jpg"),
+  },
+];
+
 export default function ProfilePage() {
   const router = useRouter();
 
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [isSavingAvatar, setIsSavingAvatar] = useState(false);
   const [statusMessage, setStatusMessage] = useState<{
     type: "success" | "error";
     text: string;
@@ -88,6 +116,14 @@ export default function ProfilePage() {
   const [savedData, setSavedData] = useState<ProfileFormData>(emptyForm);
 
   // Avatar State
+  const [availableAvatars, setAvailableAvatars] = useState<
+    AvailableProfileImage[]
+  >(FALLBACK_PROFILE_AVATARS);
+  const [isLoadingAvatars, setIsLoadingAvatars] = useState(false);
+  const [isAvatarModalOpen, setIsAvatarModalOpen] = useState(false);
+  const [selectedAvatarKey, setSelectedAvatarKey] = useState<string | null>(
+    null,
+  );
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [savedAvatar, setSavedAvatar] = useState<string | null>(null);
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
@@ -97,6 +133,33 @@ export default function ProfilePage() {
   const [districts, setDistricts] = useState<LgdDistrict[]>([]);
   const [isLoadingStates, setIsLoadingStates] = useState(false);
   const [isLoadingDistricts, setIsLoadingDistricts] = useState(false);
+
+  // Fetch available profile avatars from S3 via backend API on mount
+  useEffect(() => {
+    let isMounted = true;
+    async function loadAvatars() {
+      try {
+        setIsLoadingAvatars(true);
+        const images = await getAvailableProfileImagesApi();
+        if (isMounted && images && images.length > 0) {
+          setAvailableAvatars(images);
+        }
+      } catch (err) {
+        console.warn(
+          "Could not load avatars from API, using fallback options",
+          err,
+        );
+      } finally {
+        if (isMounted) {
+          setIsLoadingAvatars(false);
+        }
+      }
+    }
+    loadAvatars();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   // Fetch logged in user profile on mount
   useEffect(() => {
@@ -127,10 +190,11 @@ export default function ProfilePage() {
         setFormData(initialForm);
         setSavedData(initialForm);
 
-        if (data.profile?.profileImageUrl) {
-          setAvatarPreview(data.profile.profileImageUrl);
-          setSavedAvatar(data.profile.profileImageUrl);
-        }
+        const profileKey =
+          data.profile?.profileImageUrl || "assets/Profile-img/Profile-1.jpg";
+        setSelectedAvatarKey(profileKey);
+        setAvatarPreview(getS3AssetUrl(profileKey));
+        setSavedAvatar(profileKey);
       } catch (err: any) {
         if (!isMounted) return;
         const msg = err?.message || "";
@@ -258,6 +322,47 @@ export default function ProfilePage() {
     }
   };
 
+  const handleSelectPresetAvatar = async (url: string, key?: string) => {
+    const chosenKey =
+      key || availableAvatars.find((a) => a.url === url)?.key || url;
+    setSelectedAvatarKey(chosenKey);
+    setAvatarPreview(getS3AssetUrl(chosenKey));
+    setAvatarFile(null);
+
+    try {
+      setIsSavingAvatar(true);
+      const res = await selectProfileImageApi(chosenKey);
+      const newKey = res.profileImageUrl || chosenKey;
+      setSelectedAvatarKey(newKey);
+      setSavedAvatar(newKey);
+      setAvatarPreview(getS3AssetUrl(newKey));
+      setStatusMessage({
+        type: "success",
+        text: "Profile image updated successfully!",
+      });
+    } catch (err: any) {
+      console.error("Failed to auto-save avatar:", err);
+      setStatusMessage({
+        type: "error",
+        text: err?.message || "Failed to auto-save avatar. Please try again.",
+      });
+    } finally {
+      setIsSavingAvatar(false);
+    }
+  };
+
+  const handleSaveAvatarFromModal = async (chosenKey: string) => {
+    const res = await selectProfileImageApi(chosenKey);
+    const newKey = res.profileImageUrl || chosenKey;
+    setSelectedAvatarKey(newKey);
+    setSavedAvatar(newKey);
+    setAvatarPreview(getS3AssetUrl(newKey));
+    setStatusMessage({
+      type: "success",
+      text: "Profile image updated successfully!",
+    });
+  };
+
   const handleSubmit = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
 
@@ -281,13 +386,13 @@ export default function ProfilePage() {
     setStatusMessage(null);
 
     try {
-      let finalAvatarUrl = savedAvatar;
+      let finalAvatarPath = selectedAvatarKey || savedAvatar;
 
       // Upload image if a new file was chosen
       if (avatarFile) {
         try {
           const uploadRes = await uploadImage(avatarFile);
-          finalAvatarUrl = uploadRes.displayUrl || uploadRes.originalUrl;
+          finalAvatarPath = uploadRes.displayUrl || uploadRes.originalUrl;
         } catch (uploadErr) {
           console.warn("Avatar upload failed:", uploadErr);
         }
@@ -303,7 +408,7 @@ export default function ProfilePage() {
         district: formData.district.trim() || undefined,
         state: formData.state.trim() || undefined,
         pincode: formData.pincode.trim() || undefined,
-        profileImageUrl: finalAvatarUrl || undefined,
+        profileImageUrl: finalAvatarPath || undefined,
       });
 
       const { firstName, lastName } = splitName(updated.name);
@@ -326,9 +431,11 @@ export default function ProfilePage() {
       setSavedData(syncedForm);
       setAvatarFile(null);
 
-      if (updated.profile?.profileImageUrl) {
-        setAvatarPreview(updated.profile.profileImageUrl);
-        setSavedAvatar(updated.profile.profileImageUrl);
+      const returnedKey = updated.profile?.profileImageUrl || finalAvatarPath;
+      if (returnedKey) {
+        setSelectedAvatarKey(returnedKey);
+        setAvatarPreview(getS3AssetUrl(returnedKey));
+        setSavedAvatar(returnedKey);
       }
 
       setStatusMessage({
@@ -347,7 +454,8 @@ export default function ProfilePage() {
 
   const handleCancel = () => {
     setFormData({ ...savedData });
-    setAvatarPreview(savedAvatar);
+    setSelectedAvatarKey(savedAvatar);
+    setAvatarPreview(getS3AssetUrl(savedAvatar));
     setAvatarFile(null);
     setStatusMessage(null);
   };
@@ -407,27 +515,57 @@ export default function ProfilePage() {
 
               {/* Avatar Section at Top Right */}
               <div className="relative shrink-0">
-                <div className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 rounded-full bg-gray-50 flex items-center justify-center overflow-hidden border-2 border-white shadow-md">
+                <button
+                  type="button"
+                  onClick={() => setIsAvatarModalOpen(true)}
+                  className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 rounded-full bg-gray-50 flex items-center justify-center overflow-hidden border-2 border-white shadow-md hover:ring-4 hover:ring-purple-300 transition-all cursor-pointer group focus:outline-none"
+                  title="Click to change profile picture"
+                >
                   <img
-                    src={avatarPreview || "/images/recommendation-toy.png"}
+                    src={
+                      avatarPreview ||
+                      getS3AssetUrl(selectedAvatarKey) ||
+                      "/images/recommendation-toy.png"
+                    }
                     alt="Profile preview"
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform"
                   />
-                </div>
-                <label
-                  htmlFor="avatar-upload"
-                  className="absolute bottom-0 right-0 p-1.5 bg-[#6B21A8] rounded-full text-white cursor-pointer hover:bg-[#4C1D95] transition-colors shadow-lg border-2 border-white"
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setIsAvatarModalOpen(true)}
+                  className="absolute bottom-0 right-0 p-1.5 bg-[#6B21A8] rounded-full text-white cursor-pointer hover:bg-[#4C1D95] transition-colors shadow-lg border-2 border-white focus:outline-none"
+                  title="Choose profile picture from S3"
                 >
                   <Camera size={13} />
-                  <input
-                    id="avatar-upload"
-                    type="file"
-                    accept="image/*"
-                    className="hidden"
-                    onChange={handleImageChange}
-                  />
-                </label>
+                </button>
               </div>
+            </div>
+
+            {/* Profile Image Modal Popup */}
+            <ProfileImageModal
+              isOpen={isAvatarModalOpen}
+              onClose={() => setIsAvatarModalOpen(false)}
+              images={availableAvatars}
+              currentSelectedKey={selectedAvatarKey}
+              onSave={handleSaveAvatarFromModal}
+              isLoadingOptions={isLoadingAvatars}
+            />
+
+            {/* Avatar Selector Section */}
+            <div className="mb-6">
+              <AvatarSelector
+                options={availableAvatars.map((img) => ({
+                  id: img.key,
+                  label: img.name,
+                  url: getS3AssetUrl(img.key),
+                  key: img.key,
+                }))}
+                selectedUrl={selectedAvatarKey || avatarPreview}
+                onSelect={handleSelectPresetAvatar}
+                onOpenModal={() => setIsAvatarModalOpen(true)}
+                isLoading={isSavingAvatar}
+              />
             </div>
 
             {statusMessage && (

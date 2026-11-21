@@ -25,6 +25,15 @@ interface CatalogPage {
   meta: { hasPreviousPage: boolean; hasNextPage: boolean };
 }
 
+interface CategoryCatalog {
+  category: { name: string; slug: string; image: string | null };
+  products: Pick<
+    StorefrontProduct,
+    "id" | "name" | "basePrice" | "finalPrice" | "images"
+  >[];
+  meta: CatalogPage["meta"] & { total: number };
+}
+
 async function fetchProductData<T>(path: string): Promise<T | null> {
   const response = await fetch(`${env.apiBaseUrl.replace(/\/+$/, "")}${path}`, {
     cache: "no-store",
@@ -61,7 +70,13 @@ export async function getProductCatalog(page: number) {
   return catalog;
 }
 
-export function getProductImages(product: StorefrontProduct) {
+export function getCategoryCatalog(slug: string, query: URLSearchParams) {
+  return fetchProductData<CategoryCatalog>(
+    `/products/categories/${encodeURIComponent(slug)}/products?${query}`,
+  );
+}
+
+export function getProductImages(product: Pick<StorefrontProduct, "images">) {
   return [
     ...new Set(
       product.images

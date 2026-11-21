@@ -79,6 +79,48 @@ export async function updateProfileApi(
   return res.data;
 }
 
+export interface AvailableProfileImage {
+  key: string;
+  name: string;
+  url: string;
+}
+
+export interface SelectProfileImageResponse {
+  profileImageUrl: string;
+  message: string;
+}
+
+/**
+ * Fetches available profile images stored in S3 assets/Profile-img/
+ */
+export async function getAvailableProfileImagesApi(): Promise<
+  AvailableProfileImage[]
+> {
+  const res = await apiClient<ApiResponse<AvailableProfileImage[]>>(
+    "/users/profile/images",
+    {
+      method: "GET",
+    },
+  );
+  return res.data;
+}
+
+/**
+ * Saves selected S3 profile image relative path for authenticated user.
+ */
+export async function selectProfileImageApi(
+  imagePath: string,
+): Promise<SelectProfileImageResponse> {
+  const res = await apiClient<ApiResponse<SelectProfileImageResponse>>(
+    "/users/profile/image",
+    {
+      method: "PATCH",
+      body: JSON.stringify({ imagePath }),
+    },
+  );
+  return res.data;
+}
+
 export interface ChangePasswordPayload {
   currentPassword: string;
   newPassword: string;

@@ -19,6 +19,12 @@
   letter-spacing: 0.035em;
 }
 
+.emptyMessage {
+  margin: 0 0 18px;
+  text-align: center;
+  color: #bcb0c5;
+}
+
 .carouselWrap {
   position: relative;
   width: min(100%, 1260px);
@@ -44,6 +50,7 @@
 }
 
 .productCard {
+  position: relative;
   flex: 0 0 calc((100% - 42px) / 4);
   min-width: 0;
   overflow: hidden;
@@ -51,23 +58,37 @@
   background: transparent;
 }
 
+.productLink {
+  color: inherit;
+  text-decoration: none;
+}
+
+.productLink::after {
+  position: absolute;
+  z-index: 3;
+  inset: 0;
+  content: "";
+}
+
+.productLink:focus-visible::after {
+  outline: 2px solid currentColor;
+  outline-offset: -2px;
+  border-radius: 8px;
+}
+
 .artwork {
   position: relative;
   aspect-ratio: 1 / 1.04;
   overflow: hidden;
   border-radius: 8px;
-  background:
-    radial-gradient(
-      ellipse at 50% 24%,
-      rgb(188 168 195 / 33%),
-      transparent 50%
-    ),
-    linear-gradient(155deg, #65606a, #3d3942 75%);
+  background: #ffffff;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
 }
 
 .artwork > img {
-  object-fit: cover;
-  object-position: center 28%;
+  object-fit: contain;
+  object-position: center;
+  padding: 10px;
   transition: transform 250ms ease;
 }
 
