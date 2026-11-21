@@ -6,6 +6,7 @@ import Link from "next/link";
 import { Heart, Menu, Search, ShoppingBag, UserRound, X } from "lucide-react";
 
 import { useCart } from "@/components/Cart/cart-items";
+import { useWishlist } from "@/hooks/use-wishlist";
 
 import styles from "./Navbar.module.css";
 
@@ -18,6 +19,7 @@ const links = [
 export default function Navbar({ checkout = false }: { checkout?: boolean }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const { cart } = useCart();
+  const wishlistCount = useWishlist().productIds.length;
   const itemCount =
     cart?.items.reduce((total, item) => total + item.quantity, 0) ?? 0;
 
@@ -61,8 +63,17 @@ export default function Navbar({ checkout = false }: { checkout?: boolean }) {
         </Link>
 
         <div className={styles.actions}>
-          <Link href="/profile/wishlist" aria-label="Wishlist">
-            <Heart size={20} />
+          <Link
+            href="/profile/wishlist"
+            className={styles.cartLink}
+            aria-label={`Wishlist, ${wishlistCount} ${wishlistCount === 1 ? "favorite" : "favorites"}`}
+          >
+            <Heart size={20} aria-hidden="true" />
+            {wishlistCount > 0 && (
+              <span className={styles.cartCount} aria-hidden="true">
+                {wishlistCount > 99 ? "99+" : wishlistCount}
+              </span>
+            )}
           </Link>
           <Link href="/profile" aria-label="Your account">
             <UserRound size={21} />

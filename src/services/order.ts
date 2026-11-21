@@ -68,6 +68,43 @@ export interface Order {
   shipment: Shipment[];
 }
 
+export type OrderConfirmation = Pick<
+  Order,
+  | "id"
+  | "orderNumber"
+  | "orderedAt"
+  | "orderStatus"
+  | "paymentStatus"
+  | "paymentMethod"
+  | "subtotal"
+  | "discount"
+  | "tax"
+  | "shippingCharge"
+  | "totalAmount"
+> & {
+  orderItems: (Pick<OrderItem, "id" | "productId" | "quantity" | "total"> & {
+    product: {
+      name: string;
+      images: Pick<
+        OrderProductImage,
+        "displayUrl" | "imageUrl" | "originalUrl"
+      >[];
+    };
+  })[];
+  shipment: Omit<Shipment, "orderId" | "shippedDate" | "deliveredDate">[];
+};
+
+export async function getOrderConfirmation(
+  orderId: string,
+  signal: AbortSignal,
+) {
+  const { data } = await apiClient<{ data: OrderConfirmation }>(
+    `/orders/${encodeURIComponent(orderId)}/confirmation`,
+    { cache: "no-store", signal },
+  );
+  return data;
+}
+
 /**
  * Fetch all orders belonging to the currently authenticated user.
  */

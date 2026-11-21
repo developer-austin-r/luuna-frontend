@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -14,6 +14,8 @@ import ShippingMethod, {
 } from "@/components/Checkout/ShippingMethod/ShippingMethod";
 import { INDIAN_STATES } from "@/constants/indian-states";
 
+import { useCheckoutPayment } from "./use-checkout-payment";
+
 import styles from "./page.module.css";
 import fieldStyles from "@/components/Checkout/CheckoutInput/CheckoutInput.module.css";
 
@@ -22,6 +24,17 @@ export default function Checkout() {
     shippingOptions[0],
   );
   const { cart, error, loading, reload } = useCart();
+  const payment = useCheckoutPayment();
+  const { paidOrder } = payment;
+  const payable =
+    cart?.items.reduce<number>(
+      (total, item) => total + item.price * item.quantity + item.tax,
+      shipping.price,
+    ) ?? 0;
+
+  useEffect(() => {
+    if (paidOrder) void reload();
+  }, [paidOrder, reload]);
 
   return (
     <main className={styles.page} aria-label="Checkout">
@@ -36,12 +49,43 @@ export default function Checkout() {
         Back to Cart
       </Link>
 
-      {loading && (
+      {paidOrder && (
+        <div role="status" className="space-y-2 text-white">
+          <p>Payment confirmed for order {paidOrder}.</p>
+          <Link href="/profile/myorders" className="font-semibold underline">
+            View my orders
+          </Link>
+        </div>
+      )}
+      {!paidOrder && payment.message && (
+        <p role="status" className="mb-4 text-white">
+          {payment.message}
+        </p>
+      )}
+      {payment.needsLogin && (
+        <Link
+          href="/login?redirect=/order-checkout"
+          className="mb-4 block text-white underline"
+        >
+          Sign in to checkout
+        </Link>
+      )}
+      {payment.pendingPayment && (
+        <button
+          type="button"
+          className="mb-4 rounded-lg bg-white px-4 py-2 text-black"
+          disabled={payment.busy}
+          onClick={() => void payment.checkStatus()}
+        >
+          Check payment status
+        </button>
+      )}
+      {!paidOrder && loading && (
         <p role="status" className="text-white">
           Loading your cart…
         </p>
       )}
-      {error && !loading && (
+      {!paidOrder && error && !loading && (
         <p role="alert" className="text-white">
           {error}{" "}
           <button type="button" onClick={reload} className="underline">
@@ -49,7 +93,7 @@ export default function Checkout() {
           </button>
         </p>
       )}
-      {cart && !loading && !error && (
+      {!paidOrder && cart && !loading && !error && (
         <>
           {cart.notices.length > 0 && (
             <ul
@@ -73,19 +117,36 @@ export default function Checkout() {
               Update or remove unavailable items from your cart before checkout.
             </p>
           ) : (
-            <div className={styles.checkoutLayout}>
-              <div className={styles.details}>
+            <form
+              className={styles.checkoutLayout}
+              onSubmit={(event) => {
+                event.preventDefault();
+                void payment.submit(
+                  new FormData(event.currentTarget),
+                  shipping.id,
+                  Math.round(payable * 100),
+                );
+              }}
+            >
+              <fieldset
+                className={styles.details}
+                disabled={payment.busy || Boolean(payment.pendingPayment)}
+              >
                 <CheckoutSection title="Shipping Address">
                   <div className={styles.twoColumn}>
                     <CheckoutInput
                       label="First Name"
                       name="givenName"
+                      required
+                      maxLength={80}
                       autoComplete="given-name"
                       placeholder="First name"
                     />
                     <CheckoutInput
                       label="Last Name"
                       name="familyName"
+                      required
+                      maxLength={80}
                       autoComplete="family-name"
                       placeholder="Last name"
                     />
@@ -93,6 +154,10 @@ export default function Checkout() {
                       label="Mobile Number"
                       name="phone"
                       type="tel"
+                      required
+                      pattern="[6-9][0-9]{9}"
+                      maxLength={10}
+                      title="Enter a 10-digit Indian mobile number"
                       autoComplete="tel"
                       placeholder="Phone number"
                     />
@@ -100,6 +165,7 @@ export default function Checkout() {
                       label="Email"
                       name="email"
                       type="email"
+                      required
                       autoComplete="email"
                       placeholder="Email address"
                     />
@@ -109,6 +175,8 @@ export default function Checkout() {
                     <CheckoutInput
                       label="Delivery Address"
                       name="address"
+                      required
+                      maxLength={240}
                       autoComplete="street-address"
                       placeholder="Enter your address"
                     />
@@ -118,6 +186,8 @@ export default function Checkout() {
                     <CheckoutInput
                       label="City"
                       name="city"
+                      required
+                      maxLength={80}
                       autoComplete="address-level2"
                       placeholder="Enter your city"
                     />
@@ -128,6 +198,7 @@ export default function Checkout() {
                         name="state"
                         autoComplete="address-level1"
                         defaultValue=""
+                        required
                       >
                         <option value="" disabled>
                           Select State
@@ -143,15 +214,23 @@ export default function Checkout() {
                       inputMode="numeric"
                       autoComplete="postal-code"
                       maxLength={6}
+                      required
+                      pattern="[1-9][0-9]{5}"
+                      title="Enter a six-digit Indian pincode"
                     />
                   </div>
                 </CheckoutSection>
 
                 <ShippingMethod selected={shipping} onSelect={setShipping} />
                 <PaymentMethod />
-              </div>
-              <OrderSummary items={cart.items} shipping={shipping.price} />
-            </div>
+              </fieldset>
+              <OrderSummary
+                items={cart.items}
+                shipping={shipping.price}
+                busy={payment.busy}
+                disabled={Boolean(payment.pendingPayment) || payment.needsLogin}
+              />
+            </form>
           )}
         </>
       )}
