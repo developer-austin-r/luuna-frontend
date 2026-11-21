@@ -12,7 +12,7 @@
 
 .whatsNew {
   padding: clamp(20px, 3.4vw, 49px) 0 clamp(16px, 2.45vw, 35px);
-  background: #140824;
+  background: #10051b;
   color: #fff;
 }
 
@@ -33,7 +33,7 @@
 
 .categorySection {
   padding: 15px 5.556% 16px;
-  background: #140824;
+  background: #10051b;
 }
 
 .categorySection .contentWidth {

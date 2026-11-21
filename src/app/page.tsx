@@ -43,7 +43,7 @@ export default async function Home() {
   }
 
   return (
-    <main>
+    <main className="min-h-screen bg-[#10051b]">
       <LoginOfferBar />
       <Navbar />
       <Hero />

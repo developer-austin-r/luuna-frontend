@@ -1,7 +1,7 @@
 .section {
   padding-inline: clamp(14px, 3vw, 36px);
   padding-block: clamp(24px, 4vw, 48px);
-  background: #140922;
+  background: #10051b;
   color: #160b24;
   overflow: hidden;
 }

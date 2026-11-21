@@ -3,7 +3,7 @@
   width: 100%;
   padding: clamp(35px, 4.5vw, 60px) 0 clamp(30px, 4vw, 50px);
   overflow: hidden;
-  background: #000000;
+  background: #10051b;
   box-sizing: border-box;
   display: flex;
   justify-content: center;
@@ -46,7 +46,7 @@
 
 /* Center card with anime character artwork background */
 .centerCard {
-  background: #000000;
+  background: #180b26;
 }
 
 .sideCard {
