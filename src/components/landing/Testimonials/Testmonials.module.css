@@ -43,10 +43,6 @@
   animation-play-state: running;
 }
 
-.testimonials[data-paused="true"] .track {
-  animation-play-state: paused;
-}
-
 @media (hover: hover) {
   .track:hover {
     animation-play-state: paused;
@@ -95,26 +91,6 @@
   line-height: 1.25;
 }
 
-.playback {
-  position: absolute;
-  right: 8px;
-  bottom: 5px;
-  display: grid;
-  width: 32px;
-  height: 32px;
-  place-items: center;
-  border: 1px solid rgb(255 255 255 / 35%);
-  border-radius: 50%;
-  background: rgb(0 0 0 / 70%);
-  color: #fff;
-  cursor: pointer;
-}
-
-.playback:focus-visible {
-  outline: 2px solid #fff;
-  outline-offset: 2px;
-}
-
 @keyframes scrollReviews {
   from {
     transform: translateX(-50%);
@@ -150,8 +126,7 @@
     gap: 22px 0;
   }
 
-  .reviewGroup[aria-hidden="true"],
-  .playback {
+  .reviewGroup[aria-hidden="true"] {
     display: none;
   }
 }

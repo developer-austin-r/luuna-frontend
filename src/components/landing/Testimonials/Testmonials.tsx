@@ -1,8 +1,6 @@
 "use client";
 
-import { useState } from "react";
 import Image from "next/image";
-import { Pause, Play } from "lucide-react";
 
 import styles from "./Testmonials.module.css";
 
@@ -43,14 +41,8 @@ function StarIcon() {
 }
 
 export default function Testimonials() {
-  const [paused, setPaused] = useState(false);
-
   return (
-    <section
-      className={styles.testimonials}
-      aria-label="Customer reviews"
-      data-paused={paused}
-    >
+    <section className={styles.testimonials} aria-label="Customer reviews">
       <div className={styles.centerArtWrapper} aria-hidden="true">
         <Image
           src="/images/testimonials-art.png"
@@ -89,20 +81,6 @@ export default function Testimonials() {
           </div>
         ))}
       </div>
-      <button
-        type="button"
-        className={styles.playback}
-        aria-label={
-          paused ? "Resume scrolling reviews" : "Pause scrolling reviews"
-        }
-        onClick={() => setPaused((value) => !value)}
-      >
-        {paused ? (
-          <Play size={15} aria-hidden="true" />
-        ) : (
-          <Pause size={15} aria-hidden="true" />
-        )}
-      </button>
     </section>
   );
 }
