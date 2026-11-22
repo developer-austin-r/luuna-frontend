@@ -8,7 +8,7 @@
 
 .container {
   width: 100%;
-  max-width: 1560px;
+  max-width: 1440px;
   margin: 0 auto;
   padding: 0 clamp(16px, 3.5vw, 48px);
   box-sizing: border-box;
@@ -17,7 +17,7 @@
 .title {
   margin: 0 0 clamp(28px, 4vw, 48px);
   color: #ffffff;
-  font-size: clamp(28px, 3.8vw, 44px);
+  font-size: clamp(26px, 3.6vw, 42px);
   font-weight: 400;
   letter-spacing: 0.05em;
   text-align: center;
@@ -29,7 +29,7 @@
   display: flex;
   justify-content: space-between;
   align-items: flex-end;
-  gap: clamp(12px, 2.5vw, 48px);
+  gap: clamp(12px, 2.5vw, 40px);
   width: 100%;
   box-sizing: border-box;
 }
@@ -41,25 +41,36 @@
   flex: 0 1 auto;
 }
 
-/* Outlined rank number standing directly alongside the image card matching Figma */
+/* Outlined rank number placed ABOVE (in front of / on top of) the image, sized slightly below the image height */
 .rank {
-  font-family: inherit;
-  font-size: clamp(180px, 19.5vw, 320px);
-  font-weight: 400;
-  line-height: 0.68;
+  position: relative;
+  z-index: 2;
+  font-family:
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    Roboto,
+    sans-serif;
+  font-size: clamp(96px, 11vw, 165px);
+  font-weight: 900;
+  line-height: 0.85;
   color: transparent;
-  -webkit-text-stroke: clamp(1.8px, 0.16vw, 2.5px) #d4c2ec;
+  -webkit-text-stroke: clamp(1.8px, 0.16vw, 2.2px) #9a78be;
   text-align: center;
   user-select: none;
-  margin-right: -4px;
+  margin-right: clamp(-30px, -3.5vw, -52px);
+  pointer-events: none;
+  filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.5));
   flex-shrink: 0;
   display: inline-block;
 }
 
 .productImageWrapper {
   position: relative;
-  width: clamp(135px, 15vw, 220px);
-  aspect-ratio: 135 / 155;
+  z-index: 1;
+  width: clamp(125px, 14.5vw, 195px);
+  aspect-ratio: 140 / 162;
   border-radius: 4px;
   overflow: hidden;
   background: #180b26;
@@ -87,33 +98,31 @@
     display: grid;
     grid-template-columns: repeat(2, auto);
     justify-content: center;
-    gap: 32px 32px;
+    gap: 32px 36px;
   }
 
   .rank {
-    font-size: clamp(140px, 20vw, 220px);
-    line-height: 0.68;
-    margin-right: -4px;
+    font-size: clamp(86px, 15vw, 125px);
+    margin-right: clamp(-24px, -3vw, -40px);
   }
 
   .productImageWrapper {
-    width: clamp(125px, 24vw, 175px);
+    width: clamp(120px, 24vw, 170px);
   }
 }
 
 @media (max-width: 540px) {
   .picksGrid {
-    gap: 24px 18px;
+    gap: 24px 20px;
   }
 
   .rank {
-    font-size: clamp(110px, 23vw, 150px);
-    line-height: 0.68;
-    -webkit-text-stroke: 1.6px #d4c2ec;
-    margin-right: -2px;
+    font-size: clamp(68px, 17vw, 92px);
+    -webkit-text-stroke: 1.5px #9a78be;
+    margin-right: -20px;
   }
 
   .productImageWrapper {
-    width: clamp(105px, 28vw, 135px);
+    width: clamp(100px, 28vw, 130px);
   }
 }
