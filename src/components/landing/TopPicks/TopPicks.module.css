@@ -8,7 +8,7 @@
 
 .container {
   width: 100%;
-  max-width: 1360px;
+  max-width: 1560px;
   margin: 0 auto;
   padding: 0 clamp(16px, 3.5vw, 48px);
   box-sizing: border-box;
@@ -17,7 +17,7 @@
 .title {
   margin: 0 0 clamp(28px, 4vw, 48px);
   color: #ffffff;
-  font-size: clamp(26px, 3.6vw, 42px);
+  font-size: clamp(28px, 3.8vw, 44px);
   font-weight: 400;
   letter-spacing: 0.05em;
   text-align: center;
@@ -43,13 +43,12 @@
 
 /* Outlined rank number standing directly alongside the image card matching Figma */
 .rank {
-  font-family:
-    var(--font-geist-mono), ui-monospace, "SF Mono", Menlo, Consolas, monospace;
-  font-size: clamp(96px, 11.5vw, 168px);
-  font-weight: 700;
-  line-height: 0.85;
+  font-family: inherit;
+  font-size: clamp(180px, 19.5vw, 320px);
+  font-weight: 400;
+  line-height: 0.68;
   color: transparent;
-  -webkit-text-stroke: 1.8px #7a589c;
+  -webkit-text-stroke: clamp(1.8px, 0.16vw, 2.5px) #d4c2ec;
   text-align: center;
   user-select: none;
   margin-right: -4px;
@@ -59,8 +58,8 @@
 
 .productImageWrapper {
   position: relative;
-  width: clamp(125px, 14.5vw, 195px);
-  aspect-ratio: 140 / 162;
+  width: clamp(135px, 15vw, 220px);
+  aspect-ratio: 135 / 155;
   border-radius: 4px;
   overflow: hidden;
   background: #180b26;
@@ -88,31 +87,33 @@
     display: grid;
     grid-template-columns: repeat(2, auto);
     justify-content: center;
-    gap: 32px 28px;
+    gap: 32px 32px;
   }
 
   .rank {
-    font-size: clamp(86px, 15vw, 125px);
+    font-size: clamp(140px, 20vw, 220px);
+    line-height: 0.68;
     margin-right: -4px;
   }
 
   .productImageWrapper {
-    width: clamp(120px, 24vw, 170px);
+    width: clamp(125px, 24vw, 175px);
   }
 }
 
 @media (max-width: 540px) {
   .picksGrid {
-    gap: 24px 16px;
+    gap: 24px 18px;
   }
 
   .rank {
-    font-size: clamp(68px, 17vw, 92px);
-    -webkit-text-stroke: 1.5px #7a589c;
+    font-size: clamp(110px, 23vw, 150px);
+    line-height: 0.68;
+    -webkit-text-stroke: 1.6px #d4c2ec;
     margin-right: -2px;
   }
 
   .productImageWrapper {
-    width: clamp(100px, 28vw, 130px);
+    width: clamp(105px, 28vw, 135px);
   }
 }

@@ -33,6 +33,7 @@
 
 .viewport {
   position: relative;
+  isolation: isolate;
   overflow-x: auto;
   scrollbar-width: none;
   scroll-snap-type: x mandatory;
@@ -224,7 +225,12 @@
     transform 150ms ease;
 }
 
-.arrow:hover {
+.arrow:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.arrow:not(:disabled):hover {
   background: #fff;
   transform: scale(1.05);
 }
@@ -239,6 +245,7 @@
 
 .pagination {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: center;
   gap: 5px;
