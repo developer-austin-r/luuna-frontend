@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { ChevronLeft, ChevronRight } from "lucide-react";
@@ -123,40 +123,41 @@ export function ProductCarousel({
 }) {
   const viewportRef = useRef<HTMLDivElement>(null);
   const trackRef = useRef<HTMLDivElement>(null);
+  const [positions, setPositions] = useState<number[]>([]);
   const [activeIndex, setActiveIndex] = useState(0);
 
-  const moveCarousel = (direction: -1 | 1) => {
+  useEffect(() => {
     const viewport = viewportRef.current;
-    if (!viewport) return;
+    const track = trackRef.current;
+    if (!viewport || !track) return;
 
-    viewport.scrollBy({
-      left: direction * viewport.clientWidth * 0.72,
-      behavior: "smooth",
-    });
-  };
+    const cards = Array.from(track.children) as HTMLElement[];
+    const measure = () => {
+      const maxScroll = viewport.scrollWidth - viewport.clientWidth;
+      const stops = cards
+        .map((card) => Math.min(card.offsetLeft, maxScroll))
+        .filter(
+          (position, index, offsets) =>
+            position > (offsets[index - 1] ?? -Infinity),
+        );
+      setPositions(stops);
+      setActiveIndex(closestPosition(stops, viewport.scrollLeft));
+    };
 
-  const updateActiveIndex = () => {
-    const viewport = viewportRef.current;
-    const firstCard = trackRef.current?.querySelector<HTMLElement>("article");
-    if (!viewport || !firstCard || !trackRef.current) return;
-
-    const gap =
-      Number.parseFloat(getComputedStyle(trackRef.current).columnGap) || 0;
-    const cardStep = firstCard.offsetWidth + gap;
-    setActiveIndex(
-      Math.min(products.length - 1, Math.round(viewport.scrollLeft / cardStep)),
-    );
-  };
+    const observer = new ResizeObserver(measure);
+    observer.observe(viewport);
+    return () => observer.disconnect();
+  }, [products]);
 
   const goToCard = (index: number) => {
-    const viewport = viewportRef.current;
-    const card =
-      trackRef.current?.querySelectorAll<HTMLElement>("article")[index];
-    if (!viewport || !card) return;
+    const left = positions[index];
+    if (left === undefined) return;
 
-    viewport.scrollTo({
-      left: card.offsetLeft,
-      behavior: "smooth",
+    viewportRef.current?.scrollTo({
+      left,
+      behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches
+        ? "auto"
+        : "smooth",
     });
   };
 
@@ -175,14 +176,19 @@ export function ProductCarousel({
               className={`${styles.arrow} ${styles.previous}`}
               type="button"
               aria-label={`Scroll to previous ${title.toLowerCase()}`}
-              onClick={() => moveCarousel(-1)}
+              disabled={activeIndex === 0}
+              onClick={() => goToCard(activeIndex - 1)}
             >
               <ChevronLeft size={19} />
             </button>
             <div
               className={styles.viewport}
               ref={viewportRef}
-              onScroll={updateActiveIndex}
+              onScroll={(event) =>
+                setActiveIndex(
+                  closestPosition(positions, event.currentTarget.scrollLeft),
+                )
+              }
               role="region"
               aria-label={title}
               aria-roledescription="carousel"
@@ -202,31 +208,45 @@ export function ProductCarousel({
               className={`${styles.arrow} ${styles.next}`}
               type="button"
               aria-label={`Scroll to next ${title.toLowerCase()}`}
-              onClick={() => moveCarousel(1)}
+              disabled={activeIndex >= positions.length - 1}
+              onClick={() => goToCard(activeIndex + 1)}
             >
               <ChevronRight size={19} />
             </button>
           </div>
 
-          <div
-            className={styles.pagination}
-            aria-label={`Choose a ${title.toLowerCase()} product`}
-          >
-            {products.map((product, index) => (
-              <button
-                className={
-                  index === activeIndex ? styles.activeDot : styles.dot
-                }
-                key={product.id ?? `${index}-${product.name}`}
-                type="button"
-                aria-label={`Show ${product.name}`}
-                aria-current={index === activeIndex ? "true" : undefined}
-                onClick={() => goToCard(index)}
-              />
-            ))}
-          </div>
+          {positions.length > 1 && (
+            <div
+              className={styles.pagination}
+              aria-label={`Choose a ${title.toLowerCase()} product`}
+            >
+              {positions.map((position, index) => (
+                <button
+                  className={
+                    index === activeIndex ? styles.activeDot : styles.dot
+                  }
+                  key={position}
+                  type="button"
+                  aria-label={`Show products from position ${index + 1}`}
+                  aria-current={index === activeIndex ? "true" : undefined}
+                  onClick={() => goToCard(index)}
+                />
+              ))}
+            </div>
+          )}
         </>
       )}
     </section>
+  );
+}
+
+function closestPosition(positions: number[], scrollLeft: number) {
+  return positions.reduce(
+    (closest, position, index) =>
+      Math.abs(position - scrollLeft) <
+      Math.abs((positions[closest] ?? 0) - scrollLeft)
+        ? index
+        : closest,
+    0,
   );
 }
