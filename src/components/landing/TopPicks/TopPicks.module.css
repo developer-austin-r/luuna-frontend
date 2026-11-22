@@ -41,7 +41,7 @@
   flex: 0 1 auto;
 }
 
-/* Outlined rank number placed ABOVE (in front of / on top of) the image, sized slightly below the image height */
+/* Outlined rank number placed ABOVE (in front of / on top of) the image, scaled to stay inside the image height level */
 .rank {
   position: relative;
   z-index: 2;
@@ -52,14 +52,14 @@
     "Segoe UI",
     Roboto,
     sans-serif;
-  font-size: clamp(96px, 11vw, 165px);
+  font-size: clamp(160px, 18.5vw, 250px);
   font-weight: 900;
-  line-height: 0.85;
+  line-height: 0.82;
   color: transparent;
-  -webkit-text-stroke: clamp(1.8px, 0.16vw, 2.2px) #9a78be;
+  -webkit-text-stroke: clamp(2px, 0.2vw, 2.5px) #9a78be;
   text-align: center;
   user-select: none;
-  margin-right: clamp(-30px, -3.5vw, -52px);
+  margin-right: clamp(-38px, -4.2vw, -58px);
   pointer-events: none;
   filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.5));
   flex-shrink: 0;
@@ -102,8 +102,9 @@
   }
 
   .rank {
-    font-size: clamp(86px, 15vw, 125px);
-    margin-right: clamp(-24px, -3vw, -40px);
+    font-size: clamp(150px, 28vw, 215px);
+    margin-right: clamp(-32px, -4.8vw, -50px);
+    -webkit-text-stroke: clamp(1.8px, 0.25vw, 2.2px) #9a78be;
   }
 
   .productImageWrapper {
@@ -117,9 +118,9 @@
   }
 
   .rank {
-    font-size: clamp(68px, 17vw, 92px);
-    -webkit-text-stroke: 1.5px #9a78be;
-    margin-right: -20px;
+    font-size: clamp(125px, 34vw, 165px);
+    -webkit-text-stroke: 1.8px #9a78be;
+    margin-right: clamp(-24px, -5.5vw, -36px);
   }
 
   .productImageWrapper {
