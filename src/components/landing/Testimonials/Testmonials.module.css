@@ -1,148 +1,144 @@
 .testimonials {
-  position: relative;
-  width: 100%;
-  padding: clamp(35px, 4.5vw, 60px) 0 clamp(30px, 4vw, 50px);
-  overflow: hidden;
-  background: #10051b;
-  box-sizing: border-box;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
+  --card-width: calc(100% / 3);
+  --track-width: 200%;
 
-.contentContainer {
   position: relative;
-  width: 100%;
-  max-width: 1360px;
-  margin: 0 auto;
-  padding: 0 clamp(16px, 4vw, 64px);
-  box-sizing: border-box;
-  z-index: 1;
-  display: flex;
-  justify-content: center;
-}
-
-/* 3-column layout matching Abu's reference screenshot */
-.reviewGrid {
+  isolation: isolate;
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: clamp(16px, 3.5vw, 56px);
-  width: 100%;
-  align-items: stretch;
-}
-
-.card {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  box-sizing: border-box;
-  border-radius: 12px;
+  grid-template-columns: minmax(0, 1fr);
+  align-content: center;
+  min-height: clamp(158px, 29vw, 264px);
+  padding-block: clamp(18px, 2.25vw, 32px);
   overflow: hidden;
-  min-height: 180px;
+  background: #000;
+  color: #fff;
 }
 
-/* Center card with anime character artwork background */
-.centerCard {
-  background: #180b26;
-}
-
-.sideCard {
-  background: transparent;
-}
-
-/* Background anime artwork positioned behind the middle review card */
 .centerArtWrapper {
   position: absolute;
-  inset: -10% -15%;
+  z-index: -1;
+  inset: 0;
   pointer-events: none;
-  z-index: 0;
-  opacity: 0.95;
 }
 
 .centerArt {
   object-fit: contain;
   object-position: center;
-  filter: drop-shadow(0 0 25px rgb(220 50 60 / 60%));
 }
 
-/* Subtle dark vignette overlay over the artwork to ensure high contrast and text readability */
 .artOverlay {
   position: absolute;
   inset: 0;
   background: radial-gradient(
     ellipse at center,
-    rgb(0 0 0 / 55%) 0%,
-    rgb(0 0 0 / 78%) 65%,
-    rgb(0 0 0 / 96%) 100%
+    rgb(0 0 0 / 48%),
+    transparent 75%
   );
 }
 
-.cardContent {
-  position: relative;
-  z-index: 1;
+.track {
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  padding: clamp(12px, 2vw, 20px) clamp(8px, 1.5vw, 16px);
-  width: 100%;
+  width: var(--track-width);
+  animation: scrollReviews 36s linear infinite;
+  animation-play-state: running;
 }
 
-.rating {
-  color: #ff6e14;
-  font-size: clamp(13px, 1.1vw, 16px);
-  letter-spacing: 3px;
-  line-height: 1;
-  margin-bottom: 8px;
-  text-shadow: 0 1px 6px rgb(255 110 20 / 30%);
+@media (hover: hover) {
+  .track:hover {
+    animation-play-state: paused;
+  }
+}
+
+.reviewGroup {
+  display: flex;
+  flex: 0 0 50%;
+}
+
+.card {
+  display: grid;
+  flex: 0 0 var(--card-width);
+  align-content: center;
+  justify-items: center;
+  min-width: 0;
+  padding-inline: clamp(16px, 2.8vw, 44px);
+  text-align: center;
+}
+
+.stars {
+  display: flex;
+  gap: 2px;
+  margin-bottom: 4px;
+}
+
+.starIcon {
+  display: block;
+  width: 13px;
+  height: 13px;
 }
 
 .reviewText {
-  margin: 0 auto;
-  color: #ffffff;
-  font-size: clamp(13px, 1.05vw, 15px);
-  font-weight: 500;
-  line-height: 1.55;
-  max-width: 360px;
-  letter-spacing: 0.01em;
-  text-shadow: 0 2px 8px rgb(0 0 0 / 90%);
+  max-width: 25ch;
+  margin: 0;
+  font-size: clamp(0.875rem, 1.45vw, 1.2rem);
+  line-height: 1.35;
+  text-shadow: 0 1px 6px #000;
 }
 
 .authorName {
-  margin: 10px 0 0;
-  color: #ffffff;
-  font-size: clamp(13px, 1.05vw, 15px);
-  font-weight: 800;
-  letter-spacing: 0.02em;
-  line-height: 1.2;
-  text-shadow: 0 2px 8px rgb(0 0 0 / 90%);
+  margin: 7px 0 0;
+  font-size: clamp(0.875rem, 1.38vw, 1.125rem);
+  font-weight: 750;
+  line-height: 1.25;
 }
 
-@media (max-width: 768px) {
+@keyframes scrollReviews {
+  from {
+    transform: translateX(-50%);
+  }
+
+  to {
+    transform: translateX(0);
+  }
+}
+
+@media (max-width: 900px) {
   .testimonials {
-    padding: 28px 0 22px;
+    --track-width: 300%;
+  }
+}
+
+@media (max-width: 560px) {
+  .testimonials {
+    --track-width: 600%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .track {
+    width: 100%;
+    animation: none;
   }
 
-  .reviewGrid {
-    grid-template-columns: 1fr;
-    gap: 20px;
-    max-width: 440px;
+  .reviewGroup {
+    flex-basis: 100%;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 22px 0;
   }
 
-  /* On small mobile screens, focus on the genuine center review */
-  .sideCard {
+  .reviewGroup[aria-hidden="true"] {
     display: none;
   }
+}
 
-  .cardContent {
-    padding: 16px 12px;
+@media (prefers-reduced-motion: reduce) and (max-width: 900px) {
+  .card {
+    flex-basis: 50%;
   }
+}
 
-  .reviewText {
-    max-width: 340px;
-    font-size: 13.5px;
+@media (prefers-reduced-motion: reduce) and (max-width: 560px) {
+  .card {
+    flex-basis: 100%;
   }
 }

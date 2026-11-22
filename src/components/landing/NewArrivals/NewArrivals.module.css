@@ -33,6 +33,7 @@
 
 .viewport {
   position: relative;
+  isolation: isolate;
   overflow-x: auto;
   scrollbar-width: none;
   scroll-snap-type: x mandatory;
@@ -81,14 +82,23 @@
   aspect-ratio: 1 / 1.04;
   overflow: hidden;
   border-radius: 8px;
-  background: #ffffff;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+  background:
+    radial-gradient(
+      ellipse at 50% 24%,
+      rgb(188 168 195 / 20%),
+      transparent 50%
+    ),
+    linear-gradient(155deg, #2a1f38, #180e25 75%);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
+}
+
+.squareArtwork {
+  aspect-ratio: 1;
 }
 
 .artwork > img {
-  object-fit: contain;
-  object-position: center;
-  padding: 10px;
+  object-fit: cover;
+  object-position: center bottom;
   transition: transform 250ms ease;
 }
 
@@ -157,6 +167,10 @@
   padding: 7px 4px 10px;
 }
 
+.productInfo.gridProductInfo {
+  padding: 7px 0 0;
+}
+
 .productInfo h3 {
   overflow: hidden;
   margin: 0;
@@ -211,7 +225,12 @@
     transform 150ms ease;
 }
 
-.arrow:hover {
+.arrow:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.arrow:not(:disabled):hover {
   background: #fff;
   transform: scale(1.05);
 }
@@ -226,6 +245,7 @@
 
 .pagination {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: center;
   gap: 5px;

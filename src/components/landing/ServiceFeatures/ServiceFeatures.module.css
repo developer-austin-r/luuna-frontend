@@ -1,7 +1,7 @@
 .section {
   width: 100%;
   background: #10051b;
-  padding: 0;
+  padding: clamp(8px, 1.5vw, 20px) 0;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -23,30 +23,5 @@
 .brandStrip {
   width: 100%;
   height: auto;
-  min-height: clamp(140px, 16vw, 240px);
-  max-height: 280px;
   display: block;
-  object-fit: cover;
-  object-position: center;
-}
-
-@media (max-width: 1024px) {
-  .brandStrip {
-    min-height: clamp(120px, 18vw, 190px);
-    object-fit: cover;
-  }
-}
-
-@media (max-width: 768px) {
-  .brandStrip {
-    min-height: clamp(100px, 20vw, 150px);
-    object-fit: cover;
-  }
-}
-
-@media (max-width: 480px) {
-  .brandStrip {
-    min-height: 90px;
-    object-fit: cover;
-  }
 }

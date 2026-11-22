@@ -6,7 +6,9 @@ import CommunityBar from "@/components/landing/CommunityBar/CommunityBar";
 import CuratedForYou from "@/components/landing/CuratedForYou/CuratedForYou";
 import Footer from "@/components/landing/Footer/Footer";
 import Hero from "@/components/landing/Hero/Hero";
-import LandingStorySections from "@/components/landing/LandingStorySections";
+import LandingStorySections, {
+  LandingProductGrid,
+} from "@/components/landing/LandingStorySections";
 import LoginOfferBar from "@/components/landing/LoginOfferBar/LoginOfferBar";
 import Navbar from "@/components/landing/Navbar/Navbar";
 import LandingProductCarousel from "@/components/landing/NewArrivals/LandingProductCarousel";
@@ -57,6 +59,9 @@ export default async function Home() {
       <ServiceFeatures />
       <TopPicks />
       <Testimonials />
+      <Suspense>
+        <LandingProductGrid />
+      </Suspense>
       <Footer />
     </main>
   );
